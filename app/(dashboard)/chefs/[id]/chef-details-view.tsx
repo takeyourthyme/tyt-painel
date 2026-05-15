@@ -231,7 +231,7 @@ function ScheduleCard({ item }: { item: ScheduleItem }) {
                 </div>
             </div>
 
-            <ButtonUtility icon={Eye} color="secondary" size="md" aria-label="Ver" />
+            <ButtonUtility icon={Eye} color="secondary" size="sm" aria-label="Ver" />
         </div>
     );
 }
@@ -648,7 +648,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                         <Table.Cell className="whitespace-nowrap text-tertiary">{row.clientName}</Table.Cell>
                                                         <Table.Cell>
                                                             <div className="flex justify-end">
-                                                                <ButtonUtility icon={Eye} color="secondary" size="md" aria-label="Ver" />
+                                                                <ButtonUtility icon={Eye} color="secondary" size="sm" aria-label="Ver" />
                                                             </div>
                                                         </Table.Cell>
                                                     </Table.Row>
