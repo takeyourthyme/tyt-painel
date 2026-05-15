@@ -76,3 +76,4 @@ Untitled UI React open-source components are licensed under the MIT license, whi
   - Tendência sempre comparada com o período imediatamente anterior equivalente.
 # tyt-painel
 # tyt-painel
+# tyt-painel
