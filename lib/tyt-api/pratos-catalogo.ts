@@ -1,0 +1,69 @@
+import { tytFetch } from "./client";
+import { tytEndpoints } from "./endpoints";
+import type { CatalogoDescricaoBody, PratoCategoriaBody, ResourceId } from "./types";
+
+export type { CatalogoDescricaoBody, PratoCategoriaBody } from "./types";
+
+function crudJson(
+    segment: "pratosCategorias" | "tiposCozinha" | "temas" | "ingredientesPrincipais" | "prefCulinarias",
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    token: string,
+    options?: { id?: ResourceId; body?: PratoCategoriaBody | CatalogoDescricaoBody },
+) {
+    const ep = tytEndpoints[segment];
+    const path = options?.id !== undefined ? ep.byId(options.id) : ep.collection;
+    return tytFetch(path, {
+        method,
+        token,
+        ...(options?.body !== undefined ? { json: options.body } : {}),
+    });
+}
+
+/** Pratos — Categorias */
+export const pratosCategoriasApi = {
+    create: (body: PratoCategoriaBody, token: string) => crudJson("pratosCategorias", "POST", token, { body }),
+    update: (id: ResourceId, body: PratoCategoriaBody, token: string) =>
+        crudJson("pratosCategorias", "PUT", token, { id, body }),
+    remove: (id: ResourceId, token: string) => crudJson("pratosCategorias", "DELETE", token, { id }),
+    getById: (id: ResourceId, token: string) => crudJson("pratosCategorias", "GET", token, { id }),
+    getAll: (token: string) => crudJson("pratosCategorias", "GET", token),
+};
+
+/** Pratos — Tipos de cozinha */
+export const tiposCozinhaApi = {
+    create: (body: CatalogoDescricaoBody, token: string) => crudJson("tiposCozinha", "POST", token, { body }),
+    update: (id: ResourceId, body: CatalogoDescricaoBody, token: string) =>
+        crudJson("tiposCozinha", "PUT", token, { id, body }),
+    remove: (id: ResourceId, token: string) => crudJson("tiposCozinha", "DELETE", token, { id }),
+    getById: (id: ResourceId, token: string) => crudJson("tiposCozinha", "GET", token, { id }),
+    getAll: (token: string) => crudJson("tiposCozinha", "GET", token),
+};
+
+/** Pratos — Temas */
+export const temasApi = {
+    create: (body: CatalogoDescricaoBody, token: string) => crudJson("temas", "POST", token, { body }),
+    update: (id: ResourceId, body: CatalogoDescricaoBody, token: string) => crudJson("temas", "PUT", token, { id, body }),
+    remove: (id: ResourceId, token: string) => crudJson("temas", "DELETE", token, { id }),
+    getById: (id: ResourceId, token: string) => crudJson("temas", "GET", token, { id }),
+    getAll: (token: string) => crudJson("temas", "GET", token),
+};
+
+/** Pratos — Ingredientes principais */
+export const ingredientesPrincipaisApi = {
+    create: (body: CatalogoDescricaoBody, token: string) => crudJson("ingredientesPrincipais", "POST", token, { body }),
+    update: (id: ResourceId, body: CatalogoDescricaoBody, token: string) =>
+        crudJson("ingredientesPrincipais", "PUT", token, { id, body }),
+    remove: (id: ResourceId, token: string) => crudJson("ingredientesPrincipais", "DELETE", token, { id }),
+    getById: (id: ResourceId, token: string) => crudJson("ingredientesPrincipais", "GET", token, { id }),
+    getAll: (token: string) => crudJson("ingredientesPrincipais", "GET", token),
+};
+
+/** Pratos — Preferências culinárias */
+export const prefCulinariasApi = {
+    create: (body: CatalogoDescricaoBody, token: string) => crudJson("prefCulinarias", "POST", token, { body }),
+    update: (id: ResourceId, body: CatalogoDescricaoBody, token: string) =>
+        crudJson("prefCulinarias", "PUT", token, { id, body }),
+    remove: (id: ResourceId, token: string) => crudJson("prefCulinarias", "DELETE", token, { id }),
+    getById: (id: ResourceId, token: string) => crudJson("prefCulinarias", "GET", token, { id }),
+    getAll: (token: string) => crudJson("prefCulinarias", "GET", token),
+};

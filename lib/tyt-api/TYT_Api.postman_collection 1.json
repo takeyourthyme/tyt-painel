@@ -1,0 +1,2975 @@
+{
+  "info": {
+    "_postman_id": "8a57e729-c948-4b47-8978-778fa9c0859e",
+    "name": "TYT_Api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "11308205"
+  },
+  "item": [
+    {
+      "name": "No Token",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "// chef\r\n/*\r\n{\r\n    \"senha\": \"senhaForte12345\",\r\n    \"email\": \"nicolas.pereira@matilha.digital\"\r\n}\r\n*/\r\n\r\n\r\n//admin\r\n\r\n{\r\n    \"senha\": \"senhaSuperSegura123\",\r\n    \"email\": \"admin@email.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/auth/login",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar user CLIENTE",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "nome",
+                  "value": "João da Silva",
+                  "type": "text",
+                  "uuid": "5dccb549-5ea0-4e80-85ab-9253df3c4465"
+                },
+                {
+                  "key": "cpf",
+                  "value": "123.456.789-00",
+                  "type": "text",
+                  "uuid": "5532580d-0f70-49b0-b0c2-5c5a08ee6677"
+                },
+                {
+                  "key": "senha",
+                  "value": "senhaSuperSegura123",
+                  "type": "text",
+                  "uuid": "44835ff4-b3e2-4e8c-9e8f-511f456f573a"
+                },
+                {
+                  "key": "email",
+                  "value": "joao.silva@email.com",
+                  "type": "text",
+                  "uuid": "e49fac8b-b4f7-4749-9982-ed5719a5354c"
+                },
+                {
+                  "key": "data_nascimento",
+                  "value": "1990-05-15T00:00:00.000Z",
+                  "type": "text",
+                  "uuid": "fe87967e-8d70-4524-a116-33defacfc83a"
+                },
+                {
+                  "key": "whatsapp",
+                  "value": "(11) 98765-4321",
+                  "type": "text",
+                  "uuid": "caef4f14-3c75-4d8a-b543-93ac5ded09e8"
+                },
+                {
+                  "key": "cep",
+                  "value": "01001-000",
+                  "type": "text",
+                  "uuid": "8b04fe1f-8aa2-413b-9b6d-8e184e8e93c8"
+                },
+                {
+                  "key": "endereco",
+                  "value": "Praça da Sé",
+                  "type": "text",
+                  "uuid": "174a6712-a93d-4f61-b367-110843d36853"
+                },
+                {
+                  "key": "numero",
+                  "value": "123",
+                  "type": "text",
+                  "uuid": "b63f48af-ba45-401e-b626-9ecebf431192"
+                },
+                {
+                  "key": "complemento",
+                  "value": "Apto 45",
+                  "type": "text",
+                  "uuid": "d8933f16-09ac-4070-baff-e18d5be697e0"
+                },
+                {
+                  "key": "bairro",
+                  "value": "Sé",
+                  "type": "text",
+                  "uuid": "bc206796-8410-455e-b342-4e7357758430"
+                },
+                {
+                  "key": "cidade",
+                  "value": "São Paulo",
+                  "type": "text",
+                  "uuid": "5a28b65e-9b52-4350-9742-0d84aa5c3744"
+                },
+                {
+                  "key": "estado",
+                  "value": "SP",
+                  "type": "text",
+                  "uuid": "64581729-ab43-4939-8279-8605bf79eb71"
+                },
+                {
+                  "key": "tipo_usuario",
+                  "value": "cliente",
+                  "type": "text",
+                  "uuid": "aff19fa8-8088-4fcb-a4ff-1c266a7cb599"
+                },
+                {
+                  "key": "foto",
+                  "type": "file",
+                  "uuid": "2769222d-760d-4f0e-b2e7-78385a79e170",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/imagemTest.jpg"
+                },
+                {
+                  "key": "comprovante_end",
+                  "type": "file",
+                  "uuid": "ecbefc8b-70cd-4c2f-b014-fa4c8c1b6282",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/imagemTest.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{URL}}/api/users",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar user Admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "nome",
+                  "value": "Admin",
+                  "type": "text",
+                  "uuid": "5dccb549-5ea0-4e80-85ab-9253df3c4465"
+                },
+                {
+                  "key": "cpf",
+                  "value": "999.999.999-00",
+                  "type": "text",
+                  "uuid": "5532580d-0f70-49b0-b0c2-5c5a08ee6677"
+                },
+                {
+                  "key": "senha",
+                  "value": "senhaSuperSegura123",
+                  "type": "text",
+                  "uuid": "44835ff4-b3e2-4e8c-9e8f-511f456f573a"
+                },
+                {
+                  "key": "email",
+                  "value": "admin@email.com",
+                  "type": "text",
+                  "uuid": "e49fac8b-b4f7-4749-9982-ed5719a5354c"
+                },
+                {
+                  "key": "data_nascimento",
+                  "value": "1990-05-15T00:00:00.000Z",
+                  "type": "text",
+                  "uuid": "fe87967e-8d70-4524-a116-33defacfc83a"
+                },
+                {
+                  "key": "whatsapp",
+                  "value": "(11) 98765-9999",
+                  "type": "text",
+                  "uuid": "caef4f14-3c75-4d8a-b543-93ac5ded09e8"
+                },
+                {
+                  "key": "cep",
+                  "value": "01001-000",
+                  "type": "text",
+                  "uuid": "8b04fe1f-8aa2-413b-9b6d-8e184e8e93c8"
+                },
+                {
+                  "key": "endereco",
+                  "value": "Praça da Sé",
+                  "type": "text",
+                  "uuid": "174a6712-a93d-4f61-b367-110843d36853"
+                },
+                {
+                  "key": "numero",
+                  "value": "123",
+                  "type": "text",
+                  "uuid": "b63f48af-ba45-401e-b626-9ecebf431192"
+                },
+                {
+                  "key": "complemento",
+                  "value": "Apto 45",
+                  "type": "text",
+                  "uuid": "d8933f16-09ac-4070-baff-e18d5be697e0"
+                },
+                {
+                  "key": "bairro",
+                  "value": "Sé",
+                  "type": "text",
+                  "uuid": "bc206796-8410-455e-b342-4e7357758430"
+                },
+                {
+                  "key": "cidade",
+                  "value": "São Paulo",
+                  "type": "text",
+                  "uuid": "5a28b65e-9b52-4350-9742-0d84aa5c3744"
+                },
+                {
+                  "key": "estado",
+                  "value": "SP",
+                  "type": "text",
+                  "uuid": "64581729-ab43-4939-8279-8605bf79eb71"
+                },
+                {
+                  "key": "tipo_usuario",
+                  "value": "admin",
+                  "type": "text",
+                  "uuid": "aff19fa8-8088-4fcb-a4ff-1c266a7cb599"
+                },
+                {
+                  "key": "foto",
+                  "type": "file",
+                  "uuid": "2769222d-760d-4f0e-b2e7-78385a79e170",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/logo_PAT-02.ico"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{URL}}/api/users",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create user CHEF",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "type": "text",
+                  "key": "nome",
+                  "value": "Chef Exemplo3"
+                },
+                {
+                  "type": "text",
+                  "key": "cpf",
+                  "value": "12345678902"
+                },
+                {
+                  "type": "text",
+                  "key": "email",
+                  "value": "chef.teste2@example.com"
+                },
+                {
+                  "type": "text",
+                  "key": "senha",
+                  "value": "senhaForte123"
+                },
+                {
+                  "type": "text",
+                  "key": "whatsapp",
+                  "value": "11999999999"
+                },
+                {
+                  "type": "text",
+                  "key": "data_nascimento",
+                  "value": "1990-05-15T00:00:00.000Z"
+                },
+                {
+                  "type": "text",
+                  "key": "cep",
+                  "value": "01001000"
+                },
+                {
+                  "type": "text",
+                  "key": "endereco",
+                  "value": "Praça da Sé"
+                },
+                {
+                  "type": "text",
+                  "key": "numero",
+                  "value": "100"
+                },
+                {
+                  "type": "text",
+                  "key": "bairro",
+                  "value": "Centro"
+                },
+                {
+                  "type": "text",
+                  "key": "cidade",
+                  "value": "São Paulo"
+                },
+                {
+                  "type": "text",
+                  "key": "estado",
+                  "value": "SP"
+                },
+                {
+                  "type": "text",
+                  "key": "tipo_usuario",
+                  "value": "chef"
+                },
+                {
+                  "type": "text",
+                  "key": "disponivel_viajar",
+                  "value": "true"
+                },
+                {
+                  "type": "text",
+                  "key": "tipo_transporte",
+                  "value": "particular"
+                },
+                {
+                  "type": "text",
+                  "key": "instagram",
+                  "value": "@chef_exemplo2"
+                },
+                {
+                  "type": "text",
+                  "key": "escola_formacao",
+                  "value": "Le Cordon Bleu"
+                },
+                {
+                  "type": "text",
+                  "key": "conte_sobre_voce",
+                  "value": "Chef com mais de 10 anos de experiência em gastronomia internacional."
+                },
+                {
+                  "type": "text",
+                  "key": "idiomas[]",
+                  "value": "br"
+                },
+                {
+                  "type": "text",
+                  "key": "idiomas[]",
+                  "value": "us"
+                },
+                {
+                  "type": "text",
+                  "key": "especialidades[]",
+                  "value": "Italiana"
+                },
+                {
+                  "type": "text",
+                  "key": "especialidades[]",
+                  "value": "Francesa"
+                },
+                {
+                  "type": "text",
+                  "key": "disponivel_para[]",
+                  "value": "cozinha_semanal"
+                },
+                {
+                  "type": "text",
+                  "key": "disponivel_para[]",
+                  "value": "eventos"
+                },
+                {
+                  "type": "text",
+                  "key": "disponibilidade[0][dia_semana]",
+                  "value": "segunda"
+                },
+                {
+                  "type": "text",
+                  "key": "disponibilidade[0][manha]",
+                  "value": "true"
+                },
+                {
+                  "type": "text",
+                  "key": "disponibilidade[0][tarde]",
+                  "value": "true"
+                },
+                {
+                  "type": "text",
+                  "key": "disponibilidade[0][noite]",
+                  "value": "false"
+                },
+                {
+                  "type": "text",
+                  "key": "disponibilidade[1][dia_semana]",
+                  "value": "terca"
+                },
+                {
+                  "type": "text",
+                  "key": "disponibilidade[1][manha]",
+                  "value": "false"
+                },
+                {
+                  "type": "text",
+                  "key": "disponibilidade[1][tarde]",
+                  "value": "true"
+                },
+                {
+                  "type": "text",
+                  "key": "disponibilidade[1][noite]",
+                  "value": "true"
+                },
+                {
+                  "type": "file",
+                  "key": "foto",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/afetovet mobile.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{URL}}/api/users",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "Generated from cURL: curl --location 'http://localhost:3000/users' \\\r\n--header 'Accept: application/json' \\\r\n--form 'nome=\"Chef Exemplo\"' \\\r\n--form 'cpf=\"12345678901\"' \\\r\n--form 'email=\"chef.teste@example.com\"' \\\r\n--form 'senha=\"senhaForte123\"' \\\r\n--form 'whatsapp=\"11999999999\"' \\\r\n--form 'data_nascimento=\"1990-01-01\"' \\\r\n--form 'cep=\"01001000\"' \\\r\n--form 'endereco=\"Praça da Sé\"' \\\r\n--form 'numero=\"100\"' \\\r\n--form 'bairro=\"Centro\"' \\\r\n--form 'cidade=\"São Paulo\"' \\\r\n--form 'estado=\"SP\"' \\\r\n--form 'tipo_usuario=\"chef\"' \\\r\n--form 'disponivel_viajar=\"true\"' \\\r\n--form 'tipo_transporte=\"particular\"' \\\r\n--form 'instagram=\"@chef_exemplo\"' \\\r\n--form 'escola_formacao=\"Le Cordon Bleu\"' \\\r\n--form 'conte_sobre_voce=\"Chef com mais de 10 anos de experiência em gastronomia internacional.\"' \\\r\n--form 'idiomas[]=\"br\"' \\\r\n--form 'idiomas[]=\"us\"' \\\r\n--form 'especialidades[]=\"Italiana\"' \\\r\n--form 'especialidades[]=\"Francesa\"' \\\r\n--form 'disponivel_para[]=\"cozinha semanal\"' \\\r\n--form 'disponivel_para[]=\"eventos\"' \\\r\n--form 'tipos_prato[]=\"Da TYT\"' \\\r\n--form 'tipos_servico[]=\"chef\"' \\\r\n--form 'disponibilidade[0][dia_semana]=\"segunda\"' \\\r\n--form 'disponibilidade[0][manha]=\"true\"' \\\r\n--form 'disponibilidade[0][tarde]=\"true\"' \\\r\n--form 'disponibilidade[0][noite]=\"false\"' \\\r\n--form 'disponibilidade[1][dia_semana]=\"terca\"' \\\r\n--form 'disponibilidade[1][manha]=\"false\"' \\\r\n--form 'disponibilidade[1][tarde]=\"true\"' \\\r\n--form 'disponibilidade[1][noite]=\"true\"' \\\r\n--form 'foto=@\"/caminho/para/sua/foto.jpg\"'\r\n"
+          },
+          "response": []
+        },
+        {
+          "name": "Rec Senha",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"nicolas.pereira@matilha.digital\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/auth/forgot-password",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Senha Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"token\": \"550857\",\r\n    \"novaSenha\": \"senhaForte1234\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/auth/reset-password",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "reset-password"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ingredientes",
+      "item": [
+        {
+          "name": "Add - Only Adm",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Arroz Cat\",\r\n    \"valor\": 10.50,\r\n    \"unidade\": \"KG\",\r\n    \"id_categoria\": 2\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/ingredientes",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Template Upload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes/template/download",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes",
+                "template",
+                "download"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload File - Only Adm",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "uuid": "034f93d7-35b1-4f2a-b6a1-6a3ae16d683f",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/modelo_ingredientes (1).xls"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{URL}}/api/ingredientes/upload",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes",
+                "upload"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update - Only Adm",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Arroz\",\r\n    \"valor\": 12.50,\r\n    \"unidade\": \"KG\",\r\n    \"ativo\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/ingredientes/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete - Only Adm",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Alterar Status - Only Adm",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes/1/toggle-status",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes",
+                "1",
+                "toggle-status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "inactive",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get By Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ingredientes - Categorias",
+      "item": [
+        {
+          "name": "Create - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Secos\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-categorias",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-categorias"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Proteinas\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-categorias/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-categorias",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-categorias/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-categorias",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-categorias/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-categorias",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-categorias",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-categorias"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pratos",
+      "item": [
+        {
+          "name": "Create - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer <SEU_TOKEN_ADMIN>"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "type": "text",
+                  "key": "descricao",
+                  "value": "Feijoada Meal Prep"
+                },
+                {
+                  "type": "text",
+                  "key": "quantidade",
+                  "value": "10"
+                },
+                {
+                  "type": "text",
+                  "key": "ativo",
+                  "value": "true"
+                },
+                {
+                  "type": "text",
+                  "key": "categorias",
+                  "value": "1,2"
+                },
+                {
+                  "type": "text",
+                  "key": "tipos_cozinha",
+                  "value": "1"
+                },
+                {
+                  "type": "text",
+                  "key": "temas",
+                  "value": "1,2"
+                },
+                {
+                  "type": "text",
+                  "key": "ingredientes_principais",
+                  "value": "1,2,3"
+                },
+                {
+                  "type": "text",
+                  "key": "pref_culinarias",
+                  "value": "1"
+                },
+                {
+                  "type": "file",
+                  "key": "foto1",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/logo_PAT-02.ico"
+                },
+                {
+                  "type": "file",
+                  "key": "foto2",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/logo_PAT-02.ico"
+                },
+                {
+                  "type": "file",
+                  "key": "ficha_tecnica",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/modelo_ingredientes (1).xls"
+                },
+                {
+                  "key": "meal_preap",
+                  "value": "true",
+                  "type": "text",
+                  "uuid": "ccdc5373-be62-4694-b664-174a6fe22e5c"
+                },
+                {
+                  "key": "get_togheter",
+                  "value": "false",
+                  "type": "text",
+                  "uuid": "3ffd3a1e-77ea-4a6b-9c53-b5fb700ce817"
+                },
+                {
+                  "key": "receita",
+                  "type": "file",
+                  "uuid": "21fbab10-5db7-44b8-8673-58cea1505505",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/1.Modelo receita.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{URL}}/api/pratos",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos"
+              ]
+            },
+            "description": "Generated from cURL: curl -X POST http://localhost:3000/api/pratos \\\r\n  -H \"Authorization: Bearer <SEU_TOKEN_ADMIN>\" \\\r\n  -F \"descricao=Feijoada Completa\" \\\r\n  -F \"quantidade=10\" \\\r\n  -F \"ativo=true\" \\\r\n  -F \"categorias=Prato Principal, Tradicional\" \\\r\n  -F \"tipos_cozinha=Brasileira\" \\\r\n  -F \"temas=Almoço de Domingo, Inverno\" \\\r\n  -F \"ingredientes_principais=Feijão Preto, Carne Seca, Linguiça\" \\\r\n  -F \"pref_culinarias=Carnívoro\" \\\r\n  -F \"foto1=@/caminho/para/imagem1.jpg\" \\\r\n  -F \"foto2=@/caminho/para/imagem2.png\" \\\r\n  -F \"ficha_tecnica=@/caminho/para/documento.pdf\"\r\n"
+          },
+          "response": []
+        },
+        {
+          "name": "Update  - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer <SEU_TOKEN_ADMIN>"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "type": "text",
+                  "key": "descricao",
+                  "value": "Feijoada Completa Verão"
+                },
+                {
+                  "type": "text",
+                  "key": "quantidade",
+                  "value": "10"
+                },
+                {
+                  "type": "text",
+                  "key": "ativo",
+                  "value": "true"
+                },
+                {
+                  "type": "text",
+                  "key": "categorias",
+                  "value": "1,2"
+                },
+                {
+                  "type": "text",
+                  "key": "tipos_cozinha",
+                  "value": "1"
+                },
+                {
+                  "type": "text",
+                  "key": "temas",
+                  "value": "1,2"
+                },
+                {
+                  "type": "text",
+                  "key": "ingredientes_principais",
+                  "value": "1,2,3"
+                },
+                {
+                  "type": "text",
+                  "key": "pref_culinarias",
+                  "value": "1"
+                },
+                {
+                  "type": "file",
+                  "key": "foto1",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/logo_PAT-02.ico"
+                },
+                {
+                  "type": "file",
+                  "key": "foto2",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/logo_PAT-02.ico"
+                },
+                {
+                  "type": "file",
+                  "key": "ficha_tecnica",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/modelo_ingredientes (1).xls"
+                },
+                {
+                  "key": "get_togheter",
+                  "value": "true",
+                  "type": "text",
+                  "uuid": "0a9f4f9d-d929-4518-a958-74a33bf87dd9"
+                },
+                {
+                  "key": "meal_preap",
+                  "value": "true",
+                  "type": "text",
+                  "uuid": "2076473f-8d4e-418a-a5d6-111c7c539183"
+                },
+                {
+                  "key": "receita",
+                  "type": "file",
+                  "uuid": "a7f0db8d-a1d8-43dd-a5e1-11550d513871",
+                  "src": "/C:/Users/Nicolas Fernando/Downloads/1.Modelo receita.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{URL}}/api/pratos/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos",
+                "1"
+              ]
+            },
+            "description": "Generated from cURL: curl -X POST http://localhost:3000/api/pratos \\\r\n  -H \"Authorization: Bearer <SEU_TOKEN_ADMIN>\" \\\r\n  -F \"descricao=Feijoada Completa\" \\\r\n  -F \"quantidade=10\" \\\r\n  -F \"ativo=true\" \\\r\n  -F \"categorias=Prato Principal, Tradicional\" \\\r\n  -F \"tipos_cozinha=Brasileira\" \\\r\n  -F \"temas=Almoço de Domingo, Inverno\" \\\r\n  -F \"ingredientes_principais=Feijão Preto, Carne Seca, Linguiça\" \\\r\n  -F \"pref_culinarias=Carnívoro\" \\\r\n  -F \"foto1=@/caminho/para/imagem1.jpg\" \\\r\n  -F \"foto2=@/caminho/para/imagem2.png\" \\\r\n  -F \"ficha_tecnica=@/caminho/para/documento.pdf\"\r\n"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete By Id  - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/pratos/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/pratos",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get By Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/pratos/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pratos - Categorias",
+      "item": [
+        {
+          "name": "Create - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Tradicional\",\r\n    \"icone\": \"knifefork\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/pratos-categorias",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos-categorias"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"massas\",\r\n    \"icone\": \"knifefork\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/pratos-categorias/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos-categorias",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/pratos-categorias/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos-categorias",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/pratos-categorias/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos-categorias",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/pratos-categorias",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pratos-categorias"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pratos - Tipos Cozinha",
+      "item": [
+        {
+          "name": "Create - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Brasileira\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/tipos-cozinha",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "tipos-cozinha"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Brasileira\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/tipos-cozinha/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "tipos-cozinha",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/tipos-cozinha/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "tipos-cozinha",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/tipos-cozinha/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "tipos-cozinha",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/tipos-cozinha",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "tipos-cozinha"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pratos - Temas",
+      "item": [
+        {
+          "name": "Create - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Verão\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/temas",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "temas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Almoço de Domingo\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/temas/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "temas",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/temas/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "temas",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/temas/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "temas",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/temas",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "temas"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pratos - Ingredientes Principais",
+      "item": [
+        {
+          "name": "Create - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Feijão Preto\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-principais",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-principais"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Feijão Preto\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-principais/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-principais",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-principais/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-principais",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-principais/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-principais",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/ingredientes-principais",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "ingredientes-principais"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pratos - Pref Culinarias",
+      "item": [
+        {
+          "name": "Create - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Carnívoro\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/pref-culinarias",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pref-culinarias"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"descricao\": \"Carnívoro\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/pref-culinarias/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pref-culinarias",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete - Only Admin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/pref-culinarias/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pref-culinarias",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/pref-culinarias/1",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pref-culinarias",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/pref-culinarias",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "pref-culinarias"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Kitchen Order",
+      "item": [
+        {
+          "name": "List Kitchen Orders",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/kitchen-orders?code=",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "kitchen-orders"
+              ],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "",
+                  "description": "Partial search by code"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Kitchen Order Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/kitchen-orders/IQN-792",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "kitchen-orders",
+                "IQN-792"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Kitchen Order",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"MEAL_PREP\",\n  \"id_pagamento\": \"\",\n  \"event_date\": \"2026-06-01T00:00:00Z\",\n  \"event_time\": \"19:00\",\n  \"people_quantity\": 4,\n  \"city\": \"São Paulo\",\n  \"address\": \"Av. Paulista\",\n  \"number\": \"1000\",\n  \"complement\": \"Apto 101\",\n  \"district\": \"Bela Vista\",\n  \"observations\": \"Nenhuma restrição alimentar\",\n  // \"client_request\": \"Solicitação especial para serviço customizado\"\n  \"dishes\": [\n    {\n      \"dish_id\": 1,\n      \"quantity\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/kitchen-orders",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "kitchen-orders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/kitchen-orders/2/status",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "kitchen-orders",
+                "2",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Special Service Proposal",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"description\": \"Item 1\",\n      \"price\": 50.00\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/kitchen-orders/:id/special-service-proposal",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "kitchen-orders",
+                ":id",
+                "special-service-proposal"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "order-id"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Kitchen Order",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/kitchen-orders/:code/cancel",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "kitchen-orders",
+                ":code",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "code",
+                  "value": "ORDER-CODE"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Update User CLIENTE",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "nome",
+              "value": "João da Silva Teste",
+              "type": "text",
+              "uuid": "5dccb549-5ea0-4e80-85ab-9253df3c4465"
+            },
+            {
+              "key": "cpf",
+              "value": "123.456.789-00",
+              "type": "text",
+              "uuid": "5532580d-0f70-49b0-b0c2-5c5a08ee6677"
+            },
+            {
+              "key": "senha",
+              "value": "senhaSuperSegura123",
+              "type": "text",
+              "uuid": "44835ff4-b3e2-4e8c-9e8f-511f456f573a"
+            },
+            {
+              "key": "email",
+              "value": "joao.silva@email.com",
+              "type": "text",
+              "uuid": "e49fac8b-b4f7-4749-9982-ed5719a5354c"
+            },
+            {
+              "key": "data_nascimento",
+              "value": "1990-05-15T00:00:00.000Z",
+              "type": "text",
+              "uuid": "fe87967e-8d70-4524-a116-33defacfc83a"
+            },
+            {
+              "key": "whatsapp",
+              "value": "(11) 98765-4321",
+              "type": "text",
+              "uuid": "caef4f14-3c75-4d8a-b543-93ac5ded09e8"
+            },
+            {
+              "key": "cep",
+              "value": "01001-000",
+              "type": "text",
+              "uuid": "8b04fe1f-8aa2-413b-9b6d-8e184e8e93c8"
+            },
+            {
+              "key": "endereco",
+              "value": "Praça da Sé",
+              "type": "text",
+              "uuid": "174a6712-a93d-4f61-b367-110843d36853"
+            },
+            {
+              "key": "numero",
+              "value": "123",
+              "type": "text",
+              "uuid": "b63f48af-ba45-401e-b626-9ecebf431192"
+            },
+            {
+              "key": "complemento",
+              "value": "Apto 45",
+              "type": "text",
+              "uuid": "d8933f16-09ac-4070-baff-e18d5be697e0"
+            },
+            {
+              "key": "bairro",
+              "value": "Sé",
+              "type": "text",
+              "uuid": "bc206796-8410-455e-b342-4e7357758430"
+            },
+            {
+              "key": "cidade",
+              "value": "São Paulo",
+              "type": "text",
+              "uuid": "5a28b65e-9b52-4350-9742-0d84aa5c3744"
+            },
+            {
+              "key": "estado",
+              "value": "SP",
+              "type": "text",
+              "uuid": "64581729-ab43-4939-8279-8605bf79eb71"
+            },
+            {
+              "key": "tipo_usuario",
+              "value": "cliente",
+              "type": "text",
+              "uuid": "aff19fa8-8088-4fcb-a4ff-1c266a7cb599"
+            },
+            {
+              "key": "foto",
+              "type": "file",
+              "uuid": "2769222d-760d-4f0e-b2e7-78385a79e170",
+              "src": "/C:/Users/Nicolas Fernando/Downloads/imagem.png"
+            },
+            {
+              "key": "comprovante_end",
+              "type": "file",
+              "uuid": "45d625a9-a5a3-4636-a24d-59dd7eb3a1e4",
+              "src": "/C:/Users/Nicolas Fernando/Downloads/logo_PAT-02.ico"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{URL}}/api/users/1",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update user CHEF",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "type": "text",
+              "key": "nome",
+              "value": "Chef Exemplo 3 testado put"
+            },
+            {
+              "type": "text",
+              "key": "cpf",
+              "value": "12345678903"
+            },
+            {
+              "type": "text",
+              "key": "email",
+              "value": "chef.teste@example.com"
+            },
+            {
+              "type": "text",
+              "key": "senha",
+              "value": "senhaForte123"
+            },
+            {
+              "type": "text",
+              "key": "whatsapp",
+              "value": "11999999999"
+            },
+            {
+              "type": "text",
+              "key": "data_nascimento",
+              "value": "1990-05-15T00:00:00.000Z"
+            },
+            {
+              "type": "text",
+              "key": "cep",
+              "value": "01001000"
+            },
+            {
+              "type": "text",
+              "key": "endereco",
+              "value": "Praça da Sé"
+            },
+            {
+              "type": "text",
+              "key": "numero",
+              "value": "100"
+            },
+            {
+              "type": "text",
+              "key": "bairro",
+              "value": "Centro"
+            },
+            {
+              "type": "text",
+              "key": "cidade",
+              "value": "São Paulo"
+            },
+            {
+              "type": "text",
+              "key": "estado",
+              "value": "SP"
+            },
+            {
+              "type": "text",
+              "key": "tipo_usuario",
+              "value": "chef"
+            },
+            {
+              "type": "text",
+              "key": "disponivel_viajar",
+              "value": "true"
+            },
+            {
+              "type": "text",
+              "key": "tipo_transporte",
+              "value": "particular"
+            },
+            {
+              "type": "text",
+              "key": "instagram",
+              "value": "@chef_exemplo2"
+            },
+            {
+              "type": "text",
+              "key": "escola_formacao",
+              "value": "Le Cordon Bleu"
+            },
+            {
+              "type": "text",
+              "key": "conte_sobre_voce",
+              "value": "Chef com mais de 10 anos de experiência em gastronomia internacional."
+            },
+            {
+              "type": "text",
+              "key": "idiomas[]",
+              "value": "br"
+            },
+            {
+              "type": "text",
+              "key": "idiomas[]",
+              "value": "us"
+            },
+            {
+              "type": "text",
+              "key": "especialidades[]",
+              "value": "Italiana"
+            },
+            {
+              "type": "text",
+              "key": "especialidades[]",
+              "value": "Francesa"
+            },
+            {
+              "type": "text",
+              "key": "disponivel_para[]",
+              "value": "cozinha_semanal"
+            },
+            {
+              "type": "text",
+              "key": "disponivel_para[]",
+              "value": "eventos"
+            },
+            {
+              "type": "text",
+              "key": "disponibilidade[0][dia_semana]",
+              "value": "segunda"
+            },
+            {
+              "type": "text",
+              "key": "disponibilidade[0][manha]",
+              "value": "true"
+            },
+            {
+              "type": "text",
+              "key": "disponibilidade[0][tarde]",
+              "value": "true"
+            },
+            {
+              "type": "text",
+              "key": "disponibilidade[0][noite]",
+              "value": "false"
+            },
+            {
+              "type": "text",
+              "key": "disponibilidade[1][dia_semana]",
+              "value": "terca"
+            },
+            {
+              "type": "text",
+              "key": "disponibilidade[1][manha]",
+              "value": "false"
+            },
+            {
+              "type": "text",
+              "key": "disponibilidade[1][tarde]",
+              "value": "true"
+            },
+            {
+              "type": "text",
+              "key": "disponibilidade[1][noite]",
+              "value": "true"
+            },
+            {
+              "type": "file",
+              "key": "foto",
+              "src": "/C:/Users/Nicolas Fernando/Downloads/symbol.png"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{URL}}/api/users/11",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "11"
+          ]
+        },
+        "description": "Generated from cURL: curl --location 'http://localhost:3000/users' \\\r\n--header 'Accept: application/json' \\\r\n--form 'nome=\"Chef Exemplo\"' \\\r\n--form 'cpf=\"12345678901\"' \\\r\n--form 'email=\"chef.teste@example.com\"' \\\r\n--form 'senha=\"senhaForte123\"' \\\r\n--form 'whatsapp=\"11999999999\"' \\\r\n--form 'data_nascimento=\"1990-01-01\"' \\\r\n--form 'cep=\"01001000\"' \\\r\n--form 'endereco=\"Praça da Sé\"' \\\r\n--form 'numero=\"100\"' \\\r\n--form 'bairro=\"Centro\"' \\\r\n--form 'cidade=\"São Paulo\"' \\\r\n--form 'estado=\"SP\"' \\\r\n--form 'tipo_usuario=\"chef\"' \\\r\n--form 'disponivel_viajar=\"true\"' \\\r\n--form 'tipo_transporte=\"particular\"' \\\r\n--form 'instagram=\"@chef_exemplo\"' \\\r\n--form 'escola_formacao=\"Le Cordon Bleu\"' \\\r\n--form 'conte_sobre_voce=\"Chef com mais de 10 anos de experiência em gastronomia internacional.\"' \\\r\n--form 'idiomas[]=\"br\"' \\\r\n--form 'idiomas[]=\"us\"' \\\r\n--form 'especialidades[]=\"Italiana\"' \\\r\n--form 'especialidades[]=\"Francesa\"' \\\r\n--form 'disponivel_para[]=\"cozinha semanal\"' \\\r\n--form 'disponivel_para[]=\"eventos\"' \\\r\n--form 'tipos_prato[]=\"Da TYT\"' \\\r\n--form 'tipos_servico[]=\"chef\"' \\\r\n--form 'disponibilidade[0][dia_semana]=\"segunda\"' \\\r\n--form 'disponibilidade[0][manha]=\"true\"' \\\r\n--form 'disponibilidade[0][tarde]=\"true\"' \\\r\n--form 'disponibilidade[0][noite]=\"false\"' \\\r\n--form 'disponibilidade[1][dia_semana]=\"terca\"' \\\r\n--form 'disponibilidade[1][manha]=\"false\"' \\\r\n--form 'disponibilidade[1][tarde]=\"true\"' \\\r\n--form 'disponibilidade[1][noite]=\"true\"' \\\r\n--form 'foto=@\"/caminho/para/sua/foto.jpg\"'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Alterar Senha",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"nicolas.pereira@matilha.digital\",\r\n    \"senha\": \"senhaForte12345\",\r\n    \"novaSenha\": \"senhaForte12345\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/api/auth/change-password",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "change-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Users",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{URL}}/api/users/",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Chefs",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{URL}}/api/chefs",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "api",
+            "chefs"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "entrevista",
+              "disabled": true
+            },
+            {
+              "key": "status",
+              "value": "active",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "status",
+              "value": "pending",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Clients",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{URL}}/api/clientes",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "api",
+            "clientes"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "entrevista",
+              "disabled": true
+            },
+            {
+              "key": "status",
+              "value": "active",
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User By Id",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{URL}}/api/users/10",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "10"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Chef Status",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"id_user\": 12,\r\n    \"aprovado\": true,\r\n    \"status\": \"entrevista\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/api/chefs/update-status",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "api",
+            "chefs",
+            "update-status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "URL",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "URL",
+      "value": "",
+      "disabled": true
+    }
+  ]
+}
