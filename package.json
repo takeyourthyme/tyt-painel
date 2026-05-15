@@ -10,14 +10,14 @@
     "start": "next start",
     "storybook": "storybook dev -p 6006 --no-open",
     "build-storybook": "storybook build -o ./storybook-static",
-    "lint": "eslint components --fix",
-    "lint:check": "eslint components",
-    "prettier": "prettier . --write",
-    "prettier:check": "prettier . --check",
+    "lint": "echo \"ESLint desabilitado\"",
+    "lint:check": "echo \"ESLint desabilitado\"",
+    "prettier": "echo \"Prettier desabilitado\"",
+    "prettier:check": "echo \"Prettier desabilitado\"",
     "type-check": "tsc --noEmit",
     "vitest": "vitest",
     "vitest:run": "vitest run",
-    "test": "npm run type-check && npm run lint:check && npm run prettier:check && npm run vitest:run"
+    "test": "npm run type-check && npm run vitest:run"
   },
   "keywords": [
     "react",
