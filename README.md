@@ -75,3 +75,4 @@ Untitled UI React open-source components are licensed under the MIT license, whi
   - “Mês atual”, “Mês anterior”, “Últimos 3 meses” e “Custom” (mês da data selecionada).
   - Tendência sempre comparada com o período imediatamente anterior equivalente.
 # tyt-painel
+# tyt-painel
