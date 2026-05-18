@@ -11,7 +11,7 @@ export type TytFetchInit = Omit<RequestInit, "headers"> & {
 /**
  * `fetch` para a API TYT. Caminhos devem começar com `/api/...` (como na collection).
  */
-export function tytFetch(path: string, init: TytFetchInit = {}): Promise<Response> {
+export async function tytFetch(path: string, init: TytFetchInit = {}): Promise<Response> {
     const { json, token, headers: initHeaders, body: initBody, ...rest } = init;
     const base = getTytApiBaseUrl();
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -28,9 +28,22 @@ export function tytFetch(path: string, init: TytFetchInit = {}): Promise<Respons
         body = JSON.stringify(json);
     }
 
-    return fetch(url, {
+    const res = await fetch(url, {
         ...rest,
         headers,
         body: body ?? null,
     });
+
+    if (token && typeof window !== "undefined" && (res.status === 401 || res.status === 403)) {
+        try {
+            window.localStorage.removeItem("tyt_access_token");
+            window.localStorage.removeItem("tyt_user");
+        } catch {}
+
+        if (!window.location.pathname.startsWith("/login")) {
+            window.location.assign("/login");
+        }
+    }
+
+    return res;
 }
