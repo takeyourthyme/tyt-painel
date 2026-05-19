@@ -152,6 +152,33 @@ function formatMemberSince(createdAtRaw: string | null | undefined): string {
     return diffYears === 1 ? "1 ano" : `${diffYears} anos`;
 }
 
+type ChefStatus = "cadastro" | "analise" | "entrevista" | "documentacao" | "ativo" | "inativo";
+
+function normalizeChefStatus(raw: unknown): ChefStatus | null {
+    if (typeof raw !== "string") return null;
+    const normalized = raw.trim().toLowerCase();
+    const mapped: Record<string, ChefStatus> = {
+        cadastro: "cadastro",
+        analise: "analise",
+        análise: "analise",
+        entrevista: "entrevista",
+        documentacao: "documentacao",
+        documentação: "documentacao",
+        ativo: "ativo",
+        inativo: "inativo",
+        active: "ativo",
+        inactive: "inativo",
+        pending: "cadastro",
+    };
+    return mapped[normalized] ?? null;
+}
+
+function getChefStatus(raw: unknown, approved: boolean): ChefStatus {
+    const fromApi = normalizeChefStatus(raw);
+    if (fromApi) return fromApi;
+    return approved ? "ativo" : "cadastro";
+}
+
 export type ChefDetails = {
     id: string;
     chefUserId: number | null;
@@ -247,7 +274,7 @@ function mapChefDetails(raw: ApiChefUser): ChefDetails {
     const username = (instagram && instagram.trim().length > 0 ? instagram.trim() : usernameFromEmail) || `@chef_${raw.id}`;
 
     const approved = chef?.cadastro_aprovado === true;
-    const statusLabel = chef?.status ?? (approved ? "active" : "pending");
+    const statusLabel = getChefStatus(chef?.status, approved);
 
     const languages = (chef?.usuario_chef_idiomas ?? []).filter((x) => x.active).map((x) => x.idioma);
     const specialties = (chef?.usuario_chef_especialidades ?? []).filter((x) => x.active).map((x) => x.especialidade);
@@ -363,37 +390,44 @@ export function useChefApprovalActions() {
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const update = useCallback(async (input: { chefUserId: number; approved: boolean; status: string }): Promise<boolean> => {
-        const token = getTytAccessToken();
-        if (!token) {
-            setError("Sessão expirada. Faça login novamente.");
-            return false;
-        }
-
-        setLoading(true);
-        setMessage(null);
-        setError(null);
-
-        try {
-            const res = await runWithRetry(() => putChefUpdateStatus({ id_user: input.chefUserId, aprovado: input.approved, status: input.status }, token), {
-                retries: 2,
-            });
-            await parseJsonOrThrow<unknown>(res);
-            setMessage("Status atualizado com sucesso.");
-            return true;
-        } catch (err) {
-            if (err instanceof TytApiError) {
-                setError(parseApiErrorMessage(err.body));
-            } else if (err instanceof Error && err.message) {
-                setError(err.message);
-            } else {
-                setError("Ocorreu um erro. Tente novamente.");
+    const update = useCallback(
+        async (input: { chefUserId: number; approved: boolean; status: string }): Promise<{ ok: boolean; message?: string; error?: string }> => {
+            const token = getTytAccessToken();
+            if (!token) {
+                const msg = "Sessão expirada. Faça login novamente.";
+                setError(msg);
+                return { ok: false, error: msg };
             }
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+
+            setLoading(true);
+            setMessage(null);
+            setError(null);
+
+            try {
+                const res = await runWithRetry(() => putChefUpdateStatus({ id_user: input.chefUserId, aprovado: input.approved, status: input.status }, token), {
+                    retries: 2,
+                });
+                await parseJsonOrThrow<unknown>(res);
+                const msg = "Status atualizado com sucesso.";
+                setMessage(msg);
+                return { ok: true, message: msg };
+            } catch (err) {
+                let msg: string;
+                if (err instanceof TytApiError) {
+                    msg = parseApiErrorMessage(err.body);
+                } else if (err instanceof Error && err.message) {
+                    msg = err.message;
+                } else {
+                    msg = "Ocorreu um erro. Tente novamente.";
+                }
+                setError(msg);
+                return { ok: false, error: msg };
+            } finally {
+                setLoading(false);
+            }
+        },
+        [],
+    );
 
     return { loading, message, error, update };
 }

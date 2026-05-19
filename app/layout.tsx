@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { AppToaster } from "@/components/application/app-toaster";
 import "@/styles/globals.css";
 
 const inter = Inter({
@@ -17,7 +18,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html lang="pt-BR" className={`${inter.variable} light-mode`} suppressHydrationWarning>
-            <body className="min-h-screen antialiased">{children}</body>
+            <body className="min-h-screen antialiased">
+                {children}
+                <AppToaster />
+            </body>
         </html>
     );
 }

@@ -1,13 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar as CalendarIcon, CheckCircle, Download02, Eye, FilterLines, SearchLg, Share04, Star01, UserSquare, XCircle } from "@untitledui/icons";
+import {
+    Calendar as CalendarIcon,
+    CheckCircle,
+    Download02,
+    Eye,
+    FilterLines,
+    SearchLg,
+    Share04,
+    Star01,
+    UserSquare,
+    X as CloseIcon,
+    XCircle,
+} from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import Link from "next/link";
 import type { Key } from "react-aria-components";
+import { toast } from "sonner";
 import { Calendar } from "@/components/application/date-picker/calendar";
 import { EmptyState } from "@/components/application/empty-state/empty-state";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
+import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Table, TableCard } from "@/components/application/table/table";
 import { Tabs } from "@/components/application/tabs/tabs";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -15,6 +29,7 @@ import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
+import { Select } from "@/components/base/select/select";
 import { NativeSelect } from "@/components/base/select/select-native";
 import { Toggle } from "@/components/base/toggle/toggle";
 import { cx } from "@/utils/cx";
@@ -56,6 +71,49 @@ type HistoryRow = {
     locationLabel: string;
     clientName: string;
 };
+
+type ChefStatus = "cadastro" | "analise" | "entrevista" | "documentacao" | "ativo" | "inativo";
+
+function normalizeChefStatus(raw: string | null | undefined): ChefStatus | null {
+    if (!raw) return null;
+    const normalized = raw.trim().toLowerCase();
+    const mapped: Record<string, ChefStatus> = {
+        cadastro: "cadastro",
+        analise: "analise",
+        análise: "analise",
+        entrevista: "entrevista",
+        documentacao: "documentacao",
+        documentação: "documentacao",
+        ativo: "ativo",
+        inativo: "inativo",
+        active: "ativo",
+        inactive: "inativo",
+        pending: "cadastro",
+    };
+    return mapped[normalized] ?? null;
+}
+
+function isFinalChefStatus(status: ChefStatus): boolean {
+    return status === "ativo" || status === "inativo";
+}
+
+function formatChefStatusLabel(status: ChefStatus): string {
+    const map: Record<ChefStatus, string> = {
+        cadastro: "Cadastro",
+        analise: "Análise",
+        entrevista: "Entrevista",
+        documentacao: "Documentação",
+        ativo: "Ativo",
+        inativo: "Inativo",
+    };
+    return map[status];
+}
+
+function getChefStatusBadgeColor(status: ChefStatus): "success" | "gray" | "warning" {
+    if (status === "ativo") return "success";
+    if (status === "inativo") return "gray";
+    return "warning";
+}
 
 function getInitials(name: string): string {
     const parts = name
@@ -250,12 +308,17 @@ export function ChefDetailsView({ id }: { id: string }) {
     const approval = useChefApprovalActions();
     const [selectedTab, setSelectedTab] = useState<Key>("chef_data");
     const [historyPage] = useState(1);
+    const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
 
     const headerName = chef?.name ?? "Perfil do Profissional";
     const headerEmail = chef?.email ?? "—";
     const headerInitials = chef ? getInitials(chef.name) : "";
     const ratingValue = "—";
     const ratingMeta = "— avaliações";
+    const chefStatus = chef ? (normalizeChefStatus(chef.statusLabel) ?? (chef.approved ? "ativo" : "cadastro")) : null;
+    const isFinalStatus = chefStatus ? isFinalChefStatus(chefStatus) : false;
+    const showReviewActions = Boolean(canManage && chef?.chefUserId && chefStatus && !isFinalStatus);
+    const showToggle = Boolean(canManage && chef?.chefUserId && chefStatus && isFinalStatus);
 
     const scheduleItems: ScheduleItem[] = [
         {
@@ -328,7 +391,29 @@ export function ChefDetailsView({ id }: { id: string }) {
                                 Visualize o perfil completo e acompanhe a disponibilidade e os serviços realizados pelo profissional na plataforma
                             </p>
                         </div>
-                        {loading ? <LoadingIndicator type="line-spinner" size="sm" label="Carregando..." /> : null}
+                        <div className="flex flex-wrap items-center justify-end gap-2">
+                            {loading ? <LoadingIndicator type="line-spinner" size="sm" label="Carregando..." /> : null}
+                            {showReviewActions ? (
+                                <>
+                                    <Button
+                                        color="secondary-destructive"
+                                        size="md"
+                                        isDisabled={approval.loading || loading}
+                                        onClick={() => setConfirmAction("reject")}
+                                    >
+                                        Reprovar cadastro
+                                    </Button>
+                                    <Button
+                                        color="primary"
+                                        size="md"
+                                        isDisabled={approval.loading || loading}
+                                        onClick={() => setConfirmAction("approve")}
+                                    >
+                                        Aprovar cadastro
+                                    </Button>
+                                </>
+                            ) : null}
+                        </div>
                     </div>
                 </header>
 
@@ -353,9 +438,11 @@ export function ChefDetailsView({ id }: { id: string }) {
                             <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
                                     <p className="truncate text-lg font-semibold text-primary">{headerName}</p>
-                                    <Badge size="sm" type="pill-color" color={chef?.approved ? "success" : "gray"}>
-                                        {chef?.approved ? "Ativo" : "Inativo"}
-                                    </Badge>
+                                    {chefStatus ? (
+                                        <Badge size="sm" type="pill-color" color={getChefStatusBadgeColor(chefStatus)}>
+                                            {formatChefStatusLabel(chefStatus)}
+                                        </Badge>
+                                    ) : null}
                                 </div>
                                 <p className="mt-0.5 truncate text-sm text-tertiary">{headerEmail}</p>
                                 <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-tertiary">
@@ -371,36 +458,182 @@ export function ChefDetailsView({ id }: { id: string }) {
                         </div>
 
                         <div className="flex items-center justify-between gap-4 rounded-xl bg-primary px-4 py-3 ring-1 ring-secondary ring-inset md:min-w-[360px]">
-                            <div className="flex min-w-0 items-center gap-3">
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-utility-blue-light-50">
-                                    <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                            {chefStatus && !isFinalStatus && canManage && chef?.chefUserId ? (
+                                <div className="flex w-full items-center gap-3">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold text-primary">Etapa</p>
+                                        <p className="mt-0.5 text-xs text-tertiary">Atualize a etapa do cadastro do profissional.</p>
+                                    </div>
+                                    <div className="w-[180px]">
+                                        <Select
+                                            aria-label="Etapa do cadastro"
+                                            size="sm"
+                                            selectedKey={chefStatus}
+                                            isDisabled={approval.loading || loading}
+                                            onSelectionChange={async (key) => {
+                                                const next = String(key) as ChefStatus;
+                                                if (!chef.chefUserId) return;
+                                                if (isFinalChefStatus(next)) return;
+                                                const result = await approval.update({ chefUserId: chef.chefUserId, approved: false, status: next });
+                                                if (result.ok) {
+                                                    await reload();
+                                                }
+                                            }}
+                                            items={[
+                                                { id: "cadastro", label: "Cadastro" },
+                                                { id: "analise", label: "Análise" },
+                                                { id: "entrevista", label: "Entrevista" },
+                                                { id: "documentacao", label: "Documentação" },
+                                            ]}
+                                        >
+                                            {(item) => <Select.Item {...item} />}
+                                        </Select>
+                                    </div>
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="text-sm font-semibold text-primary">Chef Ativo</p>
-                                    <p className="mt-0.5 text-xs text-tertiary">Conta habilitada para acesso e participação em novos trabalhos.</p>
+                            ) : chefStatus ? (
+                                <>
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-utility-blue-light-50">
+                                            {chefStatus === "ativo" ? (
+                                                <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                            ) : (
+                                                <XCircle className="size-5 text-utility-gray-400" aria-hidden />
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold text-primary">{chefStatus === "ativo" ? "Ativo" : "Inativo"}</p>
+                                            <p className="mt-0.5 text-xs text-tertiary">
+                                                {chefStatus === "ativo"
+                                                    ? "Conta habilitada para acesso e participação em novos trabalhos."
+                                                    : "Não habilitada para acesso e participação em novos trabalhos."}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {showToggle ? (
+                                        <Toggle
+                                            slim
+                                            size="sm"
+                                            isSelected={chefStatus === "ativo"}
+                                            isDisabled={approval.loading || loading}
+                                            onChange={async (isSelected) => {
+                                                if (!chef?.chefUserId) return;
+                                                const result = await approval.update({
+                                                    chefUserId: chef.chefUserId,
+                                                    approved: isSelected,
+                                                    status: isSelected ? "ativo" : "inativo",
+                                                });
+                                                if (result.ok) {
+                                                    await reload();
+                                                }
+                                            }}
+                                        />
+                                    ) : null}
+                                </>
+                            ) : (
+                                <div className="flex min-w-0 items-center gap-3">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-utility-blue-light-50">
+                                        <CheckCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-semibold text-primary">—</p>
+                                        <p className="mt-0.5 text-xs text-tertiary">Carregando status do profissional.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            {canManage && chef?.chefUserId ? (
-                                <Toggle
-                                    slim
-                                    size="sm"
-                                    isSelected={chef.approved}
-                                    isDisabled={approval.loading || loading}
-                                    onChange={async (isSelected) => {
-                                        const ok = await approval.update({
-                                            chefUserId: chef.chefUserId!,
-                                            approved: isSelected,
-                                            status: chef.statusLabel,
-                                        });
-                                        if (ok) {
-                                            await reload();
-                                        }
-                                    }}
-                                />
-                            ) : null}
+                            )}
                         </div>
                     </div>
                 </section>
+
+                <ModalOverlay
+                    isOpen={Boolean(confirmAction)}
+                    isDismissable
+                    onOpenChange={(open) => {
+                        if (!open) setConfirmAction(null);
+                    }}
+                >
+                    <Modal>
+                        <Dialog>
+                            <div className="w-full max-w-[440px] overflow-hidden rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
+                                <div className="flex items-start gap-4 px-6 pt-6">
+                                    <div
+                                        className={cx(
+                                            "flex size-12 shrink-0 items-center justify-center rounded-full",
+                                            confirmAction === "reject" ? "bg-error-primary" : "bg-success-primary",
+                                        )}
+                                    >
+                                        {confirmAction === "reject" ? (
+                                            <XCircle className="size-6 text-error-solid" aria-hidden />
+                                        ) : (
+                                            <CheckCircle className="size-6 text-success-solid" aria-hidden />
+                                        )}
+                                    </div>
+
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="text-md font-semibold text-primary">
+                                                    {confirmAction === "reject" ? "Reprovar personal chef?" : "Aprovar personal chef?"}
+                                                </p>
+                                                <p className="mt-1 text-sm text-tertiary">
+                                                    Você tem certeza que deseja {confirmAction === "reject" ? "reprovar" : "aprovar"} esse chef? Esta ação não
+                                                    pode ser desfeita.
+                                                </p>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                aria-label="Fechar"
+                                                className="flex size-9 items-center justify-center rounded-lg text-fg-quaternary outline-focus-ring hover:bg-primary_hover hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
+                                                onClick={() => setConfirmAction(null)}
+                                            >
+                                                <CloseIcon className="size-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 px-6 pt-6 pb-6">
+                                    <Button color="secondary" size="md" className="flex-1" isDisabled={approval.loading} onClick={() => setConfirmAction(null)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button
+                                        color={confirmAction === "reject" ? "primary-destructive" : "primary"}
+                                        size="md"
+                                        className="flex-1"
+                                        isLoading={approval.loading}
+                                        isDisabled={!chef?.chefUserId}
+                                        onClick={async () => {
+                                            if (!chef?.chefUserId || !confirmAction) return;
+                                            const isApprove = confirmAction === "approve";
+                                            const result = await approval.update({
+                                                chefUserId: chef.chefUserId,
+                                                approved: isApprove,
+                                                status: isApprove ? "ativo" : "inativo",
+                                            });
+
+                                            if (result.ok) {
+                                                toast.success(isApprove ? "Chef aprovado com sucesso!" : "Chef reprovado com sucesso!", {
+                                                    description: isApprove
+                                                        ? "O profissional agora tem acesso total à plataforma e já pode receber solicitações."
+                                                        : "O profissional não terá acesso à plataforma e não poderá receber solicitações.",
+                                                });
+                                                await reload();
+                                            } else {
+                                                toast.error(isApprove ? "Não foi possível aprovar o chef." : "Não foi possível reprovar o chef.", {
+                                                    description: result.error ?? "Ocorreu um erro. Tente novamente.",
+                                                });
+                                            }
+
+                                            setConfirmAction(null);
+                                        }}
+                                    >
+                                        {confirmAction === "reject" ? "Reprovar" : "Aprovar"}
+                                    </Button>
+                                </div>
+                            </div>
+                        </Dialog>
+                    </Modal>
+                </ModalOverlay>
 
                 <section className="flex flex-col gap-6">
                     <NativeSelect
@@ -638,7 +871,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                     <TableCard.Root>
                                         <Table aria-label="Registro de Atendimentos" selectionMode="none">
                                             <Table.Header>
-                                                <Table.Head id="service" label="Serviço" className="min-w-[160px]" />
+                                                <Table.Head id="service" label="Serviço" className="min-w-[160px]" isRowHeader />
                                                 <Table.Head id="value" label="Valor" className="min-w-[140px]" />
                                                 <Table.Head id="status" label="Status" className="min-w-[160px]" />
                                                 <Table.Head id="date" label="Data" className="min-w-[140px]" />
@@ -733,7 +966,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                     <TableCard.Root>
                                         <Table aria-label="Histórico de serviços" selectionMode="none">
                                             <Table.Header>
-                                                <Table.Head id="code" label="Código" className="min-w-[140px]" />
+                                                <Table.Head id="code" label="Código" className="min-w-[140px]" isRowHeader />
                                                 <Table.Head id="type" label="Tipo" className="min-w-[160px]" />
                                                 <Table.Head id="status" label="Status" className="min-w-[140px]" />
                                                 <Table.Head id="date" label="Data" className="min-w-[140px]" />

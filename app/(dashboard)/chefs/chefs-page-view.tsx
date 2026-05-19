@@ -25,12 +25,14 @@ const playfair = Playfair_Display({
     subsets: ["latin"],
     display: "swap",
 });
+type ChefStage = "cadastro" | "analise" | "entrevista" | "documentacao" | "ativo" | "inativo";
 type ChefRow = {
     id: string;
     name: string;
     username: string;
     initials: string;
     status: "ativo" | "inativo";
+    stage: ChefStage;
     services: { label: string; color: BadgeColors }[];
     location: string;
     rating: number | null;
@@ -86,6 +88,53 @@ function formatServiceLabel(value: string): string {
         .trim()
         .replace(/_/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function normalizeChefStage(raw: unknown): ChefStage | null {
+    if (typeof raw !== "string") return null;
+    const normalized = raw.trim().toLowerCase();
+    const mapped: Record<string, ChefStage> = {
+        cadastro: "cadastro",
+        analise: "analise",
+        análise: "analise",
+        entrevista: "entrevista",
+        documentacao: "documentacao",
+        documentação: "documentacao",
+        ativo: "ativo",
+        inativo: "inativo",
+        active: "ativo",
+        inactive: "inativo",
+        pending: "cadastro",
+    };
+    return mapped[normalized] ?? null;
+}
+
+function isFinalChefStage(stage: ChefStage): boolean {
+    return stage === "ativo" || stage === "inativo";
+}
+
+function formatChefStageLabel(stage: ChefStage): string {
+    const map: Record<ChefStage, string> = {
+        cadastro: "Cadastro",
+        analise: "Análise de perfil",
+        entrevista: "Entrevista",
+        documentacao: "Documentação",
+        ativo: "Ativo",
+        inativo: "Inativo",
+    };
+    return map[stage];
+}
+
+function getChefStageBadgeColor(stage: ChefStage): BadgeColors {
+    const map: Record<ChefStage, BadgeColors> = {
+        cadastro: "pink",
+        analise: "purple",
+        entrevista: "blue",
+        documentacao: "gray-blue",
+        ativo: "success",
+        inativo: "gray",
+    };
+    return map[stage];
 }
 
 const serviceColorCycle: BadgeColors[] = ["brand", "indigo", "purple", "orange", "blue", "success", "pink", "gray-blue"];
@@ -283,6 +332,7 @@ export function ChefsPageView() {
 
                 const approved = c.usuario_chef?.cadastro_aprovado === true;
                 const status: ChefRow["status"] = approved ? "ativo" : "inativo";
+                const stage: ChefStage = normalizeChefStage(c.usuario_chef?.status) ?? (approved ? "ativo" : "cadastro");
 
                 const available = (c.usuario_chef?.usuario_chef_disponivel_para ?? []).filter((x) => x?.active);
                 const serviceFilterIds = available.map((x) => x.disponivel_para).filter(Boolean);
@@ -300,6 +350,7 @@ export function ChefsPageView() {
                     username,
                     initials: getInitials(chefName),
                     status,
+                    stage,
                     services,
                     location,
                     rating: null,
@@ -365,26 +416,13 @@ export function ChefsPageView() {
     }, [query, appliedFilter, rows]);
 
     const newChefs = useMemo(() => {
-        const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
-        return rows.filter((c) => {
-            if (!c.createdAt) return false;
-            const created = new Date(c.createdAt);
-            if (Number.isNaN(created.getTime())) return false;
-            return created.getTime() >= cutoff;
-        });
+        return rows.filter((c) => !isFinalChefStage(c.stage));
     }, [rows]);
 
     const metrics = useMemo(() => {
         const active = rows.filter((c) => c.status === "ativo").length;
-        const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
-        const recent = rows.filter((c) => {
-            if (!c.createdAt) return false;
-            const created = new Date(c.createdAt);
-            if (Number.isNaN(created.getTime())) return false;
-            return created.getTime() >= cutoff;
-        }).length;
-        return { active, recent };
-    }, [rows]);
+        return { active, recent: newChefs.length };
+    }, [rows, newChefs.length]);
 
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8">
@@ -440,6 +478,7 @@ export function ChefsPageView() {
 
                         <Tabs.Panel id="todos" className="flex flex-col gap-6 outline-hidden">
                             <GestaoChefsTable
+                                mode="all"
                                 query={query}
                                 onQueryChange={setQuery}
                                 chefs={filteredChefs}
@@ -453,6 +492,7 @@ export function ChefsPageView() {
                         <Tabs.Panel id="novos" className="outline-hidden">
                             {newChefs.length > 0 ? (
                                 <GestaoChefsTable
+                                    mode="new"
                                     query={query}
                                     onQueryChange={setQuery}
                                     chefs={newChefs.filter((c) => chefMatchesFilter(c, appliedFilter))}
@@ -471,6 +511,7 @@ export function ChefsPageView() {
                     <div className="flex flex-col gap-6 md:hidden">
                         {selectedTab === "todos" ? (
                             <GestaoChefsTable
+                                mode="all"
                                 query={query}
                                 onQueryChange={setQuery}
                                 chefs={filteredChefs}
@@ -481,6 +522,7 @@ export function ChefsPageView() {
                             />
                         ) : newChefs.length > 0 ? (
                             <GestaoChefsTable
+                                mode="new"
                                 query={query}
                                 onQueryChange={setQuery}
                                 chefs={newChefs.filter((c) => chefMatchesFilter(c, appliedFilter))}
@@ -500,6 +542,7 @@ export function ChefsPageView() {
 }
 
 function GestaoChefsTable({
+    mode,
     query,
     onQueryChange,
     chefs,
@@ -508,6 +551,7 @@ function GestaoChefsTable({
     cityOptions,
     serviceOptions,
 }: {
+    mode: "all" | "new";
     query: string;
     onQueryChange: (v: string) => void;
     chefs: ChefRow[];
@@ -534,10 +578,14 @@ function GestaoChefsTable({
                     </div>
                 </div>
 
-                <Table aria-label="Lista de chefs" selectionMode="none">
+                <Table key={mode} aria-label="Lista de chefs" selectionMode="none">
                     <Table.Header>
                         <Table.Head id="nome" label="Nome" isRowHeader className="min-w-[220px]" />
-                        <Table.Head id="status" label="Status" className="min-w-[100px]" />
+                        {mode === "new" ? (
+                            <Table.Head id="stage" label="Etapa" className="min-w-[160px]" />
+                        ) : (
+                            <Table.Head id="status" label="Status" className="min-w-[100px]" />
+                        )}
                         <Table.Head id="servico" label="Serviço" className="min-w-[200px]" />
                         <Table.Head id="local" label="Localização" className="min-w-[140px]" />
                         <Table.Head id="avaliacao" label="Avaliação" className="min-w-[120px]" />
@@ -557,9 +605,15 @@ function GestaoChefsTable({
                                     </div>
                                 </Table.Cell>
                                 <Table.Cell>
-                                    <Badge size="sm" type="pill-color" color={item.status === "ativo" ? "success" : "gray"}>
-                                        {item.status === "ativo" ? "Ativo" : "Inativo"}
-                                    </Badge>
+                                    {mode === "new" ? (
+                                        <Badge size="sm" type="pill-color" color={getChefStageBadgeColor(item.stage)}>
+                                            {formatChefStageLabel(item.stage)}
+                                        </Badge>
+                                    ) : (
+                                        <Badge size="sm" type="pill-color" color={item.status === "ativo" ? "success" : "gray"}>
+                                            {item.status === "ativo" ? "Ativo" : "Inativo"}
+                                        </Badge>
+                                    )}
                                 </Table.Cell>
                                 <Table.Cell>
                                     <div className="flex flex-wrap gap-1">
