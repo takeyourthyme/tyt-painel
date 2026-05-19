@@ -96,6 +96,15 @@ function formatLanguageLabel(code: string): string {
     return map[s] ?? code;
 }
 
+function formatInstagramUsername(username: string): string {
+    return username.startsWith("@") ? username : `@${username}`;
+}
+
+function formatInstagramLink(username: string): string {
+    const user = username.startsWith("@") ? username.slice(1) : username;
+    return `https://instagram.com/${user}`;
+}
+
 function formatWhatsAppLink(raw: string): string | null {
     const digits = raw.replace(/\D/g, "");
     if (!digits) return null;
@@ -429,7 +438,11 @@ export function ChefDetailsView({ id }: { id: string }) {
 
                                                 <div className="grid gap-4 md:grid-cols-4">
                                                     <DataRow label="Escola de formação" value={chef.school || "—"} />
-                                                    <DataRow label="Instagram" value={chef.username} href={chef.username.startsWith("@") ? `https://instagram.com/${chef.username.slice(1)}` : null} />
+                                                    <DataRow
+                                                        label="Instagram"
+                                                        value={formatInstagramUsername(chef.username)}
+                                                        href={formatInstagramLink(chef.username)}
+                                                    />
                                                     <DataRow label="Tipo de serviço desejado" value="Chef" />
                                                     <DataRow label="Tipos de Prato" value="—" />
                                                 </div>
@@ -707,7 +720,9 @@ export function ChefDetailsView({ id }: { id: string }) {
                                         </EmptyState.Header>
                                         <EmptyState.Content>
                                             <h2 className="text-center text-md font-semibold text-primary">Agenda em breve</h2>
-                                            <EmptyState.Description>Esta seção será conectada assim que houver endpoint específico para agenda.</EmptyState.Description>
+                                            <EmptyState.Description>
+                                                Esta seção será conectada assim que houver endpoint específico para agenda.
+                                            </EmptyState.Description>
                                         </EmptyState.Content>
                                     </EmptyState>
                                 </div>

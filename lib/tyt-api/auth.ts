@@ -95,12 +95,12 @@ export function isTytChefUser(user: TytUser): boolean {
     return user.tipo_usuario === "chef";
 }
 
-/** Admin ou chef — perfis permitidos no painel. */
+/** Apenas admin — perfil permitido no painel. */
 export function isTytPanelUser(user: TytUser): boolean {
-    return isTytAdminUser(user) || isTytChefUser(user);
+    return isTytAdminUser(user);
 }
 
-/** Login do painel: valida resposta, exige admin ou chef e retorna token + user. */
+/** Login do painel: valida resposta, exige admin e retorna token + user. */
 export async function loginPanel(body: LoginBody): Promise<LoginResponse> {
     const res = await postLogin(body);
     const text = await readResponseBody(res);
@@ -121,7 +121,7 @@ export async function loginPanel(body: LoginBody): Promise<LoginResponse> {
     }
 
     if (!isTytPanelUser(data.user)) {
-        throw new TytApiError(403, "Acesso restrito a administradores e chefs.");
+        throw new TytApiError(403, "Acesso restrito a administradores.");
     }
 
     return data;

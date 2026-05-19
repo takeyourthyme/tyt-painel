@@ -212,7 +212,7 @@ type ApiChefUser = {
     cidade?: string | null;
     estado?: string | null;
     foto?: string | null;
-    usuario_chef?: {
+    chef?: {
         id_user?: number | string | null;
         disponivel_viajar?: boolean | null;
         tipo_transporte?: string | null;
@@ -235,7 +235,7 @@ function mapChefDetails(raw: ApiChefUser): ChefDetails {
     const birthDate = formatDatePtBr(raw.data_nascimento ?? null);
     const whatsapp = raw.whatsapp ?? "—";
 
-    const chef = raw.usuario_chef ?? null;
+    const chef = raw.chef ?? null;
     const chefUserId =
         typeof chef?.id_user === "number"
             ? chef.id_user
