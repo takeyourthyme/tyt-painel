@@ -10,7 +10,7 @@ import { Dialog as AriaDialog, DialogTrigger as AriaDialogTrigger, Modal as Aria
 import { CloseButton } from "@/components/base/buttons/close-button";
 import { cx } from "@/utils/cx";
 
-interface ModalOverlayProps extends AriaModalOverlayProps, RefAttributes<HTMLDivElement> {}
+interface ModalOverlayProps extends AriaModalOverlayProps, RefAttributes<HTMLDivElement> { }
 
 export const ModalOverlay = (props: ModalOverlayProps) => {
     return (
@@ -18,7 +18,7 @@ export const ModalOverlay = (props: ModalOverlayProps) => {
             {...props}
             className={(state) =>
                 cx(
-                    "fixed inset-0 flex min-h-dvh w-full items-center justify-end bg-overlay/70 pl-6 outline-hidden ease-linear md:pl-10",
+                    "fixed inset-0 z-50 flex min-h-dvh w-full items-center justify-end bg-overlay/70 pl-6 outline-hidden ease-linear md:pl-10",
                     state.isEntering && "duration-300 animate-in fade-in",
                     state.isExiting && "duration-500 animate-out fade-out",
                     typeof props.className === "function" ? props.className(state) : props.className,
@@ -29,7 +29,7 @@ export const ModalOverlay = (props: ModalOverlayProps) => {
 };
 ModalOverlay.displayName = "ModalOverlay";
 
-interface ModalProps extends AriaModalOverlayProps, RefAttributes<HTMLDivElement> {}
+interface ModalProps extends AriaModalOverlayProps, RefAttributes<HTMLDivElement> { }
 
 export const Modal = (props: ModalProps) => (
     <AriaModal
@@ -46,7 +46,7 @@ export const Modal = (props: ModalProps) => (
 );
 Modal.displayName = "Modal";
 
-interface DialogProps extends AriaDialogProps, RefAttributes<HTMLElement> {}
+interface DialogProps extends AriaDialogProps, RefAttributes<HTMLElement> { }
 
 export const Dialog = (props: DialogProps) => (
     <AriaDialog

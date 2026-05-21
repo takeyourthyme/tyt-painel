@@ -1,5 +1,5 @@
-import { SectionStub } from "../../_components/section-stub";
+import { redirect } from "next/navigation";
 
 export default function CardapioClassificacoesPage() {
-    return <SectionStub title="Classificações" />;
+    redirect("/cardapio");
 }

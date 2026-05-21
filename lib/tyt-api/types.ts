@@ -187,13 +187,24 @@ export type IngredienteCreateBody = {
     valor: number;
     unidade: string;
     id_categoria: number;
+    marca_pref?: string | null;
+    fornecedor?: string | null;
+    volume_peso?: number;
+    unidade_medida?: string;
+    quantidade?: number;
 };
 
 export type IngredienteUpdateBody = {
     descricao: string;
     valor: number;
     unidade: string;
-    ativo: boolean;
+    id_categoria: number;
+    marca_pref?: string | null;
+    fornecedor?: string | null;
+    volume_peso?: number;
+    unidade_medida?: string;
+    quantidade?: number;
+    ativo?: boolean;
 };
 
 /** POST /api/ingredientes/upload — campo `file` no form-data. */
