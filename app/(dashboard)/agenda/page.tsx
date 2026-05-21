@@ -1,5 +1,5 @@
-import { SectionStub } from "../_components/section-stub";
+import { AgendaPageView } from "./agenda-page-view";
 
 export default function AgendaPage() {
-    return <SectionStub title="Agenda" />;
+    return <AgendaPageView initialTab="requests" />;
 }

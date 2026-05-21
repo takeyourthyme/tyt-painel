@@ -51,21 +51,12 @@ const navigation: NavSection[] = [
         label: "Agenda",
         href: "/agenda",
         icon: Calendar,
-        children: [
-            { label: "Serviços agendados", href: "/agenda/servicos-agendados" },
-            { label: "Solicitações", href: "/agenda/solicitacoes" },
-        ],
     },
     {
         id: "cardapio",
         label: "Cardápio",
         href: "/cardapio",
         icon: Rows01,
-        children: [
-            { label: "Pratos", href: "/cardapio/pratos" },
-            { label: "Ingredientes", href: "/cardapio/ingredientes" },
-            { label: "Classificações", href: "/cardapio/classificacoes" },
-        ],
     },
     { id: "clientes", label: "Clientes", href: "/clientes", icon: Users01 },
     { id: "configuracao", label: "Configuração", href: "/configuracao", icon: Settings01 },

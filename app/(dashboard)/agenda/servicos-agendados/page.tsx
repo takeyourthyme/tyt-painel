@@ -1,5 +1,5 @@
-import { SectionStub } from "../../_components/section-stub";
+import { AgendaPageView } from "../agenda-page-view";
 
 export default function ServicosAgendadosPage() {
-    return <SectionStub title="Serviços agendados" />;
+    return <AgendaPageView initialTab="scheduled" />;
 }
