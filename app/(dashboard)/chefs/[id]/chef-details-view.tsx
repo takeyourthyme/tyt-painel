@@ -309,6 +309,8 @@ export function ChefDetailsView({ id }: { id: string }) {
     const [selectedTab, setSelectedTab] = useState<Key>("chef_data");
     const [historyPage] = useState(1);
     const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
+    const [scheduleQuery, setScheduleQuery] = useState("");
+    const [historyQuery, setHistoryQuery] = useState("");
 
     const headerName = chef?.name ?? "Perfil do Profissional";
     const headerEmail = chef?.email ?? "—";
@@ -320,53 +322,111 @@ export function ChefDetailsView({ id }: { id: string }) {
     const showReviewActions = Boolean(canManage && chef?.chefUserId && chefStatus && !isFinalStatus);
     const showToggle = Boolean(canManage && chef?.chefUserId && chefStatus && isFinalStatus);
 
-    const scheduleItems: ScheduleItem[] = [
-        {
-            id: "schedule-1",
-            serviceLabel: "Cozinha Semanal",
-            status: "pending",
-            dateLabel: "00/00/0000",
-            timeLabel: "00h00",
-            locationLabel: "Brooklin - São Paulo - SP",
-            clientName: "Maria",
-        },
-        {
-            id: "schedule-2",
-            serviceLabel: "Cozinha Semanal",
-            status: "confirmed",
-            dateLabel: "00/00/0000",
-            timeLabel: "00h00",
-            locationLabel: "Brooklin - São Paulo - SP",
-            clientName: "Maria",
-        },
-        {
-            id: "schedule-3",
-            serviceLabel: "Cozinha Semanal",
-            status: "pending",
-            dateLabel: "00/00/0000",
-            timeLabel: "00h00",
-            locationLabel: "Brooklin - São Paulo - SP",
-            clientName: "Maria",
-        },
-        {
-            id: "schedule-4",
-            serviceLabel: "Cozinha Semanal",
-            status: "confirmed",
-            dateLabel: "00/00/0000",
-            timeLabel: "00h00",
-            locationLabel: "Brooklin - São Paulo - SP",
-            clientName: "João",
-        },
-    ];
+    const safeOrders = orders ?? [];
 
-    const historyRows: HistoryRow[] = [
-        { id: "history-1", serviceLabel: "Meal Prep", valueLabel: "R$000000", status: "pending", dateLabel: "00/00/0000", locationLabel: "Curitiba", clientName: "Sophia Bennett" },
-        { id: "history-2", serviceLabel: "Get Together", valueLabel: "R$000000", status: "confirmed", dateLabel: "00/00/0000", locationLabel: "Curitiba", clientName: "Mia Thompson" },
-        { id: "history-3", serviceLabel: "Season Special", valueLabel: "R$000000", status: "confirmed", dateLabel: "00/00/0000", locationLabel: "Curitiba", clientName: "Ava Wilson" },
-        { id: "history-4", serviceLabel: "Season Special", valueLabel: "R$000000", status: "confirmed", dateLabel: "00/00/0000", locationLabel: "Curitiba", clientName: "Isabella Martinez" },
-        { id: "history-5", serviceLabel: "Meal Prep", valueLabel: "R$000000", status: "cancelled", dateLabel: "00/00/0000", locationLabel: "Curitiba", clientName: "Charlotte Green" },
-        { id: "history-6", serviceLabel: "Meal Prep", valueLabel: "R$000000", status: "confirmed", dateLabel: "00/00/0000", locationLabel: "Curitiba", clientName: "Amelia Reed" },
-    ];
+    const orderEventDateTime = (o: typeof safeOrders[number]): Date | null => {
+        if (!o.eventDate) return null;
+        const base = new Date(o.eventDate);
+        if (Number.isNaN(base.getTime())) return null;
+        if (!o.eventTime) return base;
+        const m = o.eventTime.trim().match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return base;
+        const hh = Number(m[1]);
+        const mm = Number(m[2]);
+        if (!Number.isFinite(hh) || !Number.isFinite(mm)) return base;
+        const d = new Date(base);
+        d.setHours(hh, mm, 0, 0);
+        return d;
+    };
+
+    const orderIsCancelled = (status: string | null) => {
+        if (!status) return false;
+        const s = status.trim().toLowerCase();
+        return s.includes("cancel") || s.includes("canceled") || s.includes("cancelled");
+    };
+
+    const orderIsConfirmed = (status: string | null) => {
+        if (!status) return false;
+        const s = status.trim().toLowerCase();
+        return s.includes("confirm") || s === "confirmed";
+    };
+
+    const formatTimeLabel = (raw: string | null) => {
+        if (!raw) return "—";
+        const m = raw.trim().match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return raw;
+        return `${m[1].padStart(2, "0")}h${m[2]}`;
+    };
+
+    const formatLocationLabel = (o: typeof safeOrders[number]) => {
+        const city = o.city?.trim();
+        const state = o.state?.trim();
+        if (city && state) return `${city} - ${state}`;
+        return city || state || "—";
+    };
+
+    const formatCurrency = (value: number | null) => {
+        if (value === null) return "—";
+        try {
+            return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        } catch {
+            return "—";
+        }
+    };
+
+    const scheduleOrders = safeOrders
+        .filter((o) => {
+            const dt = orderEventDateTime(o);
+            if (!dt) return false;
+            return dt.getTime() >= Date.now() && !orderIsCancelled(o.status);
+        })
+        .filter((o) => {
+            const q = scheduleQuery.trim().toLowerCase();
+            if (!q) return true;
+            const hay = `${o.code ?? ""} ${o.type ?? ""} ${o.city ?? ""} ${o.clientName ?? ""}`.toLowerCase();
+            return hay.includes(q);
+        })
+        .sort((a, b) => (orderEventDateTime(a)?.getTime() ?? 0) - (orderEventDateTime(b)?.getTime() ?? 0));
+
+    const historyOrders = safeOrders
+        .filter((o) => {
+            const dt = orderEventDateTime(o);
+            if (!dt) return false;
+            return dt.getTime() < Date.now() || orderIsCancelled(o.status);
+        })
+        .filter((o) => {
+            const q = historyQuery.trim().toLowerCase();
+            if (!q) return true;
+            const hay = `${o.code ?? ""} ${o.type ?? ""} ${o.city ?? ""} ${o.clientName ?? ""}`.toLowerCase();
+            return hay.includes(q);
+        })
+        .sort((a, b) => (orderEventDateTime(b)?.getTime() ?? 0) - (orderEventDateTime(a)?.getTime() ?? 0));
+
+    const scheduleItems: ScheduleItem[] = scheduleOrders.map((o) => {
+        const dt = orderEventDateTime(o);
+        return {
+            id: o.id,
+            serviceLabel: formatServiceChipLabel(o.type ?? "—"),
+            status: orderIsConfirmed(o.status) ? "confirmed" : "pending",
+            dateLabel: dt ? dt.toLocaleDateString("pt-BR") : "—",
+            timeLabel: formatTimeLabel(o.eventTime),
+            locationLabel: formatLocationLabel(o),
+            clientName: o.clientName ?? "—",
+        };
+    });
+
+    const historyRows: HistoryRow[] = historyOrders.map((o) => {
+        const dt = orderEventDateTime(o);
+        return {
+            id: o.id,
+            serviceLabel: formatServiceChipLabel(o.type ?? "—"),
+            valueLabel: formatCurrency(o.totalValue),
+            status: orderIsCancelled(o.status) ? "cancelled" : orderIsConfirmed(o.status) ? "confirmed" : "pending",
+            dateLabel: dt ? dt.toLocaleDateString("pt-BR") : "—",
+            locationLabel: formatLocationLabel(o),
+            clientName: o.clientName ?? "—",
+        };
+    });
 
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
@@ -823,9 +883,11 @@ export function ChefDetailsView({ id }: { id: string }) {
                                             <p className="text-sm font-semibold text-primary">Programação Diária</p>
                                         </div>
                                         <div className="flex flex-col gap-3 px-6 py-5">
-                                            {scheduleItems.slice(0, 2).map((item) => (
-                                                <ScheduleCard key={item.id} item={item} />
-                                            ))}
+                                            {scheduleItems.length > 0 ? (
+                                                scheduleItems.slice(0, 2).map((item) => <ScheduleCard key={item.id} item={item} />)
+                                            ) : (
+                                                <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -834,16 +896,26 @@ export function ChefDetailsView({ id }: { id: string }) {
                                     <div className="flex flex-col gap-4 border-b border-secondary px-6 py-5 md:flex-row md:items-center md:justify-between">
                                         <p className="text-sm font-semibold text-primary">Próximos Agendamentos</p>
                                         <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-                                            <Input aria-label="Buscar por" placeholder="Buscar por" icon={SearchLg} size="sm" className="w-full md:w-[320px]" />
+                                            <Input
+                                                aria-label="Buscar por"
+                                                placeholder="Buscar por"
+                                                icon={SearchLg}
+                                                size="sm"
+                                                value={scheduleQuery}
+                                                onChange={setScheduleQuery}
+                                                className="w-full md:w-[320px]"
+                                            />
                                             <Button size="md" color="primary" iconLeading={FilterLines} className="w-full md:w-auto">
                                                 Filtrar
                                             </Button>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-3 px-6 py-5">
-                                        {scheduleItems.map((item) => (
-                                            <ScheduleCard key={item.id} item={item} />
-                                        ))}
+                                        {scheduleItems.length > 0 ? (
+                                            scheduleItems.map((item) => <ScheduleCard key={item.id} item={item} />)
+                                        ) : (
+                                            <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -856,7 +928,15 @@ export function ChefDetailsView({ id }: { id: string }) {
                                 </div>
 
                                 <div className="flex flex-col gap-4 border-b border-secondary px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-                                    <Input aria-label="Buscar por nome" placeholder="Buscar por nome" icon={SearchLg} size="sm" className="w-full lg:max-w-[520px]" />
+                                    <Input
+                                        aria-label="Buscar por"
+                                        placeholder="Buscar por"
+                                        icon={SearchLg}
+                                        size="sm"
+                                        value={historyQuery}
+                                        onChange={setHistoryQuery}
+                                        className="w-full lg:max-w-[520px]"
+                                    />
                                     <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:w-auto">
                                         <Button size="md" color="secondary" iconLeading={Download02} className="w-full sm:w-auto">
                                             Exportar dados
@@ -868,40 +948,44 @@ export function ChefDetailsView({ id }: { id: string }) {
                                 </div>
 
                                 <div className="px-6 py-5">
-                                    <TableCard.Root>
-                                        <Table aria-label="Registro de Atendimentos" selectionMode="none">
-                                            <Table.Header>
-                                                <Table.Head id="service" label="Serviço" className="min-w-[160px]" isRowHeader />
-                                                <Table.Head id="value" label="Valor" className="min-w-[140px]" />
-                                                <Table.Head id="status" label="Status" className="min-w-[160px]" />
-                                                <Table.Head id="date" label="Data" className="min-w-[140px]" />
-                                                <Table.Head id="location" label="Localização" className="min-w-[140px]" />
-                                                <Table.Head id="client" label="Cliente" className="min-w-[200px]" />
-                                                <Table.Head id="actions" label="" className="w-[56px]" />
-                                            </Table.Header>
-                                            <Table.Body items={historyRows}>
-                                                {(row) => (
-                                                    <Table.Row id={row.id}>
-                                                        <Table.Cell className="whitespace-nowrap">
-                                                            <Badge size="sm" type="pill-color" color="gray">
-                                                                {row.serviceLabel}
-                                                            </Badge>
-                                                        </Table.Cell>
-                                                        <Table.Cell className="whitespace-nowrap text-tertiary">{row.valueLabel}</Table.Cell>
-                                                        <Table.Cell className="whitespace-nowrap">{historyStatusBadge(row.status)}</Table.Cell>
-                                                        <Table.Cell className="whitespace-nowrap text-tertiary">{row.dateLabel}</Table.Cell>
-                                                        <Table.Cell className="whitespace-nowrap text-tertiary">{row.locationLabel}</Table.Cell>
-                                                        <Table.Cell className="whitespace-nowrap text-tertiary">{row.clientName}</Table.Cell>
-                                                        <Table.Cell>
-                                                            <div className="flex justify-end">
-                                                                <ButtonUtility icon={Eye} color="secondary" size="sm" aria-label="Ver" />
-                                                            </div>
-                                                        </Table.Cell>
-                                                    </Table.Row>
-                                                )}
-                                            </Table.Body>
-                                        </Table>
-                                    </TableCard.Root>
+                                    {historyRows.length > 0 ? (
+                                        <TableCard.Root>
+                                            <Table aria-label="Registro de Atendimentos" selectionMode="none">
+                                                <Table.Header>
+                                                    <Table.Head id="service" label="Serviço" className="min-w-[160px]" isRowHeader />
+                                                    <Table.Head id="value" label="Valor" className="min-w-[140px]" />
+                                                    <Table.Head id="status" label="Status" className="min-w-[160px]" />
+                                                    <Table.Head id="date" label="Data" className="min-w-[140px]" />
+                                                    <Table.Head id="location" label="Localização" className="min-w-[140px]" />
+                                                    <Table.Head id="client" label="Cliente" className="min-w-[200px]" />
+                                                    <Table.Head id="actions" label="" className="w-[56px]" />
+                                                </Table.Header>
+                                                <Table.Body items={historyRows}>
+                                                    {(row) => (
+                                                        <Table.Row id={row.id}>
+                                                            <Table.Cell className="whitespace-nowrap">
+                                                                <Badge size="sm" type="pill-color" color="gray">
+                                                                    {row.serviceLabel}
+                                                                </Badge>
+                                                            </Table.Cell>
+                                                            <Table.Cell className="whitespace-nowrap text-tertiary">{row.valueLabel}</Table.Cell>
+                                                            <Table.Cell className="whitespace-nowrap">{historyStatusBadge(row.status)}</Table.Cell>
+                                                            <Table.Cell className="whitespace-nowrap text-tertiary">{row.dateLabel}</Table.Cell>
+                                                            <Table.Cell className="whitespace-nowrap text-tertiary">{row.locationLabel}</Table.Cell>
+                                                            <Table.Cell className="whitespace-nowrap text-tertiary">{row.clientName}</Table.Cell>
+                                                            <Table.Cell>
+                                                                <div className="flex justify-end">
+                                                                    <ButtonUtility icon={Eye} color="secondary" size="sm" aria-label="Ver" />
+                                                                </div>
+                                                            </Table.Cell>
+                                                        </Table.Row>
+                                                    )}
+                                                </Table.Body>
+                                            </Table>
+                                        </TableCard.Root>
+                                    ) : (
+                                        <p className="text-sm text-tertiary">Nenhum serviço encontrado.</p>
+                                    )}
 
                                     <div className="mt-4 flex items-center justify-between border-t border-secondary pt-4">
                                         <Button color="secondary" size="sm">
@@ -946,43 +1030,52 @@ export function ChefDetailsView({ id }: { id: string }) {
                             </div>
                         ) : selectedTab === "schedule" ? (
                             <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                                <div className="flex min-h-[min(360px,60vh)] items-center justify-center px-6 py-10 md:px-8 md:py-12">
-                                    <EmptyState size="sm" className="max-w-[420px]">
-                                        <EmptyState.Header pattern="circle">
-                                            <EmptyState.FeaturedIcon color="gray" theme="modern" icon={CalendarIcon} />
-                                        </EmptyState.Header>
-                                        <EmptyState.Content>
-                                            <h2 className="text-center text-md font-semibold text-primary">Agenda em breve</h2>
-                                            <EmptyState.Description>
-                                                Esta seção será conectada assim que houver endpoint específico para agenda.
-                                            </EmptyState.Description>
-                                        </EmptyState.Content>
-                                    </EmptyState>
+                                <div className="flex flex-col gap-4 border-b border-secondary px-6 py-5">
+                                    <p className="text-sm font-semibold text-primary">Próximos Agendamentos</p>
+                                    <Input
+                                        aria-label="Buscar por"
+                                        placeholder="Buscar por"
+                                        icon={SearchLg}
+                                        size="sm"
+                                        value={scheduleQuery}
+                                        onChange={setScheduleQuery}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-3 px-6 py-5">
+                                    {scheduleItems.length > 0 ? (
+                                        scheduleItems.map((item) => <ScheduleCard key={item.id} item={item} />)
+                                    ) : (
+                                        <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
+                                    )}
                                 </div>
                             </div>
                         ) : (
                             <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
                                 <div className="px-6 py-5">
-                                    <TableCard.Root>
-                                        <Table aria-label="Histórico de serviços" selectionMode="none">
-                                            <Table.Header>
-                                                <Table.Head id="code" label="Código" className="min-w-[140px]" isRowHeader />
-                                                <Table.Head id="type" label="Tipo" className="min-w-[160px]" />
-                                                <Table.Head id="status" label="Status" className="min-w-[140px]" />
-                                                <Table.Head id="date" label="Data" className="min-w-[140px]" />
-                                            </Table.Header>
-                                            <Table.Body items={orders ?? []}>
-                                                {(item) => (
-                                                    <Table.Row id={item.id}>
-                                                        <Table.Cell className="whitespace-nowrap">{item.code || "—"}</Table.Cell>
-                                                        <Table.Cell className="whitespace-nowrap">{item.type || "—"}</Table.Cell>
-                                                        <Table.Cell className="whitespace-nowrap">{item.status || "—"}</Table.Cell>
-                                                        <Table.Cell className="whitespace-nowrap">{formatOrderDate(item.eventDate)}</Table.Cell>
-                                                    </Table.Row>
-                                                )}
-                                            </Table.Body>
-                                        </Table>
-                                    </TableCard.Root>
+                                    {historyOrders.length > 0 ? (
+                                        <TableCard.Root>
+                                            <Table aria-label="Histórico de serviços" selectionMode="none">
+                                                <Table.Header>
+                                                    <Table.Head id="code" label="Código" className="min-w-[140px]" isRowHeader />
+                                                    <Table.Head id="type" label="Tipo" className="min-w-[160px]" />
+                                                    <Table.Head id="status" label="Status" className="min-w-[140px]" />
+                                                    <Table.Head id="date" label="Data" className="min-w-[140px]" />
+                                                </Table.Header>
+                                                <Table.Body items={historyOrders}>
+                                                    {(item) => (
+                                                        <Table.Row id={item.id}>
+                                                            <Table.Cell className="whitespace-nowrap">{item.code || "—"}</Table.Cell>
+                                                            <Table.Cell className="whitespace-nowrap">{item.type || "—"}</Table.Cell>
+                                                            <Table.Cell className="whitespace-nowrap">{item.status || "—"}</Table.Cell>
+                                                            <Table.Cell className="whitespace-nowrap">{formatOrderDate(item.eventDate)}</Table.Cell>
+                                                        </Table.Row>
+                                                    )}
+                                                </Table.Body>
+                                            </Table>
+                                        </TableCard.Root>
+                                    ) : (
+                                        <p className="text-sm text-tertiary">Nenhum serviço encontrado.</p>
+                                    )}
                                 </div>
                             </div>
                         )}

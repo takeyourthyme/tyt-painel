@@ -59,5 +59,6 @@ export const tytEndpoints = {
         status: (id: number | string) => `/api/kitchen-orders/${id}/status`,
         specialServiceProposal: (id: number | string) => `/api/kitchen-orders/${id}/special-service-proposal`,
         cancel: (code: string) => `/api/kitchen-orders/${encodeURIComponent(code)}/cancel`,
+        assignChef: (hashCodeOrder: string) => `/api/kitchen-orders/${encodeURIComponent(hashCodeOrder)}/assign-chef`,
     },
 } as const;

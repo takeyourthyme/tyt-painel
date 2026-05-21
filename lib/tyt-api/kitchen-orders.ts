@@ -2,6 +2,7 @@ import { tytFetch } from "./client";
 import { tytEndpoints } from "./endpoints";
 import { toQueryString } from "./query";
 import type {
+    AssignKitchenOrderChefBody,
     CreateKitchenOrderBody,
     KitchenOrdersListQuery,
     ResourceId,
@@ -10,8 +11,11 @@ import type {
 } from "./types";
 
 export type {
+    AssignKitchenOrderChefBody,
     CreateKitchenOrderBody,
+    KitchenOrdersListResponse,
     KitchenOrderDishInput,
+    KitchenOrderListItem,
     KitchenOrdersListQuery,
     SpecialServiceProposalBody,
     SpecialServiceProposalItem,
@@ -34,11 +38,7 @@ export function putKitchenOrderStatus(id: ResourceId, body: UpdateKitchenOrderSt
     return tytFetch(tytEndpoints.kitchenOrders.status(id), { method: "PUT", json: body, token });
 }
 
-export function putKitchenOrderSpecialServiceProposal(
-    id: ResourceId,
-    body: SpecialServiceProposalBody,
-    token: string,
-) {
+export function putKitchenOrderSpecialServiceProposal(id: ResourceId, body: SpecialServiceProposalBody, token: string) {
     return tytFetch(tytEndpoints.kitchenOrders.specialServiceProposal(id), {
         method: "PUT",
         json: body,
@@ -48,4 +48,8 @@ export function putKitchenOrderSpecialServiceProposal(
 
 export function putKitchenOrderCancel(code: string, token: string) {
     return tytFetch(tytEndpoints.kitchenOrders.cancel(code), { method: "PUT", token });
+}
+
+export function putKitchenOrderAssignChef(hashCodeOrder: string, body: AssignKitchenOrderChefBody, token: string) {
+    return tytFetch(tytEndpoints.kitchenOrders.assignChef(hashCodeOrder), { method: "PUT", json: body, token });
 }

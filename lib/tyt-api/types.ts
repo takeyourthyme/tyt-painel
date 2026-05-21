@@ -278,6 +278,24 @@ export type KitchenOrdersListQuery = {
     code?: string;
 };
 
+export type KitchenOrdersListResponse = {
+    success: boolean;
+    data: KitchenOrderListItem[];
+};
+
+export type KitchenOrderListItem = {
+    id: number;
+    code: string;
+    type: string;
+    status: string;
+    city: string;
+    event_date: string;
+    people_quantity: number;
+    createdAt: string;
+    cliente?: { id: number; nome: string; foto?: string | null } | null;
+    chef?: { id: number; nome: string; foto?: string | null } | null;
+};
+
 export type KitchenOrderDishInput = {
     dish_id: number;
     quantity: number;
@@ -310,4 +328,8 @@ export type SpecialServiceProposalItem = {
 
 export type SpecialServiceProposalBody = {
     items: SpecialServiceProposalItem[];
+};
+
+export type AssignKitchenOrderChefBody = {
+    id_usuario_chef: number;
 };

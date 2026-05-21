@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parseApiErrorMessage, parseJsonOrThrow, TytApiError } from "@/lib/tyt-api/errors";
 import { getTytAccessToken, getTytUser, isSessionAdmin } from "@/lib/tyt-api/session";
+import { getKitchenOrders } from "@/lib/tyt-api/kitchen-orders";
 import { getUserById, putChefUpdateStatus } from "@/lib/tyt-api/users";
 
 type CacheEntry<T> = { value: T; storedAt: number };
@@ -215,6 +216,11 @@ export type ChefOrderItem = {
     status: string | null;
     type: string | null;
     eventDate: string | null;
+    eventTime: string | null;
+    city: string | null;
+    state: string | null;
+    clientName: string | null;
+    totalValue: number | null;
 };
 
 export type ChefDetailsMetrics = {
@@ -254,6 +260,8 @@ type ApiChefUser = {
         usuario_chef_disponibilidade?: { dia_semana: string; manha: boolean; tarde: boolean; noite: boolean; active: boolean }[] | null;
     } | null;
 };
+
+type ApiKitchenOrder = Record<string, unknown>;
 
 function mapChefDetails(raw: ApiChefUser): ChefDetails {
     const name = raw.nome ?? "—";
@@ -314,6 +322,118 @@ function mapChefDetails(raw: ApiChefUser): ChefDetails {
     };
 }
 
+function getRecord(raw: unknown): Record<string, unknown> | null {
+    if (!raw || typeof raw !== "object") return null;
+    return raw as Record<string, unknown>;
+}
+
+function getStringValue(obj: Record<string, unknown>, keys: string[]): string | null {
+    for (const k of keys) {
+        const v = obj[k];
+        if (typeof v === "string" && v.trim().length > 0) return v;
+    }
+    return null;
+}
+
+function getNumberValue(obj: Record<string, unknown>, keys: string[]): number | null {
+    for (const k of keys) {
+        const v = obj[k];
+        if (typeof v === "number" && Number.isFinite(v)) return v;
+        if (typeof v === "string" && v.trim().length > 0) {
+            const n = Number(v);
+            if (Number.isFinite(n)) return n;
+        }
+    }
+    return null;
+}
+
+function normalizeKitchenOrderStatus(raw: unknown): string | null {
+    if (typeof raw !== "string") return null;
+    const s = raw.trim();
+    if (!s) return null;
+    return s;
+}
+
+function isKitchenOrderCancelled(status: string | null): boolean {
+    if (!status) return false;
+    const s = status.trim().toLowerCase();
+    return s.includes("cancel") || s.includes("canceled") || s.includes("cancelled");
+}
+
+function isKitchenOrderConfirmed(status: string | null): boolean {
+    if (!status) return false;
+    const s = status.trim().toLowerCase();
+    return s.includes("confirm") || s === "confirmed";
+}
+
+function parseEventDateTime(order: ChefOrderItem): Date | null {
+    const datePart = order.eventDate;
+    if (!datePart) return null;
+    const base = new Date(datePart);
+    if (Number.isNaN(base.getTime())) return null;
+    if (!order.eventTime) return base;
+    const time = order.eventTime.trim();
+    const m = time.match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return base;
+    const hh = Number(m[1]);
+    const mm = Number(m[2]);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm)) return base;
+    const d = new Date(base);
+    d.setHours(hh, mm, 0, 0);
+    return d;
+}
+
+function mapKitchenOrder(raw: ApiKitchenOrder): ChefOrderItem {
+    const obj = raw as Record<string, unknown>;
+    const id = String(obj.id ?? obj.order_id ?? obj.kitchen_order_id ?? obj.code ?? obj.hashCodeOrder ?? obj.hash_code_order ?? crypto.randomUUID());
+    const code = getStringValue(obj, ["code", "hashCodeOrder", "hash_code_order", "order_code"]);
+    const status = normalizeKitchenOrderStatus(getStringValue(obj, ["status", "order_status"]));
+    const type = getStringValue(obj, ["type", "order_type"]);
+    const eventDate = getStringValue(obj, ["event_date", "eventDate", "eventDateIso", "event_date_iso"]);
+    const eventTime = getStringValue(obj, ["event_time", "eventTime"]);
+    const city = getStringValue(obj, ["city", "cidade"]);
+    const state = getStringValue(obj, ["state", "estado", "uf"]);
+
+    const clientRecord =
+        getRecord(obj.client) ??
+        getRecord(obj.cliente) ??
+        getRecord(obj.user_client) ??
+        getRecord(obj.usuario_cliente) ??
+        getRecord(obj.usuarioClient) ??
+        getRecord(obj.user);
+    const clientName = clientRecord ? getStringValue(clientRecord, ["nome", "name"]) : null;
+
+    const totalValue =
+        getNumberValue(obj, ["total_value", "totalValue", "valor_total", "price", "valor"]) ??
+        (getRecord(obj.payment) ? getNumberValue(getRecord(obj.payment)!, ["amount", "total", "value"]) : null);
+
+    return {
+        id,
+        code,
+        status,
+        type,
+        eventDate,
+        eventTime,
+        city,
+        state,
+        clientName,
+        totalValue,
+    };
+}
+
+function getOrderAssignedChefId(raw: ApiKitchenOrder): number | null {
+    const obj = raw as Record<string, unknown>;
+    const direct = getNumberValue(obj, ["id_usuario_chef", "chef_user_id", "id_user_chef", "id_chef_user", "chefUserId"]);
+    if (direct !== null) return direct;
+    const nested =
+        getRecord(obj.chef) ??
+        getRecord(obj.usuario_chef) ??
+        getRecord(obj.user_chef) ??
+        getRecord(obj.chef_user);
+    if (!nested) return null;
+    return getNumberValue(nested, ["id", "id_user", "id_usuario", "id_user_chef", "id_usuario_chef"]);
+}
+
 export function useChefDetails(chefId: string) {
     const [chef, setChef] = useState<ChefDetails | null>(null);
     const [orders, setOrders] = useState<ChefOrderItem[] | null>([]);
@@ -352,8 +472,38 @@ export function useChefDetails(chefId: string) {
 
             const mappedChef = mapChefDetails(userJson);
             setChef(mappedChef);
-            setOrders([]);
-            setMetrics({ totalOrders: null, finishedOrders: null, cancelledOrders: null });
+
+            if (!mappedChef.chefUserId) {
+                setOrders([]);
+                setMetrics({ totalOrders: 0, finishedOrders: 0, cancelledOrders: 0 });
+                return;
+            }
+
+            const ordersJson = await requestOnce(`chef-details:kitchen-orders:${token}`, async () => {
+                return runWithRetry(async () => {
+                    const res = await getKitchenOrders(token);
+                    return parseJsonOrThrow<unknown>(res);
+                }, { retries: 2 });
+            }, 1000);
+
+            if (!mountedRef.current || requestId !== requestIdRef.current) return;
+
+            const list = normalizeList<ApiKitchenOrder>(ordersJson);
+            const assigned = list.filter((o) => getOrderAssignedChefId(o) === mappedChef.chefUserId);
+            const mappedOrders = assigned.map(mapKitchenOrder).sort((a, b) => {
+                const ad = parseEventDateTime(a)?.getTime() ?? 0;
+                const bd = parseEventDateTime(b)?.getTime() ?? 0;
+                return bd - ad;
+            });
+            setOrders(mappedOrders);
+
+            const cancelledOrders = mappedOrders.filter((o) => isKitchenOrderCancelled(o.status)).length;
+            const finishedOrders = mappedOrders.filter((o) => {
+                const d = parseEventDateTime(o);
+                if (!d) return false;
+                return d.getTime() < Date.now() && isKitchenOrderConfirmed(o.status) && !isKitchenOrderCancelled(o.status);
+            }).length;
+            setMetrics({ totalOrders: mappedOrders.length, finishedOrders, cancelledOrders });
         } catch (err) {
             if (!mountedRef.current || requestId !== requestIdRef.current) return;
             if (err instanceof TytApiError) {

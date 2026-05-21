@@ -489,7 +489,7 @@ export function ChefsPageView() {
                             />
                         </Tabs.Panel>
 
-                        <Tabs.Panel id="novos" className="outline-hidden">
+                        <Tabs.Panel id="novos" className="flex flex-col gap-6 outline-hidden">
                             {newChefs.length > 0 ? (
                                 <GestaoChefsTable
                                     mode="new"
