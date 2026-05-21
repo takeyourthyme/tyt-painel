@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
+    ArrowLeft,
     Calendar as CalendarIcon,
     CheckCircle,
+    ChevronDown,
     Download02,
     Eye,
     FilterLines,
@@ -19,7 +21,6 @@ import Link from "next/link";
 import type { Key } from "react-aria-components";
 import { toast } from "sonner";
 import { Calendar } from "@/components/application/date-picker/calendar";
-import { EmptyState } from "@/components/application/empty-state/empty-state";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Table, TableCard } from "@/components/application/table/table";
@@ -30,7 +31,6 @@ import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
-import { NativeSelect } from "@/components/base/select/select-native";
 import { Toggle } from "@/components/base/toggle/toggle";
 import { cx } from "@/utils/cx";
 import { formatAvailabilityDayLabel, formatServiceChipLabel, useChefApprovalActions, useChefDetails } from "./chef-details-data";
@@ -100,7 +100,7 @@ function isFinalChefStatus(status: ChefStatus): boolean {
 function formatChefStatusLabel(status: ChefStatus): string {
     const map: Record<ChefStatus, string> = {
         cadastro: "Cadastro",
-        analise: "Análise",
+        analise: "Análise de perfil",
         entrevista: "Entrevista",
         documentacao: "Documentação",
         ativo: "Ativo",
@@ -109,10 +109,41 @@ function formatChefStatusLabel(status: ChefStatus): string {
     return map[status];
 }
 
-function getChefStatusBadgeColor(status: ChefStatus): "success" | "gray" | "warning" {
+function getChefStatusBadgeColor(status: ChefStatus): "success" | "gray" | "pink" | "purple" | "blue" | "gray-blue" {
     if (status === "ativo") return "success";
     if (status === "inativo") return "gray";
-    return "warning";
+    if (status === "cadastro") return "pink";
+    if (status === "analise") return "purple";
+    if (status === "entrevista") return "blue";
+    return "gray-blue";
+}
+
+function MobileDisclosure({
+    title,
+    description,
+    children,
+}: {
+    title: string;
+    description: string;
+    children: ReactNode;
+}) {
+    return (
+        <details className="group overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 [&::-webkit-details-marker]:hidden">
+                <div className="flex min-w-0 items-start gap-3">
+                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary ring-1 ring-secondary ring-inset">
+                        <UserSquare className="size-5 text-tertiary" aria-hidden />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-sm font-semibold text-primary">{title}</p>
+                        <p className="mt-0.5 text-sm text-tertiary">{description}</p>
+                    </div>
+                </div>
+                <ChevronDown className="size-5 shrink-0 text-fg-quaternary transition-transform group-open:rotate-180" aria-hidden />
+            </summary>
+            <div className="border-t border-secondary px-4 py-4">{children}</div>
+        </details>
+    );
 }
 
 function getInitials(name: string): string {
@@ -431,7 +462,60 @@ export function ChefDetailsView({ id }: { id: string }) {
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
-                <header className="flex flex-col gap-3">
+                <header className="flex flex-col gap-4 md:hidden">
+                    <Link
+                        href="/chefs"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-tertiary outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                        <ArrowLeft className="size-5 shrink-0" aria-hidden />
+                        Voltar
+                    </Link>
+
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                                <h1 className={cx(playfair.className, "text-display-sm font-semibold text-primary")}>
+                                    {showReviewActions ? "Revisão de Cadastro" : "Perfil do Profissional"}
+                                </h1>
+                                <p className="mt-1 text-sm text-tertiary">
+                                    {showReviewActions
+                                        ? "Revise as informações profissionais, dados de contato e disponibilidade antes de aprovar o acesso à plataforma."
+                                        : "Visualize o perfil completo e acompanhe a disponibilidade e os serviços realizados pelo profissional na plataforma."}
+                                </p>
+                            </div>
+                            {loading ? <LoadingIndicator type="line-spinner" size="sm" label="Carregando..." /> : null}
+                        </div>
+
+                        {showReviewActions ? (
+                            <div className="flex flex-col gap-3 pt-2">
+                                <Button
+                                    color="secondary"
+                                    size="md"
+                                    className="w-full"
+                                    iconLeading={CloseIcon}
+                                    isDisabled={approval.loading || loading}
+                                    onClick={() => setConfirmAction("reject")}
+                                >
+                                    Recusar Cadastro
+                                </Button>
+                                <Button
+                                    color="primary"
+                                    size="md"
+                                    className="w-full"
+                                    iconLeading={CheckCircle}
+                                    isDisabled={approval.loading || loading}
+                                    onClick={() => setConfirmAction("approve")}
+                                >
+                                    Aprovar cadastro
+                                </Button>
+                            </div>
+                        ) : null}
+                    </div>
+
+                    <div className="h-px w-full bg-border-secondary" aria-hidden />
+                </header>
+
+                <header className="hidden flex-col gap-3 md:flex">
                     <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-tertiary">
                         <Link href="/chefs" className="font-medium hover:text-tertiary_hover">
                             Personal Chefs
@@ -491,7 +575,82 @@ export function ChefDetailsView({ id }: { id: string }) {
                     </section>
                 ) : null}
 
-                <section className="rounded-xl bg-utility-blue-light-50 p-4 shadow-xs ring-1 ring-utility-blue-light-200">
+                {chef ? (
+                    <section className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs md:hidden">
+                        <div className="flex flex-col gap-4 p-4">
+                            {chefStatus ? (
+                                <Badge size="sm" type="pill-color" color={getChefStatusBadgeColor(chefStatus)}>
+                                    {formatChefStatusLabel(chefStatus)}
+                                </Badge>
+                            ) : null}
+
+                            <div className="flex items-center gap-3">
+                                <Avatar src={chef.avatarUrl ?? null} initials={headerInitials} size="lg" alt={headerName} />
+                                <div className="min-w-0">
+                                    <p className="truncate text-lg font-semibold text-primary">{headerName}</p>
+                                    <p className="mt-0.5 truncate text-sm text-tertiary">{headerEmail}</p>
+                                </div>
+                            </div>
+
+                            {chefStatus && !isFinalStatus && canManage && chef.chefUserId ? (
+                                <div className="pt-1">
+                                    <p className="text-sm font-medium text-secondary">Etapa *</p>
+                                    <div className="mt-2">
+                                        <Select
+                                            aria-label="Etapa do cadastro"
+                                            size="md"
+                                            selectedKey={chefStatus}
+                                            isDisabled={approval.loading || loading}
+                                            onSelectionChange={async (key) => {
+                                                const next = String(key) as ChefStatus;
+                                                if (!chef.chefUserId) return;
+                                                if (isFinalChefStatus(next)) return;
+                                                const result = await approval.update({ chefUserId: chef.chefUserId, approved: false, status: next });
+                                                if (result.ok) await reload();
+                                            }}
+                                            items={[
+                                                { id: "cadastro", label: "Cadastro" },
+                                                { id: "analise", label: "Análise de perfil" },
+                                                { id: "entrevista", label: "Entrevista" },
+                                                { id: "documentacao", label: "Documentação" },
+                                            ]}
+                                        >
+                                            {(item) => <Select.Item {...item} />}
+                                        </Select>
+                                    </div>
+                                </div>
+                            ) : showToggle && chefStatus ? (
+                                <div className="flex items-start justify-between gap-4 rounded-xl bg-utility-blue-light-50 p-4 ring-1 ring-utility-blue-light-200 ring-inset">
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-semibold text-primary">{chefStatus === "ativo" ? "Chef Ativo" : "Chef Inativo"}</p>
+                                        <p className="mt-1 text-sm text-tertiary">
+                                            {chefStatus === "ativo"
+                                                ? "Conta habilitada para acesso e participação em novos trabalhos."
+                                                : "Conta desativada para acesso e participação em novos trabalhos."}
+                                        </p>
+                                    </div>
+                                    <Toggle
+                                        slim
+                                        size="sm"
+                                        isSelected={chefStatus === "ativo"}
+                                        isDisabled={approval.loading || loading}
+                                        onChange={async (isSelected) => {
+                                            if (!chef.chefUserId) return;
+                                            const result = await approval.update({
+                                                chefUserId: chef.chefUserId,
+                                                approved: isSelected,
+                                                status: isSelected ? "ativo" : "inativo",
+                                            });
+                                            if (result.ok) await reload();
+                                        }}
+                                    />
+                                </div>
+                            ) : null}
+                        </div>
+                    </section>
+                ) : null}
+
+                <section className="hidden rounded-xl bg-utility-blue-light-50 p-4 shadow-xs ring-1 ring-utility-blue-light-200 md:block">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="flex min-w-0 items-start gap-4">
                             <Avatar src={chef?.avatarUrl ?? null} initials={headerInitials} size="lg" alt={headerName} />
@@ -541,7 +700,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                             }}
                                             items={[
                                                 { id: "cadastro", label: "Cadastro" },
-                                                { id: "analise", label: "Análise" },
+                                                { id: "analise", label: "Análise de perfil" },
                                                 { id: "entrevista", label: "Entrevista" },
                                                 { id: "documentacao", label: "Documentação" },
                                             ]}
@@ -696,13 +855,374 @@ export function ChefDetailsView({ id }: { id: string }) {
                 </ModalOverlay>
 
                 <section className="flex flex-col gap-6">
-                    <NativeSelect
-                        aria-label="Seção"
-                        value={selectedTab as string}
-                        onChange={(e) => setSelectedTab(e.target.value)}
-                        options={tabItems.map((t) => ({ label: t.label, value: t.id }))}
-                        className="w-full md:hidden"
-                    />
+                    <div className="flex flex-col gap-4 md:hidden">
+                        {!chef && loading ? (
+                            <div className="rounded-xl bg-primary p-6 shadow-xs ring-1 ring-secondary ring-inset">
+                                <LoadingIndicator type="line-spinner" size="md" label="Carregando dados..." />
+                            </div>
+                        ) : null}
+
+                        {chef ? (
+                            <>
+                                {isFinalStatus ? (
+                                    <>
+                                        <Select
+                                            aria-label="Seção"
+                                            size="md"
+                                            selectedKey={selectedTab}
+                                            onSelectionChange={(key) => {
+                                                if (key !== null) setSelectedTab(key);
+                                            }}
+                                            items={[
+                                                { id: "chef_data", label: "Dados do Chef" },
+                                                { id: "schedule", label: "Agenda" },
+                                                { id: "history", label: "Histórico de serviços" },
+                                            ]}
+                                        >
+                                            {(item) => <Select.Item {...item} />}
+                                        </Select>
+
+                                        {selectedTab === "chef_data" ? (
+                                            <>
+                                                <MobileDisclosure title="Sobre o Chef" description="Perfil profissional e especialidade">
+                                                    <div className="flex flex-col gap-5">
+                                                        <div>
+                                                            <p className="text-sm font-medium text-secondary">Apresentação</p>
+                                                            <p className="mt-1 text-sm text-tertiary">{chef.about || "—"}</p>
+                                                        </div>
+
+                                                        <div className="grid gap-4 sm:grid-cols-2">
+                                                            <DataRow label="Escola de formação" value={chef.school || "—"} />
+                                                            <DataRow
+                                                                label="Instagram"
+                                                                value={formatInstagramUsername(chef.username)}
+                                                                href={formatInstagramLink(chef.username)}
+                                                            />
+                                                            <DataRow label="Tipo de serviço desejado" value="Chef" />
+                                                            <DataRow label="Tipos de Prato" value="—" />
+                                                        </div>
+
+                                                        <div>
+                                                            <p className="text-sm font-medium text-secondary">Especialidades culinárias</p>
+                                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                                {chef.specialties.length > 0 ? (
+                                                                    chef.specialties.map((s) => (
+                                                                        <Badge key={s} size="sm" type="pill-color" color="brand">
+                                                                            {s}
+                                                                        </Badge>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-sm text-tertiary">—</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        <div>
+                                                            <p className="text-sm font-medium text-secondary">Idiomas</p>
+                                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                                {chef.languages.length > 0 ? (
+                                                                    chef.languages.map((l) => (
+                                                                        <Badge key={l} size="sm" type="pill-color" color="brand">
+                                                                            {formatLanguageLabel(l)}
+                                                                        </Badge>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-sm text-tertiary">—</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        <div>
+                                                            <p className="text-sm font-medium text-secondary">Disponível para</p>
+                                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                                {chef.availableFor.length > 0 ? (
+                                                                    chef.availableFor.map((v) => (
+                                                                        <Badge key={v} size="sm" type="pill-color" color="brand">
+                                                                            {formatServiceChipLabel(v)}
+                                                                        </Badge>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-sm text-tertiary">—</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </MobileDisclosure>
+
+                                                <MobileDisclosure title="Dados básicos" description="Informações de identificação e contato">
+                                                    <div className="grid gap-4 sm:grid-cols-2">
+                                                        <DataRow label="CPF" value={chef.cpf} />
+                                                        <DataRow label="E-mail" value={chef.email} href={formatMailto(chef.email)} />
+                                                        <DataRow label="Data de nascimento" value={chef.birthDate} />
+                                                        <DataRow label="WhatsApp" value={chef.whatsapp} href={formatWhatsAppLink(chef.whatsapp)} />
+                                                    </div>
+                                                </MobileDisclosure>
+
+                                                <MobileDisclosure title="Localização" description="Endereço e raio de atuação">
+                                                    <div className="grid gap-4 sm:grid-cols-2">
+                                                        <DataRow label="CEP" value={chef.cep || "—"} />
+                                                        <DataRow label="Endereço" value={addressLine(chef)} />
+                                                        <DataRow label="Bairro" value={chef.district || "—"} />
+                                                        <DataRow label="Número" value={chef.number || "—"} />
+                                                        <DataRow label="Complemento" value={chef.complement || "—"} />
+                                                        <DataRow label="Cidade/UF" value={cityStateLine(chef)} />
+                                                        <DataRow label="Disponibilidade para deslocamento" value={formatBooleanLabel(chef.canTravel)} />
+                                                        <DataRow label="Tipo de transporte" value={chef.transportType || "—"} />
+                                                    </div>
+                                                </MobileDisclosure>
+
+                                                <MobileDisclosure title="Disponibilidade" description="Turnos disponíveis para agendamento de serviços">
+                                                    <TableCard.Root>
+                                                        <Table aria-label="Disponibilidade" selectionMode="none">
+                                                            <Table.Header>
+                                                                <Table.Head id="day" label="Dia" className="min-w-[180px]" isRowHeader />
+                                                                <Table.Head id="morning" label="Manhã" className="min-w-[120px]" />
+                                                                <Table.Head id="afternoon" label="Tarde" className="min-w-[120px]" />
+                                                                <Table.Head id="night" label="Noite" className="min-w-[120px]" />
+                                                            </Table.Header>
+                                                            <Table.Body items={availabilityMatrix(chef.availability)}>
+                                                                {(item) => (
+                                                                    <Table.Row id={item.dayKey}>
+                                                                        <Table.Cell className="whitespace-nowrap">{item.dayLabel}</Table.Cell>
+                                                                        <Table.Cell>
+                                                                            <div className="flex justify-center">
+                                                                                {item.morning ? (
+                                                                                    <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                                                                ) : (
+                                                                                    <XCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                                                                )}
+                                                                            </div>
+                                                                        </Table.Cell>
+                                                                        <Table.Cell>
+                                                                            <div className="flex justify-center">
+                                                                                {item.afternoon ? (
+                                                                                    <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                                                                ) : (
+                                                                                    <XCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                                                                )}
+                                                                            </div>
+                                                                        </Table.Cell>
+                                                                        <Table.Cell>
+                                                                            <div className="flex justify-center">
+                                                                                {item.night ? (
+                                                                                    <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                                                                ) : (
+                                                                                    <XCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                                                                )}
+                                                                            </div>
+                                                                        </Table.Cell>
+                                                                    </Table.Row>
+                                                                )}
+                                                            </Table.Body>
+                                                        </Table>
+                                                    </TableCard.Root>
+                                                </MobileDisclosure>
+                                            </>
+                                        ) : selectedTab === "schedule" ? (
+                                            <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+                                                <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4">
+                                                    <p className="text-sm font-semibold text-primary">Próximos Agendamentos</p>
+                                                    <Input
+                                                        aria-label="Buscar por"
+                                                        placeholder="Buscar por"
+                                                        icon={SearchLg}
+                                                        size="sm"
+                                                        value={scheduleQuery}
+                                                        onChange={setScheduleQuery}
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col gap-3 px-4 py-4">
+                                                    {scheduleItems.length > 0 ? (
+                                                        scheduleItems.map((item) => <ScheduleCard key={item.id} item={item} />)
+                                                    ) : (
+                                                        <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+                                                <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4">
+                                                    <p className="text-sm font-semibold text-primary">Registro de Atendimentos</p>
+                                                    <Input
+                                                        aria-label="Buscar por"
+                                                        placeholder="Buscar por"
+                                                        icon={SearchLg}
+                                                        size="sm"
+                                                        value={historyQuery}
+                                                        onChange={setHistoryQuery}
+                                                    />
+                                                </div>
+                                                <div className="px-4 py-4">
+                                                    {historyRows.length > 0 ? (
+                                                        <TableCard.Root>
+                                                            <Table aria-label="Registro de Atendimentos" selectionMode="none">
+                                                                <Table.Header>
+                                                                    <Table.Head id="service" label="Serviço" className="min-w-[160px]" isRowHeader />
+                                                                    <Table.Head id="value" label="Valor" className="min-w-[120px]" />
+                                                                    <Table.Head id="status" label="Status" className="min-w-[140px]" />
+                                                                </Table.Header>
+                                                                <Table.Body items={historyRows}>
+                                                                    {(row) => (
+                                                                        <Table.Row id={row.id}>
+                                                                            <Table.Cell className="whitespace-nowrap">
+                                                                                <Badge size="sm" type="pill-color" color="gray">
+                                                                                    {row.serviceLabel}
+                                                                                </Badge>
+                                                                            </Table.Cell>
+                                                                            <Table.Cell className="whitespace-nowrap text-tertiary">{row.valueLabel}</Table.Cell>
+                                                                            <Table.Cell className="whitespace-nowrap">{historyStatusBadge(row.status)}</Table.Cell>
+                                                                        </Table.Row>
+                                                                    )}
+                                                                </Table.Body>
+                                                            </Table>
+                                                        </TableCard.Root>
+                                                    ) : (
+                                                        <p className="text-sm text-tertiary">Nenhum serviço encontrado.</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <MobileDisclosure title="Sobre o Chef" description="Perfil profissional e especialidade">
+                                            <div className="flex flex-col gap-5">
+                                                <div>
+                                                    <p className="text-sm font-medium text-secondary">Apresentação</p>
+                                                    <p className="mt-1 text-sm text-tertiary">{chef.about || "—"}</p>
+                                                </div>
+
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <DataRow label="Escola de formação" value={chef.school || "—"} />
+                                                    <DataRow
+                                                        label="Instagram"
+                                                        value={formatInstagramUsername(chef.username)}
+                                                        href={formatInstagramLink(chef.username)}
+                                                    />
+                                                    <DataRow label="Tipo de serviço desejado" value="Chef" />
+                                                    <DataRow label="Tipos de Prato" value="—" />
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-sm font-medium text-secondary">Especialidades culinárias</p>
+                                                    <div className="mt-2 flex flex-wrap gap-2">
+                                                        {chef.specialties.length > 0 ? (
+                                                            chef.specialties.map((s) => (
+                                                                <Badge key={s} size="sm" type="pill-color" color="brand">
+                                                                    {s}
+                                                                </Badge>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-sm text-tertiary">—</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-sm font-medium text-secondary">Idiomas</p>
+                                                    <div className="mt-2 flex flex-wrap gap-2">
+                                                        {chef.languages.length > 0 ? (
+                                                            chef.languages.map((l) => (
+                                                                <Badge key={l} size="sm" type="pill-color" color="brand">
+                                                                    {formatLanguageLabel(l)}
+                                                                </Badge>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-sm text-tertiary">—</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-sm font-medium text-secondary">Disponível para</p>
+                                                    <div className="mt-2 flex flex-wrap gap-2">
+                                                        {chef.availableFor.length > 0 ? (
+                                                            chef.availableFor.map((v) => (
+                                                                <Badge key={v} size="sm" type="pill-color" color="brand">
+                                                                    {formatServiceChipLabel(v)}
+                                                                </Badge>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-sm text-tertiary">—</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </MobileDisclosure>
+
+                                        <MobileDisclosure title="Dados básicos" description="Informações de identificação e contato">
+                                            <div className="grid gap-4 sm:grid-cols-2">
+                                                <DataRow label="CPF" value={chef.cpf} />
+                                                <DataRow label="E-mail" value={chef.email} href={formatMailto(chef.email)} />
+                                                <DataRow label="Data de nascimento" value={chef.birthDate} />
+                                                <DataRow label="WhatsApp" value={chef.whatsapp} href={formatWhatsAppLink(chef.whatsapp)} />
+                                            </div>
+                                        </MobileDisclosure>
+
+                                        <MobileDisclosure title="Localização" description="Endereço e raio de atuação">
+                                            <div className="grid gap-4 sm:grid-cols-2">
+                                                <DataRow label="CEP" value={chef.cep || "—"} />
+                                                <DataRow label="Endereço" value={addressLine(chef)} />
+                                                <DataRow label="Bairro" value={chef.district || "—"} />
+                                                <DataRow label="Número" value={chef.number || "—"} />
+                                                <DataRow label="Complemento" value={chef.complement || "—"} />
+                                                <DataRow label="Cidade/UF" value={cityStateLine(chef)} />
+                                                <DataRow label="Disponibilidade para deslocamento" value={formatBooleanLabel(chef.canTravel)} />
+                                                <DataRow label="Tipo de transporte" value={chef.transportType || "—"} />
+                                            </div>
+                                        </MobileDisclosure>
+
+                                        <MobileDisclosure title="Disponibilidade" description="Turnos disponíveis para agendamento de serviços">
+                                            <TableCard.Root>
+                                                <Table aria-label="Disponibilidade" selectionMode="none">
+                                                    <Table.Header>
+                                                        <Table.Head id="day" label="Dia" className="min-w-[180px]" isRowHeader />
+                                                        <Table.Head id="morning" label="Manhã" className="min-w-[120px]" />
+                                                        <Table.Head id="afternoon" label="Tarde" className="min-w-[120px]" />
+                                                        <Table.Head id="night" label="Noite" className="min-w-[120px]" />
+                                                    </Table.Header>
+                                                    <Table.Body items={availabilityMatrix(chef.availability)}>
+                                                        {(item) => (
+                                                            <Table.Row id={item.dayKey}>
+                                                                <Table.Cell className="whitespace-nowrap">{item.dayLabel}</Table.Cell>
+                                                                <Table.Cell>
+                                                                    <div className="flex justify-center">
+                                                                        {item.morning ? (
+                                                                            <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                                                        ) : (
+                                                                            <XCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                                                        )}
+                                                                    </div>
+                                                                </Table.Cell>
+                                                                <Table.Cell>
+                                                                    <div className="flex justify-center">
+                                                                        {item.afternoon ? (
+                                                                            <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                                                        ) : (
+                                                                            <XCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                                                        )}
+                                                                    </div>
+                                                                </Table.Cell>
+                                                                <Table.Cell>
+                                                                    <div className="flex justify-center">
+                                                                        {item.night ? (
+                                                                            <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                                                        ) : (
+                                                                            <XCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                                                        )}
+                                                                    </div>
+                                                                </Table.Cell>
+                                                            </Table.Row>
+                                                        )}
+                                                    </Table.Body>
+                                                </Table>
+                                            </TableCard.Root>
+                                        </MobileDisclosure>
+                                    </>
+                                )}
+                            </>
+                        ) : null}
+                    </div>
 
                     <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="hidden w-full flex-col gap-6 md:flex">
                         <Tabs.List type="underline" size="md" items={tabItems} className="w-full">
@@ -1012,74 +1532,6 @@ export function ChefDetailsView({ id }: { id: string }) {
                             </div>
                         </Tabs.Panel>
                     </Tabs>
-
-                    <div className="flex flex-col gap-6 md:hidden">
-                        {selectedTab === "chef_data" ? (
-                            <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                                <div className="flex min-h-[min(360px,60vh)] items-center justify-center px-6 py-10 md:px-8 md:py-12">
-                                    <EmptyState size="sm" className="max-w-[420px]">
-                                        <EmptyState.Header pattern="circle">
-                                            <EmptyState.FeaturedIcon color="gray" theme="modern" icon={UserSquare} />
-                                        </EmptyState.Header>
-                                        <EmptyState.Content>
-                                            <h2 className="text-center text-md font-semibold text-primary">Abra em uma tela maior</h2>
-                                            <EmptyState.Description>O layout completo do perfil fica disponível a partir do tablet.</EmptyState.Description>
-                                        </EmptyState.Content>
-                                    </EmptyState>
-                                </div>
-                            </div>
-                        ) : selectedTab === "schedule" ? (
-                            <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                                <div className="flex flex-col gap-4 border-b border-secondary px-6 py-5">
-                                    <p className="text-sm font-semibold text-primary">Próximos Agendamentos</p>
-                                    <Input
-                                        aria-label="Buscar por"
-                                        placeholder="Buscar por"
-                                        icon={SearchLg}
-                                        size="sm"
-                                        value={scheduleQuery}
-                                        onChange={setScheduleQuery}
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-3 px-6 py-5">
-                                    {scheduleItems.length > 0 ? (
-                                        scheduleItems.map((item) => <ScheduleCard key={item.id} item={item} />)
-                                    ) : (
-                                        <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                                <div className="px-6 py-5">
-                                    {historyOrders.length > 0 ? (
-                                        <TableCard.Root>
-                                            <Table aria-label="Histórico de serviços" selectionMode="none">
-                                                <Table.Header>
-                                                    <Table.Head id="code" label="Código" className="min-w-[140px]" isRowHeader />
-                                                    <Table.Head id="type" label="Tipo" className="min-w-[160px]" />
-                                                    <Table.Head id="status" label="Status" className="min-w-[140px]" />
-                                                    <Table.Head id="date" label="Data" className="min-w-[140px]" />
-                                                </Table.Header>
-                                                <Table.Body items={historyOrders}>
-                                                    {(item) => (
-                                                        <Table.Row id={item.id}>
-                                                            <Table.Cell className="whitespace-nowrap">{item.code || "—"}</Table.Cell>
-                                                            <Table.Cell className="whitespace-nowrap">{item.type || "—"}</Table.Cell>
-                                                            <Table.Cell className="whitespace-nowrap">{item.status || "—"}</Table.Cell>
-                                                            <Table.Cell className="whitespace-nowrap">{formatOrderDate(item.eventDate)}</Table.Cell>
-                                                        </Table.Row>
-                                                    )}
-                                                </Table.Body>
-                                            </Table>
-                                        </TableCard.Root>
-                                    ) : (
-                                        <p className="text-sm text-tertiary">Nenhum serviço encontrado.</p>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
                 </section>
             </div>
         </main>
