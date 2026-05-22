@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import { useEffect, useState } from "react";
-import { BankNote01, BarChartSquare02, Calendar, ChevronDown, LogOut04, Rows01, Settings01, UserSquare, Users01 } from "@untitledui/icons";
+import { BankNote01, BarChartSquare02, Calendar, ChevronDown, ChevronLeft, ChevronRight, LogOut04, Rows01, Settings01, UserSquare, Users01 } from "@untitledui/icons";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -86,10 +86,21 @@ function computeOpenFromPath(pathname: string): Record<string, boolean> {
     return o;
 }
 
-export function TytSidebar() {
+type TytSidebarVariant = "desktop" | "mobile";
+
+export function TytSidebar({
+    collapsed,
+    onCollapsedChange,
+    variant,
+}: {
+    collapsed: boolean;
+    onCollapsedChange?: (next: boolean) => void;
+    variant: TytSidebarVariant;
+}) {
     const pathname = usePathname();
     const router = useRouter();
     const [open, setOpen] = useState<Record<string, boolean>>({});
+    const isCollapsed = variant === "desktop" ? collapsed : false;
 
     useEffect(() => {
         setOpen(computeOpenFromPath(pathname));
@@ -105,13 +116,84 @@ export function TytSidebar() {
         setOpen((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
+    if (isCollapsed) {
+        return (
+            <aside className="flex h-full w-[80px] max-w-full flex-col justify-between bg-primary py-1 pl-1">
+                <div className="flex flex-col rounded-xl bg-primary pt-5 ring-1 ring-secondary ring-inset">
+                    <div className="flex items-center justify-center px-3">
+                        <Link href="/dashboard" aria-label="Dashboard" className="relative block size-10">
+                            <Image src={logoSrc} alt="Take Your Thyme" fill className="object-contain" sizes="40px" />
+                        </Link>
+                    </div>
+
+                    <div className="mt-3 flex justify-center px-3">
+                        <button
+                            type="button"
+                            aria-label="Expandir menu"
+                            onClick={() => onCollapsedChange?.(false)}
+                            className="flex size-10 items-center justify-center rounded-md text-fg-quaternary outline-focus-ring hover:bg-primary_hover hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
+                        >
+                            <ChevronRight className="size-5 stroke-[2.5px]" aria-hidden />
+                        </button>
+                    </div>
+
+                    <nav aria-label="Principal" className="px-3 pb-3 pt-4">
+                        <ul className="flex flex-col gap-0.5">
+                            {navigation.map((section) => {
+                                const Icon = section.icon;
+                                const active = sectionActive(pathname, section);
+                                return (
+                                    <li key={section.id}>
+                                        <Link
+                                            href={section.href}
+                                            aria-label={section.label}
+                                            title={section.label}
+                                            className={cx(
+                                                "flex size-11 items-center justify-center rounded-md outline-focus-ring transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
+                                                active ? "bg-[#1c398e] text-[#dbeafe]" : "text-fg-quaternary hover:bg-primary_hover hover:text-fg-quaternary_hover",
+                                            )}
+                                        >
+                                            <Icon aria-hidden className={cx("size-5 shrink-0", active ? "text-[#dbeafe]" : "text-fg-quaternary")} />
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </nav>
+                </div>
+
+                <div className="px-3 pb-3">
+                    <button
+                        type="button"
+                        aria-label="Sair"
+                        title="Sair"
+                        onClick={handleLogout}
+                        className="flex size-11 items-center justify-center rounded-md text-fg-quaternary outline-focus-ring transition-colors hover:bg-primary_hover hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                        <LogOut04 aria-hidden className="size-5 shrink-0 text-fg-quaternary" />
+                    </button>
+                </div>
+            </aside>
+        );
+    }
+
     return (
         <aside className="flex h-full w-full max-w-full flex-col justify-between overflow-y-auto border-secondary bg-primary pt-6 md:border-r lg:w-[296px] lg:pt-6">
             <div className="flex flex-col gap-4">
-                <div className="px-5">
+                <div className="flex items-start justify-between gap-3 px-5">
                     <Link href="/dashboard" className="relative block h-16 w-[139px]">
                         <Image src={logoSrc} alt="Take Your Thyme" fill className="object-contain object-left" sizes="139px" />
                     </Link>
+                    {variant === "desktop" ? (
+                        <button
+                            type="button"
+                            aria-label="Colapsar menu"
+                            onClick={() => onCollapsedChange?.(true)}
+                            className="mt-3 flex size-10 items-center justify-center rounded-md text-fg-quaternary outline-focus-ring hover:bg-primary_hover hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
+                        >
+                            <ChevronLeft className="size-5 stroke-[2.5px]" aria-hidden />
+                        </button>
+                    ) : null}
                 </div>
                 <nav aria-label="Principal" className="px-4">
                     <ul className="flex flex-col gap-0.5">
