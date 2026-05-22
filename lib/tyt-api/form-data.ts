@@ -67,6 +67,7 @@ export function buildUserChefFormData(fields: CreateUserChefFields): FormData {
 
 export function buildPratoFormData(fields: PratoFormFields): FormData {
     const fd = new FormData();
+    appendIfDefined(fd, "nome_prato", fields.nome_prato);
     appendIfDefined(fd, "descricao", fields.descricao);
     appendIfDefined(fd, "quantidade", fields.quantidade);
     appendIfDefined(fd, "ativo", fields.ativo);
@@ -75,9 +76,10 @@ export function buildPratoFormData(fields: PratoFormFields): FormData {
     appendIfDefined(fd, "temas", fields.temas);
     appendIfDefined(fd, "ingredientes_principais", fields.ingredientes_principais);
     appendIfDefined(fd, "pref_culinarias", fields.pref_culinarias);
-    if (fields.foto1) appendIfDefined(fd, "foto1", fields.foto1);
-    if (fields.foto2) appendIfDefined(fd, "foto2", fields.foto2);
-    if (fields.ficha_tecnica) appendIfDefined(fd, "ficha_tecnica", fields.ficha_tecnica);
+    appendIfDefined(fd, "ingredientes", fields.ingredientes);
+    appendIfDefined(fd, "foto1", fields.foto1);
+    appendIfDefined(fd, "foto2", fields.foto2);
+    appendIfDefined(fd, "ficha_tecnica", fields.ficha_tecnica);
     appendIfDefined(fd, "meal_preap", fields.meal_preap);
     appendIfDefined(fd, "get_togheter", fields.get_togheter);
     appendIfDefined(fd, "receita", fields.receita);

@@ -582,8 +582,8 @@ export default function CardapioPage() {
 
     const actionButton =
         selectedTab === "dishes" ? (
-            <Button color="primary" size="md" iconLeading={Plus} isDisabled>
-                Adicionar prato
+            <Button color="primary" size="md" iconLeading={Plus} href="/cardapio/pratos/new">
+                Novo prato
             </Button>
         ) : selectedTab === "ingredients" ? (
             <Button
@@ -706,8 +706,13 @@ export default function CardapioPage() {
                                         </div>
 
                                         <div className="flex items-center justify-end border-t border-secondary px-4 py-3">
-                                            <Button color="secondary" size="sm" isDisabled>
-                                                Editar
+                                            <Button
+                                                color="secondary"
+                                                size="sm"
+                                                iconLeading={Eye}
+                                                href={`/cardapio/pratos/${dish.id}`}
+                                            >
+                                                Detalhes
                                             </Button>
                                         </div>
                                     </article>

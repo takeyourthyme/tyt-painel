@@ -234,6 +234,7 @@ export type PratoByIdQuery = {
 
 /** Campos do form-data em POST/PUT /api/pratos (collection Postman). */
 export type PratoFormFields = {
+    nome_prato: string;
     descricao: string;
     quantidade: number | string;
     ativo: boolean | string;
@@ -242,15 +243,17 @@ export type PratoFormFields = {
     temas: string;
     ingredientes_principais: string;
     pref_culinarias: string;
-    foto1?: File | Blob | null;
-    foto2?: File | Blob | null;
-    ficha_tecnica?: File | Blob | null;
+    ingredientes?: string | null;
+    foto1?: File | Blob | string | null;
+    foto2?: File | Blob | string | null;
+    ficha_tecnica?: File | Blob | string | null;
     meal_preap?: boolean | string;
     get_togheter?: boolean | string;
-    receita?: string;
+    receita?: File | Blob | string | null;
 };
 
 export const PRATO_FORM_KEYS = [
+    "nome_prato",
     "descricao",
     "quantidade",
     "ativo",
@@ -259,6 +262,7 @@ export const PRATO_FORM_KEYS = [
     "temas",
     "ingredientes_principais",
     "pref_culinarias",
+    "ingredientes",
     "foto1",
     "foto2",
     "ficha_tecnica",

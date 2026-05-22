@@ -687,7 +687,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     isLoading={loading}
                                     isDisabled={!canConfirmSendProposal}
                                     onClick={async () => {
-                                        if (!order?.id) {
+                                        if (!order?.code) {
                                             toast.error("Não foi possível enviar a proposta.");
                                             return;
                                         }
@@ -705,7 +705,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                         }
 
                                         try {
-                                            const res = await putKitchenOrderSpecialServiceProposal(order.id, { items }, token);
+                                            const res = await putKitchenOrderSpecialServiceProposal(order.code, { items }, token);
                                             await parseJsonOrThrow<unknown>(res);
                                             toast.success("Proposta enviada com sucesso!");
                                             setOpenProposalSendConfirm(false);
