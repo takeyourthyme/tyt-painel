@@ -1,7 +1,29 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download02, Edit02, Eye, FilterLines, Plus, SearchLg, Trash01, UploadCloud02 } from "@untitledui/icons";
+import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    AlertCircle,
+    Archive,
+    ArrowLeft,
+    ArrowRight,
+    Check,
+    CheckCircle,
+    ChevronDown,
+    Container,
+    Download02,
+    Edit02,
+    Eye,
+    FilterLines,
+    LayersTwo01,
+    Plus,
+    ReceiptCheck,
+    SearchLg,
+    Settings01,
+    Star01,
+    Trash01,
+    UploadCloud02,
+    Zap,
+} from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import type { Key } from "react-aria-components";
 import type { Selection } from "react-aria-components";
@@ -16,6 +38,7 @@ import { Badge } from "@/components/base/badges/badges";
 import type { BadgeColors } from "@/components/base/badges/badge-types";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { Dropdown } from "@/components/base/dropdown/dropdown";
 import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
 import { Tag, TagGroup, TagList } from "@/components/base/tags/tags";
@@ -24,6 +47,8 @@ import { deleteIngrediente, getIngredienteById, getIngredientes, postIngrediente
 import type { IngredienteCreateBody, IngredienteUpdateBody } from "@/lib/tyt-api/ingredientes";
 import { ingredientesCategoriasApi } from "@/lib/tyt-api/ingredientes-categorias";
 import { getPratos } from "@/lib/tyt-api/pratos";
+import { ingredientesPrincipaisApi, pratosCategoriasApi, prefCulinariasApi, temasApi, tiposCozinhaApi } from "@/lib/tyt-api/pratos-catalogo";
+import type { CatalogoDescricaoBody, IngredientePrincipalBody, PratoCategoriaBody } from "@/lib/tyt-api/pratos-catalogo";
 import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { cx } from "@/utils/cx";
 
@@ -51,6 +76,41 @@ type IngredientRow = {
 };
 
 type IngredienteCategoria = { id: number; descricao: string };
+
+type CatalogItem = {
+    id: number;
+    descricao: string;
+    icone?: string | null;
+    updatedAt?: string | null;
+};
+
+type ClassificationKind =
+    | "dish-categories"
+    | "food-preferences"
+    | "cuisine-types"
+    | "main-ingredients"
+    | "ingredient-categories"
+    | "themes";
+
+type ClassificationDrawerView =
+    | { type: "create"; kind: ClassificationKind }
+    | { type: "details"; kind: ClassificationKind; id: number }
+    | { type: "edit"; kind: ClassificationKind; id: number };
+
+const ICON_CATALOG: Array<{ id: string; label: string; Icon: ComponentType<{ className?: string }> }> = [
+    { id: "alert-circle", label: "AlertCircle", Icon: AlertCircle },
+    { id: "archive", label: "Archive", Icon: Archive },
+    { id: "arrow-left", label: "ArrowLeft", Icon: ArrowLeft },
+    { id: "arrow-right", label: "ArrowRight", Icon: ArrowRight },
+    { id: "check", label: "Check", Icon: Check },
+    { id: "check-circle", label: "CheckCircle", Icon: CheckCircle },
+    { id: "container", label: "Container", Icon: Container },
+    { id: "layers-two", label: "LayersTwo01", Icon: LayersTwo01 },
+    { id: "receipt", label: "ReceiptCheck", Icon: ReceiptCheck },
+    { id: "settings", label: "Settings01", Icon: Settings01 },
+    { id: "star", label: "Star01", Icon: Star01 },
+    { id: "zap", label: "Zap", Icon: Zap },
+];
 
 function normalizeList<T = unknown>(raw: unknown): T[] {
     if (Array.isArray(raw)) return raw as T[];
@@ -190,6 +250,21 @@ export default function CardapioPage() {
 
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
 
+    const [dishCategories, setDishCategories] = useState<CatalogItem[]>([]);
+    const [foodPreferences, setFoodPreferences] = useState<CatalogItem[]>([]);
+    const [cuisineTypes, setCuisineTypes] = useState<CatalogItem[]>([]);
+    const [mainIngredients, setMainIngredients] = useState<CatalogItem[]>([]);
+    const [themes, setThemes] = useState<CatalogItem[]>([]);
+
+    const [classificationDrawer, setClassificationDrawer] = useState<ClassificationDrawerView | null>(null);
+    const [classificationLoading, setClassificationLoading] = useState(false);
+    const [classificationError, setClassificationError] = useState<string | null>(null);
+    const [classificationDetails, setClassificationDetails] = useState<Record<string, unknown> | null>(null);
+    const [classificationForm, setClassificationForm] = useState<{ descricao: string; icone: string }>({ descricao: "", icone: "" });
+    const [iconQuery, setIconQuery] = useState("");
+    const [iconPickerOpen, setIconPickerOpen] = useState(false);
+    const [openClassificationDeleteConfirm, setOpenClassificationDeleteConfirm] = useState(false);
+
     const requestIdRef = useRef(0);
 
     const reload = useCallback(async () => {
@@ -200,16 +275,44 @@ export default function CardapioPage() {
         setLoading(true);
         setError(null);
         try {
-            const [pratosRes, ingredientesRes, categoriasRes] = await Promise.all([
+            const [
+                pratosRes,
+                ingredientesRes,
+                categoriasRes,
+                pratosCategoriasRes,
+                tiposCozinhaRes,
+                temasRes,
+                ingredientesPrincipaisRes,
+                prefCulinariasRes,
+            ] = await Promise.all([
                 getPratos(token),
                 getIngredientes(token),
                 ingredientesCategoriasApi.getAll(token),
+                pratosCategoriasApi.getAll(token),
+                tiposCozinhaApi.getAll(token),
+                temasApi.getAll(token),
+                ingredientesPrincipaisApi.getAll(token),
+                prefCulinariasApi.getAll(token),
             ]);
 
-            const [pratosJson, ingredientesJson, categoriasJson] = await Promise.all([
+            const [
+                pratosJson,
+                ingredientesJson,
+                categoriasJson,
+                pratosCategoriasJson,
+                tiposCozinhaJson,
+                temasJson,
+                ingredientesPrincipaisJson,
+                prefCulinariasJson,
+            ] = await Promise.all([
                 parseJsonOrThrow<unknown>(pratosRes),
                 parseJsonOrThrow<unknown>(ingredientesRes),
                 parseJsonOrThrow<unknown>(categoriasRes),
+                parseJsonOrThrow<unknown>(pratosCategoriasRes),
+                parseJsonOrThrow<unknown>(tiposCozinhaRes),
+                parseJsonOrThrow<unknown>(temasRes),
+                parseJsonOrThrow<unknown>(ingredientesPrincipaisRes),
+                parseJsonOrThrow<unknown>(prefCulinariasRes),
             ]);
 
             if (requestId !== requestIdRef.current) return;
@@ -221,10 +324,32 @@ export default function CardapioPage() {
                     const id = typeof r.id === "number" ? r.id : Number(r.id);
                     const descricao = typeof r.descricao === "string" ? r.descricao : null;
                     if (!Number.isFinite(id) || !descricao) return null;
+                    if (typeof r.ativo === "boolean" && r.ativo === false) return null;
                     return { id, descricao };
                 })
                 .filter(Boolean) as IngredienteCategoria[];
             setCategories(categoriasList);
+
+            const parseCatalogList = (raw: unknown): CatalogItem[] => {
+                return normalizeList<unknown>(raw)
+                    .map((x) => {
+                        if (!x || typeof x !== "object") return null;
+                        const r = x as Record<string, unknown>;
+                        const id = typeof r.id === "number" ? r.id : Number(r.id);
+                        const descricao = typeof r.descricao === "string" ? r.descricao : null;
+                        if (!Number.isFinite(id) || !descricao) return null;
+                        const icone = typeof r.icone === "string" ? r.icone : null;
+                        const updatedAt = typeof r.updatedAt === "string" ? r.updatedAt : typeof r.updated_at === "string" ? r.updated_at : null;
+                        return { id, descricao, icone, updatedAt } satisfies CatalogItem;
+                    })
+                    .filter(Boolean) as CatalogItem[];
+            };
+
+            setDishCategories(parseCatalogList(pratosCategoriasJson));
+            setCuisineTypes(parseCatalogList(tiposCozinhaJson));
+            setThemes(parseCatalogList(temasJson));
+            setMainIngredients(parseCatalogList(ingredientesPrincipaisJson));
+            setFoodPreferences(parseCatalogList(prefCulinariasJson));
 
             const pratosList = normalizeList<unknown>(pratosJson).map((x, idx) => {
                 const r = (x && typeof x === "object" ? (x as Record<string, unknown>) : {}) as Record<string, unknown>;
@@ -263,36 +388,43 @@ export default function CardapioPage() {
             setDishes(pratosList);
 
             const categoriasById = new Map(categoriasList.map((c) => [c.id, c.descricao]));
-            const ingredientesList = normalizeList<unknown>(ingredientesJson).map((x, idx) => {
-                const r = (x && typeof x === "object" ? (x as Record<string, unknown>) : {}) as Record<string, unknown>;
-                const id = r.id !== undefined ? String(r.id) : String(idx);
-                const name =
-                    typeof r.descricao === "string"
-                        ? r.descricao
-                        : typeof r.nome === "string"
-                            ? r.nome
-                            : typeof r.name === "string"
-                                ? r.name
+            const ingredientesList = normalizeList<unknown>(ingredientesJson)
+                .filter((x) => {
+                    if (!x || typeof x !== "object") return true;
+                    const r = x as Record<string, unknown>;
+                    if (typeof r.ativo === "boolean") return r.ativo;
+                    return true;
+                })
+                .map((x, idx) => {
+                    const r = (x && typeof x === "object" ? (x as Record<string, unknown>) : {}) as Record<string, unknown>;
+                    const id = r.id !== undefined ? String(r.id) : String(idx);
+                    const name =
+                        typeof r.descricao === "string"
+                            ? r.descricao
+                            : typeof r.nome === "string"
+                                ? r.nome
+                                : typeof r.name === "string"
+                                    ? r.name
+                                    : "—";
+                    const idCategoria = typeof r.id_categoria === "number" ? r.id_categoria : Number(r.id_categoria);
+                    const categoriaObj = getRecord(r.categoria);
+                    const categoryLabel =
+                        categoriasById.get(idCategoria) ?? (categoriaObj ? getStringValue(categoriaObj, ["descricao"]) : null) ?? (typeof r.categoria === "string" ? r.categoria : "—");
+                    const categoryColor = badgeColorByIndex(Math.abs(idCategoria || idx));
+                    const unidade = typeof r.unidade === "string" ? r.unidade : "—";
+                    const unidadeMedida = typeof r.unidade_medida === "string" ? r.unidade_medida : null;
+                    const volumePeso = typeof r.volume_peso === "string" ? r.volume_peso : typeof r.volume_peso === "number" ? String(r.volume_peso) : null;
+                    const unitLabel = volumePeso ? `${volumePeso} ${unidadeMedida ?? unidade}` : unidadeMedida ?? unidade;
+                    const valor = typeof r.valor === "number" ? r.valor : typeof r.valor === "string" ? Number(r.valor) : null;
+                    const unitPriceLabel = formatCurrency(Number.isFinite(valor as number) ? (valor as number) : null);
+                    const lastQuoteLabel =
+                        typeof r.updatedAt === "string"
+                            ? formatDatePtBr(r.updatedAt)
+                            : typeof r.updated_at === "string"
+                                ? formatDatePtBr(r.updated_at)
                                 : "—";
-                const idCategoria = typeof r.id_categoria === "number" ? r.id_categoria : Number(r.id_categoria);
-                const categoriaObj = getRecord(r.categoria);
-                const categoryLabel =
-                    categoriasById.get(idCategoria) ?? (categoriaObj ? getStringValue(categoriaObj, ["descricao"]) : null) ?? (typeof r.categoria === "string" ? r.categoria : "—");
-                const categoryColor = badgeColorByIndex(Math.abs(idCategoria || idx));
-                const unidade = typeof r.unidade === "string" ? r.unidade : "—";
-                const unidadeMedida = typeof r.unidade_medida === "string" ? r.unidade_medida : null;
-                const volumePeso = typeof r.volume_peso === "string" ? r.volume_peso : typeof r.volume_peso === "number" ? String(r.volume_peso) : null;
-                const unitLabel = volumePeso ? `${volumePeso} ${unidadeMedida ?? unidade}` : unidadeMedida ?? unidade;
-                const valor = typeof r.valor === "number" ? r.valor : typeof r.valor === "string" ? Number(r.valor) : null;
-                const unitPriceLabel = formatCurrency(Number.isFinite(valor as number) ? (valor as number) : null);
-                const lastQuoteLabel =
-                    typeof r.updatedAt === "string"
-                        ? formatDatePtBr(r.updatedAt)
-                        : typeof r.updated_at === "string"
-                            ? formatDatePtBr(r.updated_at)
-                            : "—";
-                return { id, name, categoryLabel, categoryColor, unitLabel, unitPriceLabel, lastQuoteLabel } satisfies IngredientRow;
-            });
+                    return { id, name, categoryLabel, categoryColor, unitLabel, unitPriceLabel, lastQuoteLabel } satisfies IngredientRow;
+                });
             setIngredients(ingredientesList);
         } catch (err) {
             if (requestId !== requestIdRef.current) return;
@@ -336,6 +468,47 @@ export default function CardapioPage() {
         setIngredientError(null);
         setOpenDeleteConfirm(false);
         setIngredientLoading(false);
+    }, []);
+
+    const closeClassificationDrawer = useCallback(() => {
+        setClassificationDrawer(null);
+        setClassificationError(null);
+        setClassificationDetails(null);
+        setOpenClassificationDeleteConfirm(false);
+        setClassificationLoading(false);
+        setIconQuery("");
+        setIconPickerOpen(false);
+    }, []);
+
+    const loadClassificationDetails = useCallback(async (kind: ClassificationKind, id: number) => {
+        const token = getTytAccessToken();
+        if (!token) return;
+        setClassificationLoading(true);
+        setClassificationError(null);
+        try {
+            const res =
+                kind === "dish-categories"
+                    ? await pratosCategoriasApi.getById(id, token)
+                    : kind === "cuisine-types"
+                        ? await tiposCozinhaApi.getById(id, token)
+                        : kind === "themes"
+                            ? await temasApi.getById(id, token)
+                            : kind === "main-ingredients"
+                                ? await ingredientesPrincipaisApi.getById(id, token)
+                                : kind === "food-preferences"
+                                    ? await prefCulinariasApi.getById(id, token)
+                                    : await ingredientesCategoriasApi.getById(id, token);
+
+            const json = await parseJsonOrThrow<unknown>(res);
+            const record = getRecord(json) ?? getRecord((json as Record<string, unknown>)?.data) ?? null;
+            setClassificationDetails(record);
+        } catch (err) {
+            if (err instanceof TytApiError) setClassificationError(parseApiErrorMessage(err.body));
+            else if (err instanceof Error && err.message) setClassificationError(err.message);
+            else setClassificationError("Ocorreu um erro. Tente novamente.");
+        } finally {
+            setClassificationLoading(false);
+        }
     }, []);
 
     const loadIngredientDetails = useCallback(async (id: string) => {
@@ -395,6 +568,17 @@ export default function CardapioPage() {
             updatedAt,
         };
     }, [ingredientDetails, categories]);
+
+    const classificationView = useMemo(() => {
+        const record = classificationDetails;
+        if (!record) return null;
+        const id = getNumberValue(record, ["id"]) ?? null;
+        const descricao = getStringValue(record, ["descricao", "nome", "name"]) ?? "—";
+        const icone = getStringValue(record, ["icone"]) ?? null;
+        const updatedAt =
+            getStringValue(record, ["updatedAt", "updated_at", "updated"]) ?? getStringValue(record, ["createdAt", "created_at"]) ?? null;
+        return { id, descricao, icone, updatedAt };
+    }, [classificationDetails]);
 
     const actionButton =
         selectedTab === "dishes" ? (
@@ -606,9 +790,292 @@ export default function CardapioPage() {
                     </Tabs.Panel>
 
                     <Tabs.Panel id="classifications" className="flex flex-col gap-4 outline-hidden">
-                        <div className="rounded-xl bg-primary p-6 shadow-xs ring-1 ring-secondary ring-inset">
-                            <p className="text-sm text-tertiary">Em breve.</p>
-                        </div>
+                        <section className="flex flex-col gap-4">
+                            <div>
+                                <p className="text-md font-semibold text-primary">Classificações</p>
+                                <p className="mt-1 text-sm text-tertiary">Organize e padronize os critérios que estruturam e categorizam os pratos do cardápio.</p>
+                            </div>
+
+                            <div className="grid gap-4 lg:grid-cols-2">
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-semibold text-primary">Categorias de prato</p>
+                                                <Badge size="sm" type="pill-color" color="brand">
+                                                    {dishCategories.length}
+                                                </Badge>
+                                            </div>
+                                            <p className="mt-1 text-sm text-tertiary">Classificação dos pratos no cardápio</p>
+                                        </div>
+                                        <Button
+                                            color="secondary"
+                                            size="sm"
+                                            iconLeading={Plus}
+                                            onClick={() => {
+                                                setClassificationForm({ descricao: "", icone: "" });
+                                                setClassificationError(null);
+                                                setClassificationDetails(null);
+                                                setClassificationDrawer({ type: "create", kind: "dish-categories" });
+                                            }}
+                                        >
+                                            Adicionar
+                                        </Button>
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {dishCategories.map((c) => (
+                                            <button
+                                                key={c.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setClassificationDetails(null);
+                                                    setClassificationError(null);
+                                                    setClassificationDrawer({ type: "details", kind: "dish-categories", id: c.id });
+                                                    void loadClassificationDetails("dish-categories", c.id);
+                                                }}
+                                            >
+                                                <Badge size="sm" type="pill-color" color="gray">
+                                                    {c.descricao}
+                                                </Badge>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-semibold text-primary">Preferências alimentares</p>
+                                                <Badge size="sm" type="pill-color" color="brand">
+                                                    {foodPreferences.length}
+                                                </Badge>
+                                            </div>
+                                            <p className="mt-1 text-sm text-tertiary">Restrições e escolhas alimentares</p>
+                                        </div>
+                                        <Button
+                                            color="secondary"
+                                            size="sm"
+                                            iconLeading={Plus}
+                                            onClick={() => {
+                                                setClassificationForm({ descricao: "", icone: "" });
+                                                setClassificationError(null);
+                                                setClassificationDetails(null);
+                                                setClassificationDrawer({ type: "create", kind: "food-preferences" });
+                                            }}
+                                        >
+                                            Adicionar
+                                        </Button>
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {foodPreferences.map((c) => (
+                                            <button
+                                                key={c.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setClassificationDetails(null);
+                                                    setClassificationError(null);
+                                                    setClassificationDrawer({ type: "details", kind: "food-preferences", id: c.id });
+                                                    void loadClassificationDetails("food-preferences", c.id);
+                                                }}
+                                            >
+                                                <Badge size="sm" type="pill-color" color="gray">
+                                                    {c.descricao}
+                                                </Badge>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-semibold text-primary">Tipos de cozinha</p>
+                                                <Badge size="sm" type="pill-color" color="brand">
+                                                    {cuisineTypes.length}
+                                                </Badge>
+                                            </div>
+                                            <p className="mt-1 text-sm text-tertiary">Origem culinária dos pratos</p>
+                                        </div>
+                                        <Button
+                                            color="secondary"
+                                            size="sm"
+                                            iconLeading={Plus}
+                                            onClick={() => {
+                                                setClassificationForm({ descricao: "", icone: "" });
+                                                setClassificationError(null);
+                                                setClassificationDetails(null);
+                                                setClassificationDrawer({ type: "create", kind: "cuisine-types" });
+                                            }}
+                                        >
+                                            Adicionar
+                                        </Button>
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {cuisineTypes.map((c) => (
+                                            <button
+                                                key={c.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setClassificationDetails(null);
+                                                    setClassificationError(null);
+                                                    setClassificationDrawer({ type: "details", kind: "cuisine-types", id: c.id });
+                                                    void loadClassificationDetails("cuisine-types", c.id);
+                                                }}
+                                            >
+                                                <Badge size="sm" type="pill-color" color="gray">
+                                                    {c.descricao}
+                                                </Badge>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-semibold text-primary">Ingredientes principais</p>
+                                                <Badge size="sm" type="pill-color" color="brand">
+                                                    {mainIngredients.length}
+                                                </Badge>
+                                            </div>
+                                            <p className="mt-1 text-sm text-tertiary">Base proteica ou destaque do prato</p>
+                                        </div>
+                                        <Button
+                                            color="secondary"
+                                            size="sm"
+                                            iconLeading={Plus}
+                                            onClick={() => {
+                                                setClassificationForm({ descricao: "", icone: "" });
+                                                setClassificationError(null);
+                                                setClassificationDetails(null);
+                                                setIconQuery("");
+                                                setIconPickerOpen(false);
+                                                setClassificationDrawer({ type: "create", kind: "main-ingredients" });
+                                            }}
+                                        >
+                                            Adicionar
+                                        </Button>
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {mainIngredients.map((c, idx) => {
+                                            const icon = c.icone ? ICON_CATALOG.find((x) => x.id === c.icone) : null;
+                                            return (
+                                                <button
+                                                    key={c.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setClassificationDetails(null);
+                                                        setClassificationError(null);
+                                                        setClassificationDrawer({ type: "details", kind: "main-ingredients", id: c.id });
+                                                        void loadClassificationDetails("main-ingredients", c.id);
+                                                    }}
+                                                >
+                                                    <Badge size="sm" type="pill-color" color={badgeColorByIndex(idx)}>
+                                                        <span className="inline-flex items-center gap-1.5">
+                                                            {icon ? <icon.Icon className="size-3.5" /> : null}
+                                                            {c.descricao}
+                                                        </span>
+                                                    </Badge>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-semibold text-primary">Categoria de ingredientes</p>
+                                                <Badge size="sm" type="pill-color" color="brand">
+                                                    {categories.length}
+                                                </Badge>
+                                            </div>
+                                            <p className="mt-1 text-sm text-tertiary">Crie tipo de ingredientes</p>
+                                        </div>
+                                        <Button
+                                            color="secondary"
+                                            size="sm"
+                                            iconLeading={Plus}
+                                            onClick={() => {
+                                                setClassificationForm({ descricao: "", icone: "" });
+                                                setClassificationError(null);
+                                                setClassificationDetails(null);
+                                                setClassificationDrawer({ type: "create", kind: "ingredient-categories" });
+                                            }}
+                                        >
+                                            Adicionar
+                                        </Button>
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {categories.map((c, idx) => (
+                                            <button
+                                                key={c.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setClassificationDetails(null);
+                                                    setClassificationError(null);
+                                                    setClassificationDrawer({ type: "details", kind: "ingredient-categories", id: c.id });
+                                                    void loadClassificationDetails("ingredient-categories", c.id);
+                                                }}
+                                            >
+                                                <Badge size="sm" type="pill-color" color={badgeColorByIndex(idx)}>
+                                                    {c.descricao}
+                                                </Badge>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-semibold text-primary">Temas</p>
+                                                <Badge size="sm" type="pill-color" color="brand">
+                                                    {themes.length}
+                                                </Badge>
+                                            </div>
+                                            <p className="mt-1 text-sm text-tertiary">Crie temas com cardápios completos para diferentes ocasiões.</p>
+                                        </div>
+                                        <Button
+                                            color="secondary"
+                                            size="sm"
+                                            iconLeading={Plus}
+                                            onClick={() => {
+                                                setClassificationForm({ descricao: "", icone: "" });
+                                                setClassificationError(null);
+                                                setClassificationDetails(null);
+                                                setClassificationDrawer({ type: "create", kind: "themes" });
+                                            }}
+                                        >
+                                            Adicionar
+                                        </Button>
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {themes.map((c) => (
+                                            <button
+                                                key={c.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setClassificationDetails(null);
+                                                    setClassificationError(null);
+                                                    setClassificationDrawer({ type: "details", kind: "themes", id: c.id });
+                                                    void loadClassificationDetails("themes", c.id);
+                                                }}
+                                            >
+                                                <Badge size="sm" type="pill-color" color="gray">
+                                                    {c.descricao}
+                                                </Badge>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
                     </Tabs.Panel>
                 </Tabs>
             </div>
@@ -1187,6 +1654,442 @@ export default function CardapioPage() {
                     );
                 }}
             </SlideoutMenu>
+
+            <SlideoutMenu
+                isOpen={classificationDrawer !== null}
+                isDismissable
+                onOpenChange={(open) => (!open ? closeClassificationDrawer() : undefined)}
+            >
+                {({ close }) => {
+                    const type = classificationDrawer?.type ?? null;
+                    const kind = classificationDrawer?.kind ?? null;
+
+                    const closeAll = () => {
+                        close();
+                        closeClassificationDrawer();
+                    };
+
+                    const kindLabel =
+                        kind === "dish-categories"
+                            ? "categoria de prato"
+                            : kind === "food-preferences"
+                                ? "preferência alimentar"
+                                : kind === "cuisine-types"
+                                    ? "tipo de cozinha"
+                                    : kind === "main-ingredients"
+                                        ? "ingrediente principal"
+                                        : kind === "ingredient-categories"
+                                            ? "categoria ingrediente"
+                                            : "tema";
+
+                    const title =
+                        type === "create"
+                            ? `Adicionar ${kindLabel}`
+                            : type === "details"
+                                ? kind === "cuisine-types" || kind === "main-ingredients" || kind === "themes"
+                                    ? `Detalhes do ${kindLabel}`
+                                    : `Detalhes da ${kindLabel}`
+                                : type === "edit"
+                                    ? `Editar ${kindLabel}`
+                                    : "Classificação";
+
+                    const description =
+                        type === "details"
+                            ? "Informações completas desta classificação."
+                            : type === "edit"
+                                ? "Atualize as informações da classificação."
+                                : "Preencha o nome abaixo.";
+
+                    const selectedIcon = classificationForm.icone
+                        ? ICON_CATALOG.find((x) => x.id === classificationForm.icone) ?? null
+                        : null;
+
+                    const filteredIcons = ICON_CATALOG.filter((x) => {
+                        const q = iconQuery.trim().toLowerCase();
+                        if (!q) return true;
+                        return `${x.id} ${x.label}`.toLowerCase().includes(q);
+                    });
+
+                    return (
+                        <>
+                            <SlideoutMenu.Header onClose={closeAll}>
+                                <div className="flex flex-col gap-1 pr-10">
+                                    <p className="text-md font-semibold text-primary">{title}</p>
+                                    <p className="text-sm text-tertiary">{description}</p>
+                                </div>
+                            </SlideoutMenu.Header>
+
+                            <SlideoutMenu.Content>
+                                {classificationError ? <p className="text-sm text-error-primary">{classificationError}</p> : null}
+
+                                {type === "details" || type === "edit" ? (
+                                    classificationLoading ? (
+                                        <div className="flex items-center justify-center py-10">
+                                            <LoadingIndicator type="line-spinner" size="sm" label="Carregando..." />
+                                        </div>
+                                    ) : classificationView ? (
+                                        type === "details" ? (
+                                            <div className="rounded-xl border border-secondary bg-primary p-4 shadow-xs">
+                                                <p className="text-sm font-semibold text-primary">Nome</p>
+                                                <p className="mt-1 text-sm text-tertiary">{classificationView.descricao}</p>
+
+                                                {kind === "main-ingredients" ? (
+                                                    <div className="mt-4">
+                                                        <p className="text-sm font-semibold text-primary">Ícone</p>
+                                                        <div className="mt-2">
+                                                            {classificationView.icone ? (
+                                                                (() => {
+                                                                    const icon = ICON_CATALOG.find((x) => x.id === classificationView.icone);
+                                                                    return icon ? (
+                                                                        <div className="inline-flex items-center gap-2 rounded-lg border border-secondary px-3 py-2 text-sm text-tertiary">
+                                                                            <icon.Icon className="size-4" />
+                                                                            {icon.label}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <p className="text-sm text-tertiary">{classificationView.icone}</p>
+                                                                    );
+                                                                })()
+                                                            ) : (
+                                                                <p className="text-sm text-tertiary">—</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ) : null}
+
+                                                {classificationView.updatedAt ? (
+                                                    <p className="mt-4 text-xs text-tertiary">
+                                                        Atualizado em {formatDatePtBr(classificationView.updatedAt)}
+                                                    </p>
+                                                ) : null}
+                                            </div>
+                                        ) : (
+                                            <div className="rounded-xl border border-secondary bg-primary p-4 shadow-xs">
+                                                <p className="text-sm font-semibold text-primary">Dados básicos</p>
+                                                <div className="mt-4 flex flex-col gap-4">
+                                                    <Input
+                                                        label="Nome"
+                                                        value={classificationForm.descricao}
+                                                        onChange={(v) => setClassificationForm((p) => ({ ...p, descricao: v }))}
+                                                        isRequired
+                                                    />
+
+                                                    {kind === "main-ingredients" ? (
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <p className="text-sm font-medium text-secondary">Ícone *</p>
+                                                            <Dropdown.Root isOpen={iconPickerOpen} onOpenChange={setIconPickerOpen}>
+                                                                <button
+                                                                    type="button"
+                                                                    className={cx(
+                                                                        "flex w-full items-center justify-between gap-3 rounded-lg bg-primary px-3 py-2 shadow-xs ring-1 ring-primary ring-inset outline-hidden transition-shadow duration-100 ease-linear",
+                                                                        iconPickerOpen ? "ring-2 ring-brand" : null,
+                                                                    )}
+                                                                >
+                                                                    <span className="inline-flex min-w-0 items-center gap-2">
+                                                                        {selectedIcon ? <selectedIcon.Icon className="size-4 text-tertiary" /> : <Star01 className="size-4 text-tertiary" />}
+                                                                        <span className="truncate text-sm text-tertiary">
+                                                                            {selectedIcon ? selectedIcon.label : "Selecione um ícone"}
+                                                                        </span>
+                                                                    </span>
+                                                                    <ChevronDown className="size-4 text-tertiary" />
+                                                                </button>
+
+                                                                <Dropdown.Popover className="w-[360px] p-3">
+                                                                    <Input
+                                                                        placeholder="Buscar ícone..."
+                                                                        icon={SearchLg}
+                                                                        value={iconQuery}
+                                                                        onChange={setIconQuery}
+                                                                    />
+                                                                    <div className="mt-3 grid grid-cols-4 gap-2">
+                                                                        {filteredIcons.map((i) => (
+                                                                            <button
+                                                                                key={i.id}
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    setClassificationForm((p) => ({ ...p, icone: i.id }));
+                                                                                    setIconPickerOpen(false);
+                                                                                }}
+                                                                                className={cx(
+                                                                                    "flex flex-col items-center gap-1 rounded-lg border px-2 py-2 text-center",
+                                                                                    classificationForm.icone === i.id ? "border-brand ring-1 ring-brand" : "border-secondary",
+                                                                                )}
+                                                                            >
+                                                                                <i.Icon className="size-5 text-tertiary" />
+                                                                                <span className="w-full truncate text-[11px] text-tertiary">{i.label}</span>
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </Dropdown.Popover>
+                                                            </Dropdown.Root>
+                                                        </div>
+                                                    ) : null}
+                                                </div>
+                                            </div>
+                                        )
+                                    ) : (
+                                        <p className="text-sm text-tertiary">Não foi possível carregar os detalhes.</p>
+                                    )
+                                ) : type === "create" ? (
+                                    <div className="rounded-xl border border-secondary bg-primary p-4 shadow-xs">
+                                        <p className="text-sm font-semibold text-primary">Dados básicos</p>
+                                        <div className="mt-4 flex flex-col gap-4">
+                                            <Input
+                                                label="Nome"
+                                                value={classificationForm.descricao}
+                                                onChange={(v) => setClassificationForm((p) => ({ ...p, descricao: v }))}
+                                                isRequired
+                                            />
+
+                                            {kind === "main-ingredients" ? (
+                                                <div className="flex flex-col gap-1.5">
+                                                    <p className="text-sm font-medium text-secondary">Ícone *</p>
+                                                    <Dropdown.Root isOpen={iconPickerOpen} onOpenChange={setIconPickerOpen}>
+                                                        <button
+                                                            type="button"
+                                                            className={cx(
+                                                                "flex w-full items-center justify-between gap-3 rounded-lg bg-primary px-3 py-2 shadow-xs ring-1 ring-primary ring-inset outline-hidden transition-shadow duration-100 ease-linear",
+                                                                iconPickerOpen ? "ring-2 ring-brand" : null,
+                                                            )}
+                                                        >
+                                                            <span className="inline-flex min-w-0 items-center gap-2">
+                                                                {selectedIcon ? <selectedIcon.Icon className="size-4 text-tertiary" /> : <Star01 className="size-4 text-tertiary" />}
+                                                                <span className="truncate text-sm text-tertiary">
+                                                                    {selectedIcon ? selectedIcon.label : "Selecione um ícone"}
+                                                                </span>
+                                                            </span>
+                                                            <ChevronDown className="size-4 text-tertiary" />
+                                                        </button>
+
+                                                        <Dropdown.Popover className="w-[360px] p-3">
+                                                            <Input placeholder="Buscar ícone..." icon={SearchLg} value={iconQuery} onChange={setIconQuery} />
+                                                            <div className="mt-3 grid grid-cols-4 gap-2">
+                                                                {filteredIcons.map((i) => (
+                                                                    <button
+                                                                        key={i.id}
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setClassificationForm((p) => ({ ...p, icone: i.id }));
+                                                                            setIconPickerOpen(false);
+                                                                        }}
+                                                                        className={cx(
+                                                                            "flex flex-col items-center gap-1 rounded-lg border px-2 py-2 text-center",
+                                                                            classificationForm.icone === i.id ? "border-brand ring-1 ring-brand" : "border-secondary",
+                                                                        )}
+                                                                    >
+                                                                        <i.Icon className="size-5 text-tertiary" />
+                                                                        <span className="w-full truncate text-[11px] text-tertiary">{i.label}</span>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </Dropdown.Popover>
+                                                    </Dropdown.Root>
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                ) : null}
+                            </SlideoutMenu.Content>
+
+                            <SlideoutMenu.Footer>
+                                {type === "details" ? (
+                                    <div className="flex justify-end">
+                                        <Button
+                                            color="secondary"
+                                            size="md"
+                                            iconTrailing={Edit02}
+                                            onClick={() => {
+                                                if (!kind || classificationDrawer?.type !== "details") return;
+                                                if (!classificationView?.id) return;
+                                                setClassificationForm({
+                                                    descricao: classificationView.descricao === "—" ? "" : classificationView.descricao,
+                                                    icone: classificationView.icone ?? "",
+                                                });
+                                                setClassificationDrawer({ type: "edit", kind, id: classificationDrawer.id });
+                                            }}
+                                        >
+                                            Editar
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-3">
+                                        {type === "edit" ? (
+                                            <Button
+                                                color="secondary-destructive"
+                                                size="md"
+                                                className="flex-1"
+                                                iconLeading={Trash01}
+                                                onClick={() => setOpenClassificationDeleteConfirm(true)}
+                                            >
+                                                Excluir
+                                            </Button>
+                                        ) : null}
+
+                                        <Button
+                                            color="secondary"
+                                            size="md"
+                                            className="flex-1"
+                                            isDisabled={classificationLoading}
+                                            onClick={closeAll}
+                                        >
+                                            Cancelar
+                                        </Button>
+
+                                        <Button
+                                            color="primary"
+                                            size="md"
+                                            className="flex-1"
+                                            isLoading={classificationLoading}
+                                            onClick={async () => {
+                                                const token = getTytAccessToken();
+                                                if (!token || !kind || !type) return;
+
+                                                const descricao = classificationForm.descricao.trim();
+                                                const icone = classificationForm.icone.trim();
+
+                                                if (!descricao) {
+                                                    toast.error("Preencha o nome.");
+                                                    return;
+                                                }
+
+                                                if (kind === "main-ingredients" && !icone) {
+                                                    toast.error("Selecione um ícone.");
+                                                    return;
+                                                }
+
+                                                setClassificationLoading(true);
+                                                try {
+                                                    const isEdit = type === "edit" && classificationDrawer?.type === "edit";
+                                                    const id = isEdit ? classificationDrawer.id : null;
+
+                                                    const res =
+                                                        kind === "dish-categories"
+                                                            ? isEdit && id !== null
+                                                                ? await pratosCategoriasApi.update(id, { descricao, icone: "knifefork" } satisfies PratoCategoriaBody, token)
+                                                                : await pratosCategoriasApi.create({ descricao, icone: "knifefork" } satisfies PratoCategoriaBody, token)
+                                                            : kind === "cuisine-types"
+                                                                ? isEdit && id !== null
+                                                                    ? await tiposCozinhaApi.update(id, { descricao } satisfies CatalogoDescricaoBody, token)
+                                                                    : await tiposCozinhaApi.create({ descricao } satisfies CatalogoDescricaoBody, token)
+                                                                : kind === "themes"
+                                                                    ? isEdit && id !== null
+                                                                        ? await temasApi.update(id, { descricao } satisfies CatalogoDescricaoBody, token)
+                                                                        : await temasApi.create({ descricao } satisfies CatalogoDescricaoBody, token)
+                                                                    : kind === "food-preferences"
+                                                                        ? isEdit && id !== null
+                                                                            ? await prefCulinariasApi.update(id, { descricao } satisfies CatalogoDescricaoBody, token)
+                                                                            : await prefCulinariasApi.create({ descricao } satisfies CatalogoDescricaoBody, token)
+                                                                        : kind === "main-ingredients"
+                                                                            ? isEdit && id !== null
+                                                                                ? await ingredientesPrincipaisApi.update(
+                                                                                    id,
+                                                                                    { descricao, icone } satisfies IngredientePrincipalBody,
+                                                                                    token,
+                                                                                )
+                                                                                : await ingredientesPrincipaisApi.create(
+                                                                                    { descricao, icone } satisfies IngredientePrincipalBody,
+                                                                                    token,
+                                                                                )
+                                                                            : isEdit && id !== null
+                                                                                ? await ingredientesCategoriasApi.update(id, { descricao }, token)
+                                                                                : await ingredientesCategoriasApi.create({ descricao }, token);
+
+                                                    await parseJsonOrThrow<unknown>(res);
+                                                    toast.success(isEdit ? "Classificação atualizada com sucesso!" : "Classificação criada com sucesso!");
+                                                    closeAll();
+                                                    await reload();
+                                                } catch (err) {
+                                                    if (err instanceof TytApiError)
+                                                        toast.error("Não foi possível salvar.", { description: parseApiErrorMessage(err.body) });
+                                                    else toast.error("Não foi possível salvar.");
+                                                } finally {
+                                                    setClassificationLoading(false);
+                                                }
+                                            }}
+                                        >
+                                            Salvar
+                                        </Button>
+                                    </div>
+                                )}
+                            </SlideoutMenu.Footer>
+                        </>
+                    );
+                }}
+            </SlideoutMenu>
+
+            <ModalOverlay
+                isOpen={openClassificationDeleteConfirm}
+                isDismissable
+                onOpenChange={(open) => {
+                    if (!open) setOpenClassificationDeleteConfirm(false);
+                }}
+            >
+                <Modal>
+                    <Dialog>
+                        <div className="w-full max-w-[520px] overflow-hidden rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
+                            <div className="flex items-start justify-between gap-4 border-b border-secondary px-6 py-5">
+                                <div className="min-w-0">
+                                    <p className="text-md font-semibold text-primary">
+                                        Excluir {classificationForm.descricao ? `${classificationForm.descricao}?` : "item?"}
+                                    </p>
+                                    <p className="mt-1 text-sm text-tertiary">
+                                        Você tem certeza que deseja excluir esta classificação? Esta ação não poderá ser desfeita.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3 px-6 py-5">
+                                <Button
+                                    color="secondary"
+                                    size="md"
+                                    className="flex-1"
+                                    onClick={() => setOpenClassificationDeleteConfirm(false)}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    color="primary-destructive"
+                                    size="md"
+                                    className="flex-1"
+                                    isLoading={classificationLoading}
+                                    onClick={async () => {
+                                        const token = getTytAccessToken();
+                                        if (!token || classificationDrawer?.type !== "edit") return;
+                                        setClassificationLoading(true);
+                                        try {
+                                            const kind = classificationDrawer.kind;
+                                            const id = classificationDrawer.id;
+                                            const res =
+                                                kind === "dish-categories"
+                                                    ? await pratosCategoriasApi.remove(id, token)
+                                                    : kind === "cuisine-types"
+                                                        ? await tiposCozinhaApi.remove(id, token)
+                                                        : kind === "themes"
+                                                            ? await temasApi.remove(id, token)
+                                                            : kind === "food-preferences"
+                                                                ? await prefCulinariasApi.remove(id, token)
+                                                                : kind === "main-ingredients"
+                                                                    ? await ingredientesPrincipaisApi.remove(id, token)
+                                                                    : await ingredientesCategoriasApi.remove(id, token);
+                                            await parseJsonOrThrow<unknown>(res);
+                                            toast.success("Classificação excluída com sucesso!");
+                                            setOpenClassificationDeleteConfirm(false);
+                                            closeClassificationDrawer();
+                                            await reload();
+                                        } catch (err) {
+                                            if (err instanceof TytApiError)
+                                                toast.error("Não foi possível excluir.", { description: parseApiErrorMessage(err.body) });
+                                            else toast.error("Não foi possível excluir.");
+                                        } finally {
+                                            setClassificationLoading(false);
+                                        }
+                                    }}
+                                >
+                                    Excluir
+                                </Button>
+                            </div>
+                        </div>
+                    </Dialog>
+                </Modal>
+            </ModalOverlay>
 
             <ModalOverlay isOpen={openDeleteConfirm} isDismissable onOpenChange={setOpenDeleteConfirm}>
                 <Modal>

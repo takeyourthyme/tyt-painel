@@ -280,6 +280,11 @@ export type CatalogoDescricaoBody = {
     descricao: string;
 };
 
+export type IngredientePrincipalBody = {
+    descricao: string;
+    icone?: string;
+};
+
 // ---------------------------------------------------------------------------
 // Kitchen orders — /api/kitchen-orders*
 // ---------------------------------------------------------------------------

@@ -1,14 +1,14 @@
 import { tytFetch } from "./client";
 import { tytEndpoints } from "./endpoints";
-import type { CatalogoDescricaoBody, PratoCategoriaBody, ResourceId } from "./types";
+import type { CatalogoDescricaoBody, IngredientePrincipalBody, PratoCategoriaBody, ResourceId } from "./types";
 
-export type { CatalogoDescricaoBody, PratoCategoriaBody } from "./types";
+export type { CatalogoDescricaoBody, IngredientePrincipalBody, PratoCategoriaBody } from "./types";
 
 function crudJson(
     segment: "pratosCategorias" | "tiposCozinha" | "temas" | "ingredientesPrincipais" | "prefCulinarias",
     method: "GET" | "POST" | "PUT" | "DELETE",
     token: string,
-    options?: { id?: ResourceId; body?: PratoCategoriaBody | CatalogoDescricaoBody },
+    options?: { id?: ResourceId; body?: PratoCategoriaBody | CatalogoDescricaoBody | IngredientePrincipalBody },
 ) {
     const ep = tytEndpoints[segment];
     const path = options?.id !== undefined ? ep.byId(options.id) : ep.collection;
@@ -50,8 +50,8 @@ export const temasApi = {
 
 /** Pratos — Ingredientes principais */
 export const ingredientesPrincipaisApi = {
-    create: (body: CatalogoDescricaoBody, token: string) => crudJson("ingredientesPrincipais", "POST", token, { body }),
-    update: (id: ResourceId, body: CatalogoDescricaoBody, token: string) =>
+    create: (body: IngredientePrincipalBody, token: string) => crudJson("ingredientesPrincipais", "POST", token, { body }),
+    update: (id: ResourceId, body: IngredientePrincipalBody, token: string) =>
         crudJson("ingredientesPrincipais", "PUT", token, { id, body }),
     remove: (id: ResourceId, token: string) => crudJson("ingredientesPrincipais", "DELETE", token, { id }),
     getById: (id: ResourceId, token: string) => crudJson("ingredientesPrincipais", "GET", token, { id }),
