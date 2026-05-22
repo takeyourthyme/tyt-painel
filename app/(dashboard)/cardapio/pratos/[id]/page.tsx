@@ -75,7 +75,8 @@ function badgeColorByIndex(i: number): BadgeColors {
 
 type DishView = {
     id: string;
-    descricao: string;
+    title: string | null;
+    description: string | null;
     ativo: boolean;
     meal_preap: boolean;
     get_togheter: boolean;
@@ -139,7 +140,8 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
     const dish = useMemo<DishView | null>(() => {
         if (!details) return null;
         const id = getStringValue(details, ["id"]) ?? dishId;
-        const descricao = getStringValue(details, ["descricao"]) ?? "—";
+        const title = getStringValue(details, ["nome_prato"]) ?? null;
+        const description = getStringValue(details, ["descricao"]) ?? null;
         const ativo = coerceBool(details.ativo);
         const meal_preap = coerceBool(details.meal_preap);
         const get_togheter = coerceBool(details.get_togheter);
@@ -151,7 +153,8 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
 
         return {
             id,
-            descricao,
+            title,
+            description,
             ativo,
             meal_preap,
             get_togheter,
@@ -187,7 +190,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0">
                             <h1 className={cx(playfair.className, "text-display-sm font-semibold text-primary md:text-display-md")}>
-                                {dish?.descricao ?? "Detalhes do prato"}
+                                {dish?.title ?? "Detalhes do prato"}
                             </h1>
                             <p className="mt-1 text-sm text-tertiary">Confira como as informações do seu prato aparecem no sistema.</p>
                         </div>
@@ -224,7 +227,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                             <div className="grid gap-4 px-5 py-5 sm:grid-cols-2">
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Nome do prato</p>
-                                    <p className="mt-1 text-sm text-tertiary">{dish.descricao}</p>
+                                    <p className="mt-1 text-sm text-tertiary">{dish.title || ""}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Status</p>

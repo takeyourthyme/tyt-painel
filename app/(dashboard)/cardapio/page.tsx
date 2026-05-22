@@ -58,8 +58,8 @@ type TabId = "dishes" | "ingredients" | "classifications";
 
 type DishCard = {
     id: string;
-    title: string;
-    description: string;
+    title: string | null;
+    description: string | null;
     imageUrl: string | null;
     categoryBadges: Array<{ label: string; color: BadgeColors }>;
     serviceBadges: string[];
@@ -79,7 +79,8 @@ type IngredienteCategoria = { id: number; descricao: string };
 
 type CatalogItem = {
     id: number;
-    descricao: string;
+    title: string | null;
+    descricao: string | null;
     icone?: string | null;
     updatedAt?: string | null;
 };
@@ -336,11 +337,12 @@ export default function CardapioPage() {
                         if (!x || typeof x !== "object") return null;
                         const r = x as Record<string, unknown>;
                         const id = typeof r.id === "number" ? r.id : Number(r.id);
+                        const title = typeof r.nome_prato === "string" ? r.nome_prato : null;
                         const descricao = typeof r.descricao === "string" ? r.descricao : null;
                         if (!Number.isFinite(id) || !descricao) return null;
                         const icone = typeof r.icone === "string" ? r.icone : null;
                         const updatedAt = typeof r.updatedAt === "string" ? r.updatedAt : typeof r.updated_at === "string" ? r.updated_at : null;
-                        return { id, descricao, icone, updatedAt } satisfies CatalogItem;
+                        return { id, title, descricao, icone, updatedAt } satisfies CatalogItem;
                     })
                     .filter(Boolean) as CatalogItem[];
             };
@@ -354,15 +356,8 @@ export default function CardapioPage() {
             const pratosList = normalizeList<unknown>(pratosJson).map((x, idx) => {
                 const r = (x && typeof x === "object" ? (x as Record<string, unknown>) : {}) as Record<string, unknown>;
                 const id = r.id !== undefined ? String(r.id) : String(idx);
-                const title = typeof r.descricao === "string" ? r.descricao : typeof r.title === "string" ? r.title : "—";
-                const description =
-                    typeof r.receita === "string"
-                        ? r.receita
-                        : typeof r.description === "string"
-                            ? r.description
-                            : typeof r.resumo === "string"
-                                ? r.resumo
-                                : "";
+                const title = typeof r.nome_prato === "string" ? r.nome_prato : null;
+                const description = typeof r.descricao === "string" ? r.descricao : null;
 
                 const imageUrl = cleanUrl(r.foto1) ?? cleanUrl(r.imageUrl) ?? cleanUrl(r.foto) ?? null;
 
@@ -679,7 +674,7 @@ export default function CardapioPage() {
                                     <article key={dish.id} className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
                                         <div className="relative aspect-[16/9] w-full bg-secondary">
                                             {dish.imageUrl ? (
-                                                <img src={dish.imageUrl} alt={dish.title} className="h-full w-full object-cover" />
+                                                <img src={dish.imageUrl} alt={dish.title || ""} className="h-full w-full object-cover" />
                                             ) : (
                                                 <div className="flex h-full w-full items-center justify-center text-sm text-tertiary">Sem imagem</div>
                                             )}
@@ -687,7 +682,7 @@ export default function CardapioPage() {
 
                                         <div className="flex flex-col gap-3 px-4 py-4">
                                             <div className="min-w-0">
-                                                <p className="text-sm font-semibold text-primary">{dish.title}</p>
+                                                <p className="text-sm font-semibold text-primary">{dish.title || ""}</p>
                                                 <p className="mt-1 line-clamp-2 text-sm text-tertiary">{dish.description || "—"}</p>
                                             </div>
 

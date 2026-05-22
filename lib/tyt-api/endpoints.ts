@@ -10,6 +10,7 @@ export const tytEndpoints = {
     users: {
         collection: "/api/users",
         byId: (id: number | string) => `/api/users/${id}`,
+        toggleStatus: (id: number | string) => `/api/users/${id}/toggle-status`,
     },
     chefs: {
         collection: "/api/chefs",

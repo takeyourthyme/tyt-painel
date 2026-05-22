@@ -51,6 +51,10 @@ export function getUserById(id: ResourceId, token: string) {
     return tytFetch(tytEndpoints.users.byId(id), { method: "GET", token });
 }
 
+export function putUserToggleStatus(id: ResourceId, token: string) {
+    return tytFetch(tytEndpoints.users.toggleStatus(id), { method: "PUT", token });
+}
+
 export function getChefs(token: string, query?: ChefsListQuery) {
     return tytFetch(`${tytEndpoints.chefs.collection}${toQueryString(query)}`, { method: "GET", token });
 }
