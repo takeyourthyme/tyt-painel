@@ -1,7 +1,7 @@
 {
   "name": "tyt-painel",
   "version": "0.0.0",
-  "description": "Untitled UI React is the world's largest collection of open-source React components. Everything you need to design and develop modern, beautiful interfaces—fast.",
+  "description": "Painel de controle do TyT",
   "main": "index.js",
   "private": true,
   "scripts": {
@@ -15,9 +15,7 @@
     "prettier": "echo \"Prettier desabilitado\"",
     "prettier:check": "echo \"Prettier desabilitado\"",
     "type-check": "tsc --noEmit",
-    "vitest": "vitest",
-    "vitest:run": "vitest run",
-    "test": "npm run type-check && npm run vitest:run"
+    "test": "npm run type-check"
   },
   "keywords": [
     "react",
@@ -73,6 +71,9 @@
     "@storybook/nextjs-vite": "^9.1.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/vite": "^4.1.11",
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.2",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/node": "^24.2.1",
     "@types/react": "^19.1.9",
@@ -80,9 +81,6 @@
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "@vitejs/plugin-react": "^5.0.0",
-    "@testing-library/jest-dom": "^6.6.0",
-    "@testing-library/react": "^16.0.0",
-    "@testing-library/user-event": "^14.5.2",
     "eslint": "^9.33.0",
     "eslint-config-next": "^15.4.6",
     "eslint-config-prettier": "^10.1.8",
@@ -96,12 +94,11 @@
     "eslint-plugin-storybook": "9.1.1",
     "eslint-plugin-tailwindcss": "^3.18.2",
     "eslint-plugin-unused-imports": "^4.1.4",
+    "jsdom": "^25.0.1",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "storybook": "^9.1.1",
-    "typescript": "^5.9.2",
-    "jsdom": "^25.0.1",
-    "vitest": "^2.1.8"
+    "typescript": "^5.9.2"
   }
 }

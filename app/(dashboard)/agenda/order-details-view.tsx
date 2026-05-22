@@ -31,10 +31,10 @@ type KitchenOrderDetails = {
     district: string | null;
     observations: string | null;
     clientRequest: string | null;
-    dishes: string[];
+    dishes: Array<{ id: number | null; name: string; quantity: number | null }>;
     proposalStatus: string | null;
     proposalItems: { description: string; price: number }[];
-    cliente: { id: number; nome: string; foto: string | null } | null;
+    cliente: { id: number; nome: string; email: string | null; whatsapp: string | null } | null;
     chef: { id: number; nome: string; foto: string | null } | null;
 };
 
@@ -168,16 +168,24 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
             const r = getRecord(x);
             if (!r) return null;
             const dish = getRecord(r.dish) ?? getRecord(r.prato);
-            return getStringValue(dish ?? r, ["nome", "name", "title"]);
+            const name =
+                getStringValue(dish ?? r, ["nome_prato", "descricao", "nome", "name", "title"]) ??
+                getStringValue(r, ["descricao", "nome", "name", "title"]) ??
+                null;
+            if (!name) return null;
+            const id = getNumberValue(dish ?? r, ["id", "dish_id", "prato_id"]);
+            const quantity = getNumberValue(r, ["quantity", "quantidade"]);
+            return { id, name, quantity };
         })
-        .filter(Boolean) as string[];
+        .filter(Boolean) as Array<{ id: number | null; name: string; quantity: number | null }>;
 
     const clienteRaw = getRecord(obj.cliente) ?? getRecord(obj.client);
     const cliente = clienteRaw
         ? {
             id: getNumberValue(clienteRaw, ["id"]) ?? 0,
             nome: getStringValue(clienteRaw, ["nome", "name"]) ?? "—",
-            foto: cleanUrl(getStringValue(clienteRaw, ["foto", "avatar", "avatarUrl"])),
+            email: getStringValue(clienteRaw, ["email"]),
+            whatsapp: getStringValue(clienteRaw, ["whatsapp", "telefone", "phone"]),
         }
         : null;
 
@@ -199,7 +207,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
     const proposalStatus = proposalRaw ? getStringValue(proposalRaw, ["status", "proposal_status", "proposalStatus"]) : null;
     const proposalItemsRaw = (proposalRaw?.items ?? proposalRaw?.itens ?? obj.special_service_proposal_items ?? obj.proposal_items) as unknown;
     const proposalItemsList = Array.isArray(proposalItemsRaw) ? proposalItemsRaw : [];
-    const proposalItems = proposalItemsList
+    const proposalItemsFromProposal = proposalItemsList
         .map((x) => {
             const r = getRecord(x);
             if (!r) return null;
@@ -209,6 +217,22 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
             return { description, price };
         })
         .filter(Boolean) as { description: string; price: number }[];
+
+    const proposalsRaw = obj.proposals as unknown;
+    const proposalsList = Array.isArray(proposalsRaw) ? proposalsRaw : [];
+    const proposalItemsFromProposals = proposalsList
+        .map((x) => {
+            const r = getRecord(x);
+            if (!r) return null;
+            const description = getStringValue(r, ["item", "description", "descricao", "nome"]);
+            const price = getNumberValue(r, ["value", "valor", "price"]);
+            if (!description || price === null) return null;
+            return { description, price };
+        })
+        .filter(Boolean) as { description: string; price: number }[];
+
+    const proposalItems = proposalItemsFromProposal.length ? proposalItemsFromProposal : proposalItemsFromProposals;
+    const proposalStatusFromProposals = proposalItemsFromProposals.length > 0 ? "AWAITING_CLIENT" : null;
 
     return {
         id,
@@ -226,7 +250,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
         observations,
         clientRequest,
         dishes,
-        proposalStatus,
+        proposalStatus: proposalStatus ?? proposalStatusFromProposals,
         proposalItems,
         cliente,
         chef,
@@ -449,6 +473,27 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     </div>
 
                                     <div className="overflow-hidden rounded-xl border border-secondary bg-primary">
+                                        <div className="border-b border-secondary px-4 py-4">
+                                            <p className="text-sm font-semibold text-primary">Pratos</p>
+                                        </div>
+                                        <div className="flex flex-wrap gap-3 px-4 py-4">
+                                            {order.dishes.length > 0 ? (
+                                                order.dishes.map((d, idx) => (
+                                                    <div key={`${d.id ?? "dish"}-${idx}`} className="inline-flex items-center gap-2 text-sm text-tertiary">
+                                                        <CheckCircle className="size-4 text-tertiary" aria-hidden />
+                                                        <span>
+                                                            {d.name}
+                                                            {d.quantity !== null ? ` x${d.quantity}` : ""}
+                                                        </span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <p className="text-sm text-tertiary">—</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary">
                                         <div className="flex items-center justify-between border-b border-secondary px-4 py-4">
                                             <div className="flex items-center gap-2">
                                                 <p className="text-sm font-semibold text-primary">Proposta de Serviço</p>
@@ -492,10 +537,13 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                             ) : (
                                 <div className="flex flex-wrap gap-3 px-6 py-5">
                                     {order.dishes.length > 0 ? (
-                                        order.dishes.map((d) => (
-                                            <div key={d} className="inline-flex items-center gap-2 text-sm text-tertiary">
+                                        order.dishes.map((d, idx) => (
+                                            <div key={`${d.id ?? "dish"}-${idx}`} className="inline-flex items-center gap-2 text-sm text-tertiary">
                                                 <CheckCircle className="size-4 text-tertiary" aria-hidden />
-                                                <span>{d}</span>
+                                                <span>
+                                                    {d.name}
+                                                    {d.quantity !== null ? ` x${d.quantity}` : ""}
+                                                </span>
                                             </div>
                                         ))
                                     ) : (
@@ -511,7 +559,13 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     <p className="text-sm font-semibold text-primary">Informações do Cliente</p>
                                 </div>
                                 <div className="px-6 py-5">
-                                    <p className="text-sm font-semibold text-primary">{order.cliente?.nome ?? "—"}</p>
+                                    <div className="flex items-start gap-3">
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-semibold text-primary">{order.cliente?.nome ?? "—"}</p>
+                                            <p className="mt-1 truncate text-sm text-tertiary">{order.cliente?.email ?? "—"}</p>
+                                            <p className="mt-0.5 truncate text-sm text-tertiary">{order.cliente?.whatsapp ?? "—"}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
