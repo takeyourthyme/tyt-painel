@@ -22,9 +22,24 @@ interface DateRangePickerProps extends AriaDateRangePickerProps<DateValue> {
     onApply?: () => void;
     /** The function to call when the cancel button is clicked. */
     onCancel?: () => void;
+    placeholder?: string;
+    cancelLabel?: string;
+    applyLabel?: string;
+    triggerClassName?: string;
 }
 
-export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onApply, onCancel, ...props }: DateRangePickerProps) => {
+export const DateRangePicker = ({
+    value: valueProp,
+    defaultValue,
+    onChange,
+    onApply,
+    onCancel,
+    placeholder = "Select dates",
+    cancelLabel = "Cancel",
+    applyLabel = "Apply",
+    triggerClassName,
+    ...props
+}: DateRangePickerProps) => {
     const { locale } = useLocale();
     const formatter = useDateFormatter({
         month: "short",
@@ -34,8 +49,8 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
     const [value, setValue] = useControlledState(valueProp, defaultValue || null, onChange);
     const [focusedValue, setFocusedValue] = useState<DateValue | null>(null);
 
-    const formattedStartDate = value?.start ? formatter.format(value.start.toDate(getLocalTimeZone())) : "Select date";
-    const formattedEndDate = value?.end ? formatter.format(value.end.toDate(getLocalTimeZone())) : "Select date";
+    const formattedStartDate = value?.start ? formatter.format(value.start.toDate(getLocalTimeZone())) : "—";
+    const formattedEndDate = value?.end ? formatter.format(value.end.toDate(getLocalTimeZone())) : "—";
 
     const presets = useMemo(
         () => ({
@@ -79,8 +94,8 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
     return (
         <AriaDateRangePicker aria-label="Date range picker" shouldCloseOnSelect={false} {...props} value={value} onChange={setValue}>
             <AriaGroup>
-                <Button size="md" color="secondary" iconLeading={CalendarIcon}>
-                    {!value ? <span className="text-placeholder">Select dates</span> : `${formattedStartDate} – ${formattedEndDate}`}
+                <Button size="md" color="secondary" iconLeading={CalendarIcon} className={triggerClassName}>
+                    {!value ? <span className="text-placeholder">{placeholder}</span> : `${formattedStartDate} – ${formattedEndDate}`}
                 </Button>
             </AriaGroup>
             <AriaPopover
@@ -139,7 +154,7 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
                                                 close();
                                             }}
                                         >
-                                            Cancel
+                                            {cancelLabel}
                                         </Button>
                                         <Button
                                             size="md"
@@ -149,7 +164,7 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
                                                 close();
                                             }}
                                         >
-                                            Apply
+                                            {applyLabel}
                                         </Button>
                                     </div>
                                 </div>

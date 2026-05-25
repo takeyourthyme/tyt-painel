@@ -43,7 +43,15 @@ import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
 import { Tag, TagGroup, TagList } from "@/components/base/tags/tags";
 import { parseApiErrorMessage, parseJsonOrThrow, TytApiError } from "@/lib/tyt-api/errors";
-import { deleteIngrediente, getIngredienteById, getIngredientes, postIngrediente, postIngredientesUpload, putIngrediente } from "@/lib/tyt-api/ingredientes";
+import {
+    deleteIngrediente,
+    getIngredienteById,
+    getIngredientes,
+    getIngredientesTemplate,
+    postIngrediente,
+    postIngredientesUpload,
+    putIngrediente,
+} from "@/lib/tyt-api/ingredientes";
 import type { IngredienteCreateBody, IngredienteUpdateBody } from "@/lib/tyt-api/ingredientes";
 import { ingredientesCategoriasApi } from "@/lib/tyt-api/ingredientes-categorias";
 import { getPratos } from "@/lib/tyt-api/pratos";
@@ -223,6 +231,7 @@ export default function CardapioPage() {
     const [pickCreateMode, setPickCreateMode] = useState<"single" | "batch">("single");
 
     const [batchFile, setBatchFile] = useState<File | null>(null);
+    const [templateDownloading, setTemplateDownloading] = useState(false);
 
     const [ingredientLoading, setIngredientLoading] = useState(false);
     const [ingredientError, setIngredientError] = useState<string | null>(null);
@@ -463,6 +472,50 @@ export default function CardapioPage() {
         setIngredientError(null);
         setOpenDeleteConfirm(false);
         setIngredientLoading(false);
+    }, []);
+
+    const downloadIngredientsTemplate = useCallback(async () => {
+        const token = getTytAccessToken();
+        if (!token) {
+            toast.error("Sessão expirada. Faça login novamente.");
+            return;
+        }
+
+        setTemplateDownloading(true);
+        try {
+            const res = await getIngredientesTemplate(token);
+            if (!res.ok) {
+                let message = "Não foi possível baixar o template.";
+                try {
+                    const body = await res.json();
+                    message = parseApiErrorMessage(body);
+                } catch { }
+                toast.error(message);
+                return;
+            }
+
+            const blob = await res.blob();
+            const cd = res.headers.get("content-disposition") ?? res.headers.get("Content-Disposition");
+            const filename =
+                cd?.match(/filename\*=UTF-8''([^;]+)/i)?.[1]?.trim().replace(/^"+|"+$/g, "") ??
+                cd?.match(/filename=([^;]+)/i)?.[1]?.trim().replace(/^"+|"+$/g, "") ??
+                "template_ingredientes.xlsx";
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = decodeURIComponent(filename);
+            a.rel = "noopener";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            if (err instanceof TytApiError) toast.error("Não foi possível baixar o template.", { description: parseApiErrorMessage(err.body) });
+            else toast.error("Não foi possível baixar o template.");
+        } finally {
+            setTemplateDownloading(false);
+        }
     }, []);
 
     const closeClassificationDrawer = useCallback(() => {
@@ -1299,6 +1352,16 @@ export default function CardapioPage() {
                                                 setBatchFile(first ? (first as File) : null);
                                             }}
                                         />
+                                        <Button
+                                            color="link-color"
+                                            size="sm"
+                                            iconLeading={Download02}
+                                            isLoading={templateDownloading}
+                                            onClick={() => void downloadIngredientsTemplate()}
+                                            className="w-fit"
+                                        >
+                                            Baixar template de exemplo
+                                        </Button>
                                         {batchFile ? <p className="text-sm text-tertiary">{batchFile.name}</p> : null}
                                     </div>
                                 ) : type === "create-single" ? (
@@ -1444,6 +1507,7 @@ export default function CardapioPage() {
                                                 )}
                                             />
                                         </button>
+
                                     </div>
                                 )}
                             </SlideoutMenu.Content>

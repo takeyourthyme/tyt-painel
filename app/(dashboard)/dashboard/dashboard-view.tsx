@@ -6,9 +6,10 @@ import { Playfair_Display } from "next/font/google";
 import type { DateValue } from "react-aria-components";
 import { Area, AreaChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartLegendContent, ChartTooltipContent } from "@/components/application/charts/charts-base";
+import { DateRangePicker } from "@/components/application/date-picker/date-range-picker";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
 import { Button } from "@/components/base/buttons/button";
-import { TytDatePicker } from "@/components/tyt/tyt-date-picker";
+import { I18nProvider } from "@react-aria/i18n";
 import { cx } from "@/utils/cx";
 import type { DashboardPeriodId } from "./dashboard-data";
 import { useDashboardData } from "./dashboard-data";
@@ -86,12 +87,13 @@ function MetricCard({
 
 export function DashboardView() {
     const [period, setPeriod] = useState<PeriodId>("current");
-    const [customPeriodDate, setCustomPeriodDate] = useState<DateValue | null>(null);
-    const { derived, errors, loading, reload } = useDashboardData(period, customPeriodDate);
+    const [draftCustomRange, setDraftCustomRange] = useState<{ start: DateValue; end: DateValue } | null>(null);
+    const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: DateValue; end: DateValue } | null>(null);
+    const { derived, errors, loading, reload } = useDashboardData(period, appliedCustomRange);
 
     const errorSummary = useMemo(() => {
         if (errors.length === 0) return null;
-        const parts = errors.map((e) => `Chefs: ${e.message}`);
+        const parts = errors.map((e) => e.message);
         return parts.join(" • ");
     }, [errors]);
 
@@ -125,13 +127,23 @@ export function DashboardView() {
                                 <PeriodButton key={p.id} label={p.label} selected={period === p.id} onClick={() => setPeriod(p.id)} />
                             ))}
                         </div>
-                        <TytDatePicker
-                            aria-label="Selecionar período"
-                            value={customPeriodDate ?? undefined}
-                            onChange={setCustomPeriodDate}
-                            onApply={() => setPeriod("custom")}
-                            triggerClassName={cx(period === "custom" && "ring-2 ring-[#1c398e] ring-inset")}
-                        />
+                        <I18nProvider locale="pt-BR">
+                            <DateRangePicker
+                                aria-label="Selecionar período"
+                                value={draftCustomRange ?? undefined}
+                                onChange={setDraftCustomRange}
+                                placeholder="Selecionar período"
+                                cancelLabel="Cancelar"
+                                applyLabel="Aplicar"
+                                onApply={() => {
+                                    if (!draftCustomRange?.start || !draftCustomRange?.end) return;
+                                    setAppliedCustomRange(draftCustomRange);
+                                    setPeriod("custom");
+                                }}
+                                onCancel={() => setDraftCustomRange(appliedCustomRange)}
+                                triggerClassName={cx("font-semibold", period === "custom" && "ring-2 ring-[#1c398e] ring-inset")}
+                            />
+                        </I18nProvider>
                     </div>
                 </header>
 

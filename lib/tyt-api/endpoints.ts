@@ -1,6 +1,9 @@
 /** Rotas espelhadas da collection `TYT_Api.postman_collection.json` (variável `{{URL}}` + estes caminhos). */
 
 export const tytEndpoints = {
+    dashboard: {
+        overview: "/api/dashboard/overview",
+    },
     auth: {
         login: "/api/auth/login",
         forgotPassword: "/api/auth/forgot-password",

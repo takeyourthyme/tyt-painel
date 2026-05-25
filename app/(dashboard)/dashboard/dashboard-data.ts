@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getLocalTimeZone } from "@internationalized/date";
+import type { DateValue } from "react-aria-components";
 import { TytApiError, parseApiErrorMessage, parseJsonOrThrow } from "@/lib/tyt-api/errors";
+import { tytFetch } from "@/lib/tyt-api/client";
+import { tytEndpoints } from "@/lib/tyt-api/endpoints";
 import { getTytAccessToken } from "@/lib/tyt-api/session";
-import { getChefs } from "@/lib/tyt-api/users";
 
 export type DashboardPeriodId = "current" | "previous" | "3months" | "custom";
 
@@ -48,13 +50,8 @@ export type DashboardDerivedData = {
     matchTimeByDay: DashboardMatchTimeByDayItem[];
 };
 
-type DashboardRawData = {
-    chefs: unknown[] | null;
-    orders: unknown[] | null;
-};
-
 type DashboardLoadError = {
-    scope: "chefs";
+    scope: "overview";
     message: string;
 };
 
@@ -423,34 +420,141 @@ export function computeDashboardDerivedData(input: {
     };
 }
 
-async function fetchChefs(token: string) {
-    return requestOnce(`dashboard:chefs:${token}`, async () => {
-        const res = await runWithRetry(() => getChefs(token, undefined), { retries: 2 });
-        const json = await parseJsonOrThrow<unknown>(res);
-        return normalizeList(json);
-    });
-}
-
 function errorMessageFromUnknown(err: unknown): string {
     if (err instanceof TytApiError) return parseApiErrorMessage(err.body);
     if (err instanceof Error && err.message) return err.message;
     return "Ocorreu um erro. Tente novamente.";
 }
 
+function getRecord(v: unknown): Record<string, unknown> | null {
+    if (!v || typeof v !== "object") return null;
+    return v as Record<string, unknown>;
+}
+
+function normalizeOverviewPayload(raw: unknown): Record<string, unknown> | null {
+    const obj = getRecord(raw);
+    if (!obj) return null;
+    const data = getRecord(obj.data);
+    return data ?? obj;
+}
+
+function formatDateYmd(d: Date): string {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+}
+
+type OverviewTempo = "mes_atual" | "mes_anterior" | "ultimos_3" | "periodo";
+
+function buildOverviewBody(
+    period: DashboardPeriodId,
+    customRange: { start: Date; end: Date } | null,
+): { tempo: OverviewTempo; inicio?: string; fim?: string } {
+    if (period === "current") return { tempo: "mes_atual" };
+    if (period === "previous") return { tempo: "mes_anterior" };
+    if (period === "3months") return { tempo: "ultimos_3" };
+
+    if (!customRange) return { tempo: "mes_atual" };
+    return { tempo: "periodo", inicio: formatDateYmd(customRange.start), fim: formatDateYmd(customRange.end) };
+}
+
+function emptyDerived(): DashboardDerivedData {
+    return {
+        metrics: {
+            pendingChefApprovals: { value: null, trendPercent: null, trendUp: null },
+            serviceRequests: { value: null, trendPercent: null, trendUp: null },
+            unfinishedServices: { value: null, trendPercent: null, trendUp: null },
+            cancellationRate: { value: null, trendPercent: null, trendUp: null },
+        },
+        finishedByCategory: [
+            { name: "Meal Prep", value: 0, className: "text-[#22c55e]" },
+            { name: "Get Together", value: 0, className: "text-[#a855f7]" },
+            { name: "Season Special", value: 0, className: "text-[#f97316]" },
+        ],
+        matchTimeByDay: [],
+    };
+}
+
+function mapOverviewToDerived(raw: unknown): DashboardDerivedData {
+    const obj = normalizeOverviewPayload(raw) ?? {};
+    const metrics = emptyDerived().metrics;
+
+    const pendingChefs = typeof obj.pending_chefs === "number" ? obj.pending_chefs : Number(obj.pending_chefs);
+    const serviceRequests = typeof obj.service_requests === "number" ? obj.service_requests : Number(obj.service_requests);
+    const unfinishedServices = typeof obj.unfinished_services === "number" ? obj.unfinished_services : Number(obj.unfinished_services);
+    const cancellationRate = typeof obj.cancelation_rate === "number" ? obj.cancelation_rate : Number(obj.cancelation_rate);
+
+    const finishedByCategoryBase: DashboardFinishedByCategoryItem[] = [
+        { name: "Meal Prep", value: 0, className: "text-[#22c55e]" },
+        { name: "Get Together", value: 0, className: "text-[#a855f7]" },
+        { name: "Season Special", value: 0, className: "text-[#f97316]" },
+    ];
+
+    const finishedRaw = obj.finished_services_chart;
+    const finishedList = Array.isArray(finishedRaw) ? finishedRaw : [];
+    for (const item of finishedList) {
+        const r = getRecord(item);
+        if (!r) continue;
+        const type = typeof r.type === "string" ? r.type.trim().toUpperCase() : String(r.type ?? "").trim().toUpperCase();
+        const total = typeof r.total === "number" ? r.total : Number(r.total);
+        if (!Number.isFinite(total)) continue;
+        const label: DashboardFinishedCategory | null =
+            type === "MEAL_PREP" ? "Meal Prep" : type.includes("TOGETHER") ? "Get Together" : type.includes("SPECIAL") ? "Season Special" : null;
+        if (!label) continue;
+        const idx = finishedByCategoryBase.findIndex((x) => x.name === label);
+        if (idx >= 0) finishedByCategoryBase[idx] = { ...finishedByCategoryBase[idx], value: total };
+    }
+
+    const matchRaw = obj.match_time_chart;
+    const matchList = Array.isArray(matchRaw) ? matchRaw : [];
+    const matchTimeByDay = matchList
+        .map((x) => {
+            const r = getRecord(x);
+            if (!r) return null;
+            const day = typeof r.label === "string" ? r.label : typeof r.day === "string" ? r.day : null;
+            const hours = typeof r.average_hours === "number" ? r.average_hours : Number(r.average_hours);
+            if (!day || !Number.isFinite(hours)) return null;
+            return { day, hours: Math.round(hours * 100) / 100 } satisfies DashboardMatchTimeByDayItem;
+        })
+        .filter(Boolean) as DashboardMatchTimeByDayItem[];
+
+    return {
+        metrics: {
+            pendingChefApprovals: { ...metrics.pendingChefApprovals, value: Number.isFinite(pendingChefs) ? pendingChefs : null },
+            serviceRequests: { ...metrics.serviceRequests, value: Number.isFinite(serviceRequests) ? serviceRequests : null },
+            unfinishedServices: { ...metrics.unfinishedServices, value: Number.isFinite(unfinishedServices) ? unfinishedServices : null },
+            cancellationRate: { ...metrics.cancellationRate, value: Number.isFinite(cancellationRate) ? cancellationRate : null },
+        },
+        finishedByCategory: finishedByCategoryBase,
+        matchTimeByDay,
+    };
+}
+
+async function fetchDashboardOverview(token: string, body: { tempo: OverviewTempo; inicio?: string; fim?: string }) {
+    const key = `dashboard:overview:${token}:${JSON.stringify(body)}`;
+    return requestOnce(key, async () => {
+        const res = await runWithRetry(() => tytFetch(tytEndpoints.dashboard.overview, { method: "PUT", token, json: body }), { retries: 2 });
+        return parseJsonOrThrow<unknown>(res);
+    });
+}
+
 export function useDashboardData(period: DashboardPeriodId, customDateValue: unknown) {
-    const [raw, setRaw] = useState<DashboardRawData>({ chefs: null, orders: null });
+    const [derived, setDerived] = useState<DashboardDerivedData>(() => emptyDerived());
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<DashboardLoadError[]>([]);
     const requestIdRef = useRef(0);
     const mountedRef = useRef(false);
 
-    const customDate = useMemo(() => {
+    const customRange = useMemo(() => {
         if (!customDateValue || typeof customDateValue !== "object") return null;
-        const dv = customDateValue as { toDate?: (tz: string) => Date };
-        if (typeof dv.toDate !== "function") return null;
+        const range = customDateValue as { start?: DateValue; end?: DateValue };
+        if (!range.start || !range.end) return null;
         try {
-            const date = dv.toDate(getLocalTimeZone());
-            return Number.isNaN(date.getTime()) ? null : date;
+            const start = range.start.toDate(getLocalTimeZone());
+            const end = range.end.toDate(getLocalTimeZone());
+            if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+            return { start, end };
         } catch {
             return null;
         }
@@ -461,8 +565,8 @@ export function useDashboardData(period: DashboardPeriodId, customDateValue: unk
 
         const token = getTytAccessToken();
         if (!token) {
-            setRaw({ chefs: null, orders: null });
-            setErrors([{ scope: "chefs", message: "Sessão expirada. Faça login novamente." }]);
+            setDerived(emptyDerived());
+            setErrors([{ scope: "overview", message: "Sessão expirada. Faça login novamente." }]);
             setLoading(false);
             return;
         }
@@ -470,23 +574,23 @@ export function useDashboardData(period: DashboardPeriodId, customDateValue: unk
         setLoading(true);
         setErrors([]);
 
-        const settled = await Promise.allSettled([fetchChefs(token)]);
+        const body = buildOverviewBody(period, customRange);
+        const settled = await Promise.allSettled([fetchDashboardOverview(token, body)]);
         if (!mountedRef.current || requestId !== requestIdRef.current) return;
 
-        const nextRaw: DashboardRawData = { chefs: null, orders: null };
         const nextErrors: DashboardLoadError[] = [];
 
-        const [chefsRes] = settled;
-        if (chefsRes.status === "fulfilled") {
-            nextRaw.chefs = chefsRes.value;
+        const [overviewRes] = settled;
+        if (overviewRes.status === "fulfilled") {
+            setDerived(mapOverviewToDerived(overviewRes.value));
         } else {
-            nextErrors.push({ scope: "chefs", message: errorMessageFromUnknown(chefsRes.reason) });
+            setDerived(emptyDerived());
+            nextErrors.push({ scope: "overview", message: errorMessageFromUnknown(overviewRes.reason) });
         }
 
-        setRaw(nextRaw);
         setErrors(nextErrors);
         setLoading(false);
-    }, []);
+    }, [customRange, period]);
 
     useEffect(() => {
         mountedRef.current = true;
@@ -496,14 +600,5 @@ export function useDashboardData(period: DashboardPeriodId, customDateValue: unk
         };
     }, [reload]);
 
-    const derived = useMemo(() => {
-        return computeDashboardDerivedData({
-            chefs: raw.chefs,
-            orders: raw.orders,
-            period,
-            customDate,
-        });
-    }, [customDate, period, raw.chefs, raw.orders]);
-
-    return { loading, errors, raw, derived, reload };
+    return { loading, errors, derived, reload };
 }
