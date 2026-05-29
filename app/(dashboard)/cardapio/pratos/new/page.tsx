@@ -107,6 +107,7 @@ export default function DishNewPage() {
         ativo: boolean;
         mealPreap: boolean;
         getTogheter: boolean;
+        destaqueSite: boolean;
         receitaFile: File | null;
         fichaTecnicaFile: File | null;
         foto1File: File | null;
@@ -118,6 +119,7 @@ export default function DishNewPage() {
         ativo: true,
         mealPreap: false,
         getTogheter: false,
+        destaqueSite: false,
         receitaFile: null,
         fichaTecnicaFile: null,
         foto1File: null,
@@ -231,6 +233,13 @@ export default function DishNewPage() {
                             onChange={(v) => setForm((p) => ({ ...p, ativo: v }))}
                             label="Exibir no cardápio"
                             hint="Quando ativo, o prato ficará visível para os clientes"
+                        />
+                        <Toggle
+                            size="sm"
+                            isSelected={form.destaqueSite}
+                            onChange={(v) => setForm((p) => ({ ...p, destaqueSite: v }))}
+                            label="Destaque no site"
+                            hint="Quando ativo, o prato será destacado no site"
                         />
                     </div>
                 </header>
@@ -722,6 +731,7 @@ export default function DishNewPage() {
                                                 meal_preap: form.mealPreap,
                                                 get_togheter: form.getTogheter,
                                                 receita: form.receitaFile,
+                                                destaque_site: form.destaqueSite,
                                             };
 
                                             const res = await postPratoFromFields(fields, token);

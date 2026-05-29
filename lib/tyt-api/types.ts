@@ -250,6 +250,7 @@ export type PratoFormFields = {
     meal_preap?: boolean | string;
     get_togheter?: boolean | string;
     receita?: File | Blob | string | null;
+    destaque_site?: boolean | string;
 };
 
 export const PRATO_FORM_KEYS = [
@@ -269,6 +270,7 @@ export const PRATO_FORM_KEYS = [
     "meal_preap",
     "get_togheter",
     "receita",
+    "destaque_site",
 ] as const;
 
 // ---------------------------------------------------------------------------

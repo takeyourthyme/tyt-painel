@@ -80,6 +80,7 @@ type DishView = {
     ativo: boolean;
     meal_preap: boolean;
     get_togheter: boolean;
+    destaque_site: boolean;
     foto1Url: string | null;
     foto2Url: string | null;
     fichaTecnicaUrl: string | null;
@@ -145,6 +146,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
         const ativo = coerceBool(details.ativo);
         const meal_preap = coerceBool(details.meal_preap);
         const get_togheter = coerceBool(details.get_togheter);
+        const destaque_site = coerceBool(details.destaque_site);
         const foto1Url = cleanUrl(details.foto1);
         const foto2Url = cleanUrl(details.foto2);
         const fichaTecnicaUrl = cleanUrl(details.ficha_tecnica);
@@ -158,6 +160,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
             ativo,
             meal_preap,
             get_togheter,
+            destaque_site,
             foto1Url,
             foto2Url,
             fichaTecnicaUrl,
@@ -231,9 +234,12 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Status</p>
-                                    <div className="mt-2">
+                                    <div className="mt-2 flex flex-wrap gap-2">
                                         <Badge size="sm" type="pill-color" color={dish.ativo ? "success" : "gray"}>
                                             {dish.ativo ? "Disponível no cardápio" : "Oculto do cardápio"}
+                                        </Badge>
+                                        <Badge size="sm" type="pill-color" color={dish.destaque_site ? "brand" : "gray"}>
+                                            {dish.destaque_site ? "Destaque no site" : "Sem destaque"}
                                         </Badge>
                                     </div>
                                 </div>

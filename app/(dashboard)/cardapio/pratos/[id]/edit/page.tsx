@@ -138,6 +138,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
         ativo: boolean;
         mealPreap: boolean;
         getTogheter: boolean;
+        destaqueSite: boolean;
         receitaFile: File | null;
         fichaTecnicaFile: File | null;
         foto1File: File | null;
@@ -149,6 +150,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
         ativo: true,
         mealPreap: false,
         getTogheter: false,
+        destaqueSite: false,
         receitaFile: null,
         fichaTecnicaFile: null,
         foto1File: null,
@@ -215,6 +217,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                 const ativo = coerceBool(dishRecord.ativo);
                 const mealPreap = coerceBool(dishRecord.meal_preap);
                 const getTogheter = coerceBool(dishRecord.get_togheter);
+                const destaqueSite = coerceBool(dishRecord.destaque_site);
 
                 const idsFromDishArray = (key: string) => {
                     const raw = dishRecord[key];
@@ -251,6 +254,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                     ativo,
                     mealPreap,
                     getTogheter,
+                    destaqueSite,
                 }));
             }
         } catch (err) {
@@ -318,6 +322,13 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                             onChange={(v) => setForm((p) => ({ ...p, ativo: v }))}
                             label="Exibir no cardápio"
                             hint="Quando ativo, o prato ficará visível para os clientes"
+                        />
+                        <Toggle
+                            size="sm"
+                            isSelected={form.destaqueSite}
+                            onChange={(v) => setForm((p) => ({ ...p, destaqueSite: v }))}
+                            label="Destaque no site"
+                            hint="Quando ativo, o prato será destacado no site"
                         />
                     </div>
                 </header>
@@ -857,6 +868,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                                 meal_preap: form.mealPreap,
                                                 get_togheter: form.getTogheter,
                                                 receita: removeReceita ? "" : form.receitaFile,
+                                                destaque_site: form.destaqueSite,
                                             };
 
                                             const res = await putPratoFromFields(dishId, fields, token);
