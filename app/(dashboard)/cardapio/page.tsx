@@ -34,7 +34,7 @@ import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/mod
 import { SlideoutMenu } from "@/components/application/slideout-menus/slideout-menu";
 import { Table, TableCard } from "@/components/application/table/table";
 import { Tabs } from "@/components/application/tabs/tabs";
-import { Badge } from "@/components/base/badges/badges";
+import { Badge, BadgeWithIcon } from "@/components/base/badges/badges";
 import type { BadgeColors } from "@/components/base/badges/badge-types";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
@@ -71,6 +71,7 @@ type DishCard = {
     imageUrl: string | null;
     categoryBadges: Array<{ label: string; color: BadgeColors }>;
     serviceBadges: string[];
+    destaque_site: boolean;
 };
 
 type IngredientRow = {
@@ -387,7 +388,9 @@ export default function CardapioPage() {
                 if (coerceBool(r.meal_preap ?? r.meal_prep)) serviceBadges.push("Meal Prep");
                 if (coerceBool(r.get_togheter ?? r.get_together)) serviceBadges.push("Get Together");
 
-                return { id, title, description, imageUrl, categoryBadges, serviceBadges } satisfies DishCard;
+                const destaque_site = coerceBool(r.destaque_site);
+
+                return { id, title, description, imageUrl, categoryBadges, serviceBadges, destaque_site } satisfies DishCard;
             });
             setDishes(pratosList);
 
@@ -726,6 +729,13 @@ export default function CardapioPage() {
                                 {dishItems.map((dish) => (
                                     <article key={dish.id} className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
                                         <div className="relative aspect-[16/9] w-full bg-secondary">
+                                            {dish.destaque_site && (
+                                                <div className="absolute top-3 right-3 z-10">
+                                                    <BadgeWithIcon size="sm" type="pill-color" color="brand" iconLeading={Star01}>
+                                                        Destaque
+                                                    </BadgeWithIcon>
+                                                </div>
+                                            )}
                                             {dish.imageUrl ? (
                                                 <img src={dish.imageUrl} alt={dish.title || ""} className="h-full w-full object-cover" />
                                             ) : (
