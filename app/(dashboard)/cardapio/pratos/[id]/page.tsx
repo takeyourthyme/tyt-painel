@@ -1,7 +1,8 @@
 "use client";
 
 import { use, useCallback, useEffect, useMemo, useState } from "react";
-import { Edit02 } from "@untitledui/icons";
+import { Edit02, Download02 } from "@untitledui/icons";
+import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
 import { Playfair_Display } from "next/font/google";
 import { useRouter } from "next/navigation";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
@@ -177,7 +178,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
-                <header className="flex flex-col gap-3">
+                <header className="flex flex-col gap-4">
                     <div className="flex items-center gap-2 text-sm text-tertiary">
                         <Button color="link-gray" size="sm" onClick={() => router.push("/cardapio")}>
                             Cardápio
@@ -192,7 +193,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
 
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0">
-                            <h1 className={cx(playfair.className, "text-display-sm font-semibold text-primary md:text-display-md")}>
+                            <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>
                                 {dish?.title ?? "Detalhes do prato"}
                             </h1>
                             <p className="mt-1 text-sm text-tertiary">Confira como as informações do seu prato aparecem no sistema.</p>
@@ -201,6 +202,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                             Editar
                         </Button>
                     </div>
+                    <div className="h-px w-full bg-border-secondary" aria-hidden />
                 </header>
 
                 {error ? (
@@ -242,6 +244,10 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                             {dish.destaque_site ? "Destaque no site" : "Sem destaque"}
                                         </Badge>
                                     </div>
+                                </div>
+                                <div className="col-span-full border-t border-secondary pt-4 mt-2">
+                                    <p className="text-sm font-semibold text-primary">Descrição</p>
+                                    <p className="mt-1 text-sm text-tertiary whitespace-pre-wrap">{dish.description || "—"}</p>
                                 </div>
                             </div>
                         </section>
@@ -351,13 +357,36 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                     <h2 className="text-sm font-semibold text-primary">Ficha Técnica</h2>
                                 </div>
                                 <div className="px-5 py-5">
-                                    {dish.fichaTecnicaUrl ? (
-                                        <a href={dish.fichaTecnicaUrl} target="_blank" rel="noreferrer" className="text-sm text-brand-solid">
-                                            Abrir arquivo
-                                        </a>
-                                    ) : (
-                                        <p className="text-sm text-tertiary">—</p>
-                                    )}
+                                    <div className="flex items-center justify-between gap-4 rounded-xl border border-secondary bg-primary p-4">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className={cx(
+                                                "flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary_alt",
+                                                dish.fichaTecnicaUrl ? "text-tertiary" : "text-quaternary"
+                                            )}>
+                                                <FileTypeIcon type={dish.fichaTecnicaUrl ? "pdf" : "empty"} theme="light" variant="default" className="size-6" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className={cx("truncate text-sm font-semibold", dish.fichaTecnicaUrl ? "text-primary" : "text-disabled")}>
+                                                    Ficha Técnica
+                                                </p>
+                                                <p className="truncate text-xs text-tertiary">
+                                                    {dish.fichaTecnicaUrl ? "Clique para baixar o documento" : "Nenhum arquivo cadastrado"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {dish.fichaTecnicaUrl && (
+                                            <Button
+                                                color="secondary"
+                                                size="sm"
+                                                iconLeading={Download02}
+                                                href={dish.fichaTecnicaUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                Download
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             </article>
                             <article className="rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
@@ -365,13 +394,36 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                     <h2 className="text-sm font-semibold text-primary">Receita</h2>
                                 </div>
                                 <div className="px-5 py-5">
-                                    {dish.receitaUrl ? (
-                                        <a href={dish.receitaUrl} target="_blank" rel="noreferrer" className="text-sm text-brand-solid">
-                                            Abrir arquivo
-                                        </a>
-                                    ) : (
-                                        <p className="text-sm text-tertiary">—</p>
-                                    )}
+                                    <div className="flex items-center justify-between gap-4 rounded-xl border border-secondary bg-primary p-4">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className={cx(
+                                                "flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary_alt",
+                                                dish.receitaUrl ? "text-tertiary" : "text-quaternary"
+                                            )}>
+                                                <FileTypeIcon type={dish.receitaUrl ? "pdf" : "empty"} theme="light" variant="default" className="size-6" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className={cx("truncate text-sm font-semibold", dish.receitaUrl ? "text-primary" : "text-disabled")}>
+                                                    Receita
+                                                </p>
+                                                <p className="truncate text-xs text-tertiary">
+                                                    {dish.receitaUrl ? "Clique para baixar o documento" : "Nenhum arquivo cadastrado"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {dish.receitaUrl && (
+                                            <Button
+                                                color="secondary"
+                                                size="sm"
+                                                iconLeading={Download02}
+                                                href={dish.receitaUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                Download
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             </article>
                         </section>

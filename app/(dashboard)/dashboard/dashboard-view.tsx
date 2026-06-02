@@ -9,10 +9,12 @@ import { ChartLegendContent, ChartTooltipContent } from "@/components/applicatio
 import { DateRangePicker } from "@/components/application/date-picker/date-range-picker";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
 import { Button } from "@/components/base/buttons/button";
+import { Skeleton } from "@/components/base/skeleton/skeleton";
 import { I18nProvider } from "@react-aria/i18n";
 import { cx } from "@/utils/cx";
 import type { DashboardPeriodId } from "./dashboard-data";
 import { useDashboardData } from "./dashboard-data";
+import Link from "next/link";
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -54,22 +56,27 @@ function MetricCard({
     trendLabel,
     trendUp,
     icon: Icon,
+    href,
 }: {
     title: string;
     value: string;
     trendLabel: string;
     trendUp: boolean;
     icon: typeof UserSquare;
+    href: string;
 }) {
     return (
-        <div className="rounded-xl bg-primary p-5 shadow-xs ring-1 ring-secondary ring-inset">
+        <Link
+            href={href}
+            className="block rounded-xl bg-primary p-5 shadow-xs ring-1 ring-secondary ring-inset transition-shadow duration-100 ease-linear hover:shadow-md outline-hidden focus-visible:ring-2 focus-visible:ring-brand"
+        >
             <div className="flex items-start gap-4">
                 <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#dbeafe]">
                     <Icon className="size-6 text-[#1c398e]" aria-hidden />
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-secondary">{title}</p>
-                    <p className={cx(playfair.className, "mt-1 text-display-sm font-semibold text-primary")}>{value}</p>
+                    <p className="mt-1 text-display-sm font-semibold text-primary">{value}</p>
                     <p className="mt-2 flex items-center gap-1 text-sm text-tertiary">
                         {trendUp ? (
                             <ArrowUp className="size-4 text-utility-success-600" aria-hidden />
@@ -81,7 +88,7 @@ function MetricCard({
                     </p>
                 </div>
             </div>
-        </div>
+        </Link>
     );
 }
 
@@ -113,14 +120,49 @@ export function DashboardView() {
     const cancellationTrendLabel = derived.metrics.cancellationRate.trendPercent === null ? "—" : `${derived.metrics.cancellationRate.trendPercent}%`;
     const cancellationTrendUp = derived.metrics.cancellationRate.trendUp ?? false;
 
+    if (loading && derived.finishedByCategory.length === 0) {
+        return (
+            <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8">
+                <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
+                    <header className="flex flex-col gap-4">
+                        <Skeleton className="h-8 w-48" />
+                        <div className="h-px w-full bg-border-secondary" aria-hidden />
+                    </header>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:gap-6">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="rounded-xl bg-primary p-5 shadow-xs ring-1 ring-secondary ring-inset flex gap-4">
+                                <Skeleton variant="circular" className="size-12 shrink-0" />
+                                <div className="flex-1 flex flex-col gap-2">
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-8 w-24" />
+                                    <Skeleton className="h-4 w-40" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
+                        {Array.from({ length: 2 }).map((_, i) => (
+                            <div key={i} className="flex flex-col overflow-hidden rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset p-5 gap-4">
+                                <Skeleton className="h-6 w-48" />
+                                <Skeleton className="h-4 w-64" />
+                                <Skeleton className="h-[220px] w-full" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </main>
+        );
+    }
+
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
-                <header className="flex flex-col gap-5">
+                <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                        <h1 className={cx(playfair.className, "text-display-sm font-semibold text-primary md:text-display-md")}>Dashboard</h1>
+                        <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Dashboard</h1>
                         {loading ? <LoadingIndicator type="line-spinner" size="sm" label="Carregando dados..." /> : null}
                     </div>
+                    <div className="h-px w-full bg-border-secondary" aria-hidden />
                     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                         <div className="flex flex-wrap gap-2">
                             {periods.map((p) => (
@@ -168,10 +210,11 @@ export function DashboardView() {
                         trendLabel={pendingChefTrendLabel}
                         trendUp={pendingChefTrendUp}
                         icon={UserSquare}
+                        href="/chefs"
                     />
-                    <MetricCard title="Solicitações de serviço" value={requestsValue} trendLabel={requestsTrendLabel} trendUp={requestsTrendUp} icon={Percent02} />
-                    <MetricCard title="Serviços não finalizados" value={unfinishedValue} trendLabel={unfinishedTrendLabel} trendUp={unfinishedTrendUp} icon={AlertTriangle} />
-                    <MetricCard title="Taxa de cancelamento" value={cancellationValue} trendLabel={cancellationTrendLabel} trendUp={cancellationTrendUp} icon={Percent02} />
+                    <MetricCard title="Solicitações de serviço" value={requestsValue} trendLabel={requestsTrendLabel} trendUp={requestsTrendUp} icon={Percent02} href="/agenda" />
+                    <MetricCard title="Serviços não finalizados" value={unfinishedValue} trendLabel={unfinishedTrendLabel} trendUp={unfinishedTrendUp} icon={AlertTriangle} href="/agenda" />
+                    <MetricCard title="Taxa de cancelamento" value={cancellationValue} trendLabel={cancellationTrendLabel} trendUp={cancellationTrendUp} icon={Percent02} href="/agenda" />
                 </section>
 
                 <section className="grid gap-4 lg:grid-cols-2 lg:gap-6">

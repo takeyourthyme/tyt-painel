@@ -313,7 +313,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
 
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0">
-                            <h1 className={cx(playfair.className, "text-display-sm font-semibold text-primary md:text-display-md")}>Editar prato</h1>
+                            <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Editar prato</h1>
                             <p className="mt-1 text-sm text-tertiary">Atualize as informações e a disponibilidade do prato.</p>
                         </div>
                         <Toggle
@@ -505,6 +505,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                         label="Preferência culinária"
                                         size="md"
                                         isRequired
+                                        shortcut={false}
                                         items={prefSelectableItems}
                                         inputValue={foodPreferenceQuery}
                                         onInputChange={setFoodPreferenceQuery}
@@ -551,6 +552,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                         label="Ingrediente principal"
                                         size="md"
                                         isRequired
+                                        shortcut={false}
                                         items={mainSelectableItems}
                                         inputValue={mainIngredientQuery}
                                         onInputChange={setMainIngredientQuery}
@@ -597,6 +599,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                         label="Tipo de cozinha"
                                         size="md"
                                         isRequired
+                                        shortcut={false}
                                         items={cuisineSelectableItems}
                                         inputValue={cuisineTypeQuery}
                                         onInputChange={setCuisineTypeQuery}
@@ -643,6 +646,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                         label="Tema"
                                         size="md"
                                         isRequired
+                                        shortcut={false}
                                         items={themeSelectableItems}
                                         inputValue={themeQuery}
                                         onInputChange={setThemeQuery}
@@ -688,6 +692,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                         aria-label="Ingredientes"
                                         label="Ingredientes"
                                         size="md"
+                                        shortcut={false}
                                         items={ingredientSelectableItems}
                                         inputValue={ingredientQuery}
                                         onInputChange={setIngredientQuery}

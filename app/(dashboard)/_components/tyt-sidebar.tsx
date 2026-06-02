@@ -2,14 +2,15 @@
 
 import type { FC } from "react";
 import { useEffect, useState } from "react";
-import { BankNote01, BarChartSquare02, Calendar, ChevronDown, ChevronLeft, ChevronRight, LogOut04, Rows01, Settings01, UserSquare, Users01 } from "@untitledui/icons";
+import { BankNote01, BarChartSquare02, ChevronDown, ChevronLeft, ChevronRight, LogOut04, Settings01, Receipt, User03 } from "@untitledui/icons";
+import { ChefHat, Utensils } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearTytSession } from "@/lib/tyt-api/session";
 import { cx } from "@/utils/cx";
 
-const logoSrc = "/assets/Logo-TYT-Preta.svg";
+const logoSrc = "/assets/Logo-TYT-2.svg";
 
 type NavChild = { label: string; href: string };
 
@@ -44,21 +45,21 @@ const navigation: NavSection[] = [
         id: "chefs",
         label: "Chefs",
         href: "/chefs",
-        icon: UserSquare,
-    },
-    {
-        id: "agenda",
-        label: "Agenda",
-        href: "/agenda",
-        icon: Calendar,
+        icon: ChefHat,
     },
     {
         id: "cardapio",
         label: "Cardápio",
         href: "/cardapio",
-        icon: Rows01,
+        icon: Utensils,
     },
-    { id: "clientes", label: "Clientes", href: "/clientes", icon: Users01 },
+    {
+        id: "agenda",
+        label: "Serviços",
+        href: "/agenda",
+        icon: Receipt,
+    },
+    { id: "clientes", label: "Clientes", href: "/clientes", icon: User03 },
     { id: "configuracao", label: "Configuração", href: "/configuracao", icon: Settings01 },
     { id: "financeiro", label: "Financeiro", href: "/financeiro", icon: BankNote01 },
 ];
@@ -119,10 +120,10 @@ export function TytSidebar({
     if (isCollapsed) {
         return (
             <aside className="flex h-full w-[80px] max-w-full flex-col justify-between bg-primary py-1 pl-1">
-                <div className="flex flex-col rounded-xl bg-primary pt-5 ring-1 ring-secondary ring-inset">
+                <div className="flex flex-col h-full rounded-xl bg-primary pt-5 ring-1 ring-secondary ring-inset">
                     <div className="flex items-center justify-center px-3">
                         <Link href="/dashboard" aria-label="Dashboard" className="relative block size-10">
-                            <Image src={logoSrc} alt="Take Your Thyme" fill className="object-contain" sizes="40px" />
+                            <Image src={logoSrc} alt="Take Your Thyme" width={50} height={64} className="object-contain" />
                         </Link>
                     </div>
 
@@ -160,18 +161,17 @@ export function TytSidebar({
                             })}
                         </ul>
                     </nav>
-                </div>
-
-                <div className="px-3 pb-3">
-                    <button
-                        type="button"
-                        aria-label="Sair"
-                        title="Sair"
-                        onClick={handleLogout}
-                        className="flex size-11 items-center justify-center rounded-md text-fg-quaternary outline-focus-ring transition-colors hover:bg-primary_hover hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
-                    >
-                        <LogOut04 aria-hidden className="size-5 shrink-0 text-fg-quaternary" />
-                    </button>
+                    <div className="px-3 pb-3">
+                        <button
+                            type="button"
+                            aria-label="Sair"
+                            title="Sair"
+                            onClick={handleLogout}
+                            className="flex size-11 items-center justify-center rounded-md text-fg-quaternary outline-focus-ring transition-colors hover:bg-primary_hover hover:text-fg-quaternary_hover hover:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2"
+                        >
+                            <LogOut04 aria-hidden className="size-5 shrink-0 text-fg-quaternary" />
+                        </button>
+                    </div>
                 </div>
             </aside>
         );
@@ -182,7 +182,7 @@ export function TytSidebar({
             <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-3 px-5">
                     <Link href="/dashboard" className="relative block h-16 w-[139px]">
-                        <Image src={logoSrc} alt="Take Your Thyme" fill className="object-contain object-left" sizes="139px" />
+                        <Image src={logoSrc} alt="Take Your Thyme" className="object-contain object-left" priority width={50} height={64} />
                     </Link>
                     {variant === "desktop" ? (
                         <button

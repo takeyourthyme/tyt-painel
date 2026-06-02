@@ -137,8 +137,8 @@ export const TabList = <T extends Orientation>({
 
                         // Only horizontal tabs with underline type have bottom border
                         orientation === "horizontal" &&
-                            type === "underline" &&
-                            "relative before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border-secondary",
+                        type === "underline" &&
+                        "relative before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border-secondary",
 
                         typeof className === "function" ? className(state) : className,
                     )

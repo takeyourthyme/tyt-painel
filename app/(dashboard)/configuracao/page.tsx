@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { Playfair_Display } from "next/font/google";
 import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
 import { CheckCircle, Trash01, UploadCloud02, XCircle } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
@@ -9,6 +10,8 @@ import { ProgressBar } from "@/components/base/progress-indicators/progress-indi
 import { Toggle } from "@/components/base/toggle/toggle";
 import { cx } from "@/utils/cx";
 import { getReadableFileSize } from "@/components/application/file-upload/file-upload-base";
+
+const playfair = Playfair_Display({ subsets: ["latin"], display: "swap" });
 
 type UploadItem = {
     id: string;
@@ -190,7 +193,7 @@ export default function ConfiguracaoPage() {
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8">
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8">
                 <header className="flex flex-col gap-2">
-                    <h1 className="text-display-md font-normal text-primary lg:text-display-lg">Configurações</h1>
+                    <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Configurações</h1>
                     <p className="text-sm text-tertiary">Gerencie os documentos legais e as preferências de privacidade da plataforma.</p>
                     <div className="mt-2 h-px w-full bg-border-secondary" aria-hidden />
                 </header>

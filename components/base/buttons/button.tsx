@@ -86,7 +86,7 @@ export const styles = sortCx({
         },
         "link-color": {
             root: [
-                "justify-normal rounded p-0! text-brand-secondary hover:text-brand-secondary_hover",
+                "justify-normal rounded p-0! text-text-brand-secondary hover:text-text-brand-secondary_hover",
                 // Inner text underline
                 "*:data-text:underline *:data-text:decoration-transparent *:data-text:underline-offset-2 hover:*:data-text:decoration-current",
                 // Icon styles

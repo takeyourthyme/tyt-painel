@@ -13,7 +13,7 @@ import {
 } from "react-aria-components";
 import { cx } from "@/utils/cx";
 
-const logoSrc = "/assets/Logo-TYT-Preta.svg";
+const logoSrc = "/assets/Logo-TYT-2.svg";
 
 export function TytMobileNavigationHeader({ children }: PropsWithChildren) {
     return (

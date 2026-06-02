@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle, Edit02, Plus, ReceiptCheck, Trash01, X as CloseIcon } from "@untitledui/icons";
+import { CheckCircle, Edit02, Mail01, Plus, ReceiptCheck, Trash01, X as CloseIcon } from "@untitledui/icons";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Playfair_Display } from "next/font/google";
 import { toast } from "sonner";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Badge } from "@/components/base/badges/badges";
@@ -11,10 +12,18 @@ import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
+import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import { parseApiErrorMessage, parseJsonOrThrow, TytApiError } from "@/lib/tyt-api/errors";
 import { getKitchenOrderByCode, putKitchenOrderAssignChef, putKitchenOrderCancel, putKitchenOrderSpecialServiceProposal } from "@/lib/tyt-api/kitchen-orders";
 import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { getChefs } from "@/lib/tyt-api/users";
+import { cx } from "@/utils/cx";
+
+const playfair = Playfair_Display({
+    subsets: ["latin"],
+    weight: ["600"],
+    display: "swap",
+});
 
 type KitchenOrderDetails = {
     id: number | null;
@@ -343,7 +352,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
-                <header className="flex flex-col gap-3">
+                <header className="flex flex-col gap-4">
                     <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-tertiary">
                         <Link href="/agenda" className="font-medium hover:text-tertiary_hover">
                             Agenda serviços
@@ -358,13 +367,14 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
 
                     <div className="flex flex-wrap items-end justify-between gap-4">
                         <div className="min-w-0">
-                            <h1 className="text-display-sm font-semibold text-primary md:text-display-md">Ordem</h1>
+                            <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Ordem</h1>
                             <p className="mt-1 text-sm text-tertiary">Acompanhe o status e os detalhes da solicitação.</p>
                         </div>
                         <Button color="primary" size="md" iconLeading={CloseIcon} onClick={() => setOpenCancel(true)} isDisabled={loading || !order}>
                             Cancelar
                         </Button>
                     </div>
+                    <div className="h-px w-full bg-border-secondary" aria-hidden />
                 </header>
 
                 {error ? (
@@ -386,9 +396,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                         <section className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
                             <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between">
                                 <div className="flex min-w-0 items-center gap-3">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary ring-1 ring-secondary ring-inset">
-                                        <CheckCircle className="size-5 text-tertiary" aria-hidden />
-                                    </div>
+                                    <FeaturedIcon color="brand" icon={CheckCircle} theme="light" size="md" />
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <p className="text-sm font-semibold text-primary">{formatServiceLabel(order.type)}</p>
@@ -470,27 +478,6 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                         >
                                             Enviar proposta
                                         </Button>
-                                    </div>
-
-                                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary">
-                                        <div className="border-b border-secondary px-4 py-4">
-                                            <p className="text-sm font-semibold text-primary">Pratos</p>
-                                        </div>
-                                        <div className="flex flex-wrap gap-3 px-4 py-4">
-                                            {order.dishes.length > 0 ? (
-                                                order.dishes.map((d, idx) => (
-                                                    <div key={`${d.id ?? "dish"}-${idx}`} className="inline-flex items-center gap-2 text-sm text-tertiary">
-                                                        <CheckCircle className="size-4 text-tertiary" aria-hidden />
-                                                        <span>
-                                                            {d.name}
-                                                            {d.quantity !== null ? ` x${d.quantity}` : ""}
-                                                        </span>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="text-sm text-tertiary">—</p>
-                                            )}
-                                        </div>
                                     </div>
 
                                     <div className="overflow-hidden rounded-xl border border-secondary bg-primary">
@@ -577,10 +564,9 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             Pendente
                                         </Badge>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-sm font-medium text-tertiary">Acessar recibo</p>
-                                        <ReceiptCheck className="size-5 text-fg-quaternary" aria-hidden />
-                                    </div>
+                                    <Button color="secondary" size="sm" iconTrailing={ReceiptCheck} isDisabled>
+                                        Acessar recibo
+                                    </Button>
                                 </div>
                                 <div className="grid gap-4 px-6 py-5 md:grid-cols-2">
                                     <DataRow label="Valor do serviço" value="—" />
@@ -588,14 +574,14 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     <DataRow label="Método de Pagamento" value="—" />
                                 </div>
                                 <div className="border-t border-secondary px-6 py-5">
-                                    <Button color="secondary" size="md" className="w-full" isDisabled>
+                                    <Button color="secondary" size="md" className="w-full" iconLeading={Mail01} isDisabled>
                                         Enviar aviso de pagamento
                                     </Button>
                                 </div>
                             </div>
                         </section>
 
-                        {order.observations ? (
+                        {order.observations && !isSpecial ? (
                             <section className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                                 <p className="text-sm font-semibold text-primary">Observações</p>
                                 <p className="mt-1 text-sm text-tertiary">{order.observations}</p>
@@ -657,7 +643,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
 
                                 <div>
                                     <Button
-                                        color="secondary"
+                                        color="link-color"
                                         size="md"
                                         iconLeading={Plus}
                                         onClick={() => setProposalDraft((prev) => [...prev, { description: "", price: "" }])}

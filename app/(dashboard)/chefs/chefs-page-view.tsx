@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download02, Eye, SearchLg, Star01 } from "@untitledui/icons";
+import { Download02, Eye, SearchLg, Star01, Users01, UserSquare } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import type { Key } from "react-aria-components";
 import { EmptyState } from "@/components/application/empty-state/empty-state";
@@ -15,6 +15,7 @@ import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
 import { NativeSelect } from "@/components/base/select/select-native";
+import { Skeleton } from "@/components/base/skeleton/skeleton";
 import { TytApiError, parseApiErrorMessage, parseJsonOrThrow } from "@/lib/tyt-api/errors";
 import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { getChefs } from "@/lib/tyt-api/users";
@@ -23,6 +24,7 @@ import { type ChefsFilterOption, ChefsFilterPopover, type ChefsFilterState, empt
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
+    weight: ["600"],
     display: "swap",
 });
 type ChefStage = "cadastro" | "analise" | "entrevista" | "documentacao" | "ativo" | "inativo";
@@ -270,13 +272,28 @@ function StarRating({ value, max = 5 }: { value: number | null; max?: number }) 
     );
 }
 
-function MetricCard({ label, value, sublabel }: { label: string; value: ReactNode; sublabel?: string }) {
+function MetricCard({
+    label,
+    value,
+    sublabel,
+    icon: Icon,
+}: {
+    label: string;
+    value: ReactNode;
+    sublabel?: string;
+    icon: typeof UserSquare;
+}) {
     return (
-        <div className="flex flex-1 flex-col gap-1 rounded-xl bg-primary px-5 py-4 shadow-xs ring-1 ring-secondary ring-inset">
-            <p className="text-sm font-medium text-tertiary">{label}</p>
-            <div className="flex items-baseline gap-2">
-                <span className="text-display-sm font-semibold text-primary">{value}</span>
-                {sublabel ? <span className="text-sm text-quaternary">{sublabel}</span> : null}
+        <div className="flex flex-1 items-start gap-4 rounded-xl bg-primary px-5 py-4 shadow-xs ring-1 ring-secondary ring-inset">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#dbeafe]">
+                <Icon className="size-6 text-[#1c398e]" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-tertiary">{label}</p>
+                <div className="mt-1 flex items-baseline gap-2">
+                    <span className="text-display-sm font-semibold text-primary">{value}</span>
+                    {sublabel ? <span className="text-sm text-quaternary">{sublabel}</span> : null}
+                </div>
             </div>
         </div>
     );
@@ -429,7 +446,7 @@ export function ChefsPageView() {
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                        <h1 className={cx(playfair.className, "text-display-md font-normal text-primary lg:text-display-lg")}>Personal Chefs</h1>
+                        <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Personal Chefs</h1>
                         {loading ? <LoadingIndicator type="line-spinner" size="sm" label="Carregando chefs..." /> : null}
                     </div>
                     <div className="h-px w-full bg-border-secondary" aria-hidden />
@@ -450,8 +467,8 @@ export function ChefsPageView() {
                 ) : null}
 
                 <section className="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Métricas">
-                    <MetricCard label="Chefs ativos" value={loading ? "—" : String(metrics.active)} />
-                    <MetricCard label="Novos cadastros" value={loading ? "—" : String(metrics.recent)} sublabel="últimos 30 dias" />
+                    <MetricCard label="Chefs ativos" value={loading ? "—" : String(metrics.active)} icon={Users01} />
+                    <MetricCard label="Novos cadastros" value={loading ? "—" : String(metrics.recent)} sublabel="últimos 30 dias" icon={UserSquare} />
                     <MetricCard
                         label="Avaliação média"
                         value={
@@ -459,6 +476,7 @@ export function ChefsPageView() {
                                 —<span className="text-display-xs font-normal text-quaternary">/5</span>
                             </span>
                         }
+                        icon={Star01}
                     />
                 </section>
 
@@ -486,11 +504,12 @@ export function ChefsPageView() {
                                 onApplyFilter={setAppliedFilter}
                                 cityOptions={cityOptions}
                                 serviceOptions={serviceOptions}
+                                loading={loading}
                             />
                         </Tabs.Panel>
 
                         <Tabs.Panel id="novos" className="flex flex-col gap-6 outline-hidden">
-                            {newChefs.length > 0 ? (
+                            {newChefs.length > 0 || loading ? (
                                 <GestaoChefsTable
                                     mode="new"
                                     query={query}
@@ -500,6 +519,7 @@ export function ChefsPageView() {
                                     onApplyFilter={setAppliedFilter}
                                     cityOptions={cityOptions}
                                     serviceOptions={serviceOptions}
+                                    loading={loading}
                                 />
                             ) : (
                                 <NovosCadastrosEmpty />
@@ -519,8 +539,9 @@ export function ChefsPageView() {
                                 onApplyFilter={setAppliedFilter}
                                 cityOptions={cityOptions}
                                 serviceOptions={serviceOptions}
+                                loading={loading}
                             />
-                        ) : newChefs.length > 0 ? (
+                        ) : newChefs.length > 0 || loading ? (
                             <GestaoChefsTable
                                 mode="new"
                                 query={query}
@@ -530,6 +551,7 @@ export function ChefsPageView() {
                                 onApplyFilter={setAppliedFilter}
                                 cityOptions={cityOptions}
                                 serviceOptions={serviceOptions}
+                                loading={loading}
                             />
                         ) : (
                             <NovosCadastrosEmpty />
@@ -550,6 +572,7 @@ function GestaoChefsTable({
     onApplyFilter,
     cityOptions,
     serviceOptions,
+    loading,
 }: {
     mode: "all" | "new";
     query: string;
@@ -559,17 +582,24 @@ function GestaoChefsTable({
     onApplyFilter: (next: ChefsFilterState) => void;
     cityOptions: ChefsFilterOption[];
     serviceOptions: ChefsFilterOption[];
+    loading?: boolean;
 }) {
     return (
         <>
             <div className="flex flex-col gap-1">
-                <h2 className="text-lg font-semibold text-primary">Gestão de Chefs</h2>
-                <p className="text-sm text-tertiary">Visualize, filtre e gerencie os chefs cadastrados na plataforma.</p>
+                <h2 className="text-lg font-semibold text-primary">
+                    {mode === "new" ? "Novos cadastros" : "Gestão de Chefs"}
+                </h2>
+                <p className="text-sm text-tertiary">
+                    {mode === "new"
+                        ? "Aprove novos chefs e gerencie solicitações pendentes."
+                        : "Visualize, filtre e gerencie os chefs cadastrados na plataforma."}
+                </p>
             </div>
 
             <TableCard.Root>
                 <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
-                    <Input placeholder="Pesquisar chef..." value={query} onChange={onQueryChange} icon={SearchLg} className="min-w-0 md:max-w-sm md:flex-1" />
+                    <Input placeholder="Pesquisar chef..." value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:flex-1" />
                     <div className="flex flex-wrap items-center gap-3">
                         <Button color="secondary" size="md" iconLeading={Download02}>
                             Exportar dados
@@ -588,56 +618,96 @@ function GestaoChefsTable({
                         )}
                         <Table.Head id="servico" label="Serviço" className="min-w-[200px]" />
                         <Table.Head id="local" label="Localização" className="min-w-[140px]" />
-                        <Table.Head id="avaliacao" label="Avaliação" className="min-w-[120px]" />
+                        {mode !== "new" && <Table.Head id="avaliacao" label="Avaliação" className="min-w-[120px]" />}
                         <Table.Head id="cadastro" label="Cadastro há" className="min-w-[100px]" />
                         <Table.Head id="acao" className="w-14 min-w-[56px] !pr-4" />
                     </Table.Header>
-                    <Table.Body items={chefs}>
+                    <Table.Body items={loading ? Array.from({ length: 5 }).map((_, i) => ({ id: `skeleton-${i}`, isSkeleton: true } as any)) : chefs}>
                         {(item) => (
                             <Table.Row id={item.id}>
-                                <Table.Cell>
-                                    <div className="flex items-center gap-3">
-                                        <Avatar src={item.avatarUrl} initials={item.initials} size="md" alt={item.name} />
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-medium text-primary">{item.name}</p>
-                                            <p className="truncate text-sm text-tertiary">{item.username}</p>
-                                        </div>
-                                    </div>
-                                </Table.Cell>
-                                <Table.Cell>
-                                    {mode === "new" ? (
-                                        <Badge size="sm" type="pill-color" color={getChefStageBadgeColor(item.stage)}>
-                                            {formatChefStageLabel(item.stage)}
-                                        </Badge>
-                                    ) : (
-                                        <Badge size="sm" type="pill-color" color={item.status === "ativo" ? "success" : "gray"}>
-                                            {item.status === "ativo" ? "Ativo" : "Inativo"}
-                                        </Badge>
-                                    )}
-                                </Table.Cell>
-                                <Table.Cell>
-                                    <div className="flex flex-wrap gap-1">
-                                        {item.services.length > 0 ? (
-                                            item.services.map((s) => (
-                                                <Badge key={s.label} size="sm" type="pill-color" color={s.color}>
-                                                    {s.label}
-                                                </Badge>
-                                            ))
-                                        ) : (
-                                            <span className="text-sm text-tertiary">—</span>
+                                {item.isSkeleton ? (
+                                    <>
+                                        <Table.Cell>
+                                            <div className="flex items-center gap-3 animate-pulse">
+                                                <Skeleton variant="circular" className="size-10 shrink-0" />
+                                                <div className="flex flex-col gap-2">
+                                                    <Skeleton className="h-4 w-28" />
+                                                    <Skeleton className="h-3 w-20" />
+                                                </div>
+                                            </div>
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <Skeleton className="h-6 w-16" />
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <Skeleton className="h-6 w-24" />
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <Skeleton className="h-4 w-20" />
+                                        </Table.Cell>
+                                        {mode !== "new" && (
+                                            <Table.Cell>
+                                                <Skeleton className="h-4 w-24" />
+                                            </Table.Cell>
                                         )}
-                                    </div>
-                                </Table.Cell>
-                                <Table.Cell className="whitespace-nowrap">{item.location}</Table.Cell>
-                                <Table.Cell>
-                                    <StarRating value={item.rating} />
-                                </Table.Cell>
-                                <Table.Cell className="whitespace-nowrap">{item.registeredAgo}</Table.Cell>
-                                <Table.Cell className="!px-4">
-                                    <div className="flex justify-end">
-                                        <ButtonUtility size="sm" color="tertiary" tooltip="Ver perfil" icon={Eye} href={`/chefs/${item.id}`} />
-                                    </div>
-                                </Table.Cell>
+                                        <Table.Cell>
+                                            <Skeleton className="h-4 w-16" />
+                                        </Table.Cell>
+                                        <Table.Cell className="!px-4">
+                                            <div className="flex justify-end">
+                                                <Skeleton className="size-8 rounded-lg" />
+                                            </div>
+                                        </Table.Cell>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Table.Cell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar src={item.avatarUrl} initials={item.initials} size="md" alt={item.name} />
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-medium text-primary">{item.name}</p>
+                                                    <p className="truncate text-sm text-tertiary">{item.username}</p>
+                                                </div>
+                                            </div>
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            {mode === "new" ? (
+                                                <Badge size="sm" type="pill-color" color={getChefStageBadgeColor(item.stage)}>
+                                                    {formatChefStageLabel(item.stage)}
+                                                </Badge>
+                                            ) : (
+                                                <Badge size="sm" type="pill-color" color={item.status === "ativo" ? "success" : "gray"}>
+                                                    {item.status === "ativo" ? "Ativo" : "Inativo"}
+                                                </Badge>
+                                            )}
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <div className="flex flex-wrap gap-1">
+                                                {item.services.length > 0 ? (
+                                                    item.services.map((s: any) => (
+                                                        <Badge key={s.label} size="sm" type="pill-color" color={s.color}>
+                                                            {s.label}
+                                                        </Badge>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-sm text-tertiary">—</span>
+                                                )}
+                                            </div>
+                                        </Table.Cell>
+                                        <Table.Cell className="whitespace-nowrap">{item.location}</Table.Cell>
+                                        {mode !== "new" && (
+                                            <Table.Cell>
+                                                <StarRating value={item.rating} />
+                                            </Table.Cell>
+                                        )}
+                                        <Table.Cell className="whitespace-nowrap">{item.registeredAgo}</Table.Cell>
+                                        <Table.Cell className="!px-4">
+                                            <div className="flex justify-end">
+                                                <ButtonUtility size="sm" color="tertiary" tooltip="Ver perfil" icon={Eye} href={`/chefs/${item.id}`} />
+                                            </div>
+                                        </Table.Cell>
+                                    </>
+                                )}
                             </Table.Row>
                         )}
                     </Table.Body>

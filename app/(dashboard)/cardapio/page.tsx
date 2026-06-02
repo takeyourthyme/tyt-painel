@@ -214,6 +214,17 @@ export default function CardapioPage() {
     const [dishQuery, setDishQuery] = useState("");
     const [ingredientQuery, setIngredientQuery] = useState("");
 
+    const [dishPage, setDishPage] = useState(1);
+    const [ingredientPage, setIngredientPage] = useState(1);
+
+    useEffect(() => {
+        setDishPage(1);
+    }, [dishQuery]);
+
+    useEffect(() => {
+        setIngredientPage(1);
+    }, [ingredientQuery]);
+
     const [dishes, setDishes] = useState<DishCard[]>([]);
     const [ingredients, setIngredients] = useState<IngredientRow[]>([]);
     const [categories, setCategories] = useState<IngredienteCategoria[]>([]);
@@ -371,7 +382,7 @@ export default function CardapioPage() {
 
                 const imageUrl = cleanUrl(r.foto1) ?? cleanUrl(r.imageUrl) ?? cleanUrl(r.foto) ?? null;
 
-                const prefsRaw = (r.pref_culinarias ?? r.categorias ?? r.tags) as unknown;
+                const prefsRaw = (r.pratos_categorias ?? r.pref_culinarias ?? r.categorias ?? r.tags) as unknown;
                 const prefs = Array.isArray(prefsRaw) ? prefsRaw : [];
                 const categoryBadges = prefs
                     .map((p, i) => {
@@ -421,7 +432,7 @@ export default function CardapioPage() {
                     const unidade = typeof r.unidade === "string" ? r.unidade : "—";
                     const unidadeMedida = typeof r.unidade_medida === "string" ? r.unidade_medida : null;
                     const volumePeso = typeof r.volume_peso === "string" ? r.volume_peso : typeof r.volume_peso === "number" ? String(r.volume_peso) : null;
-                    const unitLabel = volumePeso ? `${volumePeso} ${unidadeMedida ?? unidade}` : unidadeMedida ?? unidade;
+                    const unitLabel = volumePeso ? `${volumePeso}${unidadeMedida ?? unidade}` : unidadeMedida ?? unidade;
                     const valor = typeof r.valor === "number" ? r.valor : typeof r.valor === "string" ? Number(r.valor) : null;
                     const unitPriceLabel = formatCurrency(Number.isFinite(valor as number) ? (valor as number) : null);
                     const lastQuoteLabel =
@@ -454,15 +465,29 @@ export default function CardapioPage() {
         return dishes.filter((d) => `${d.title} ${d.description}`.toLowerCase().includes(q));
     }, [dishes, dishQuery]);
 
+    const dishLimit = 9;
+    const totalDishPages = Math.max(Math.ceil(dishItems.length / dishLimit), 1);
+    const paginatedDishItems = useMemo(() => {
+        const startIndex = (dishPage - 1) * dishLimit;
+        return dishItems.slice(startIndex, startIndex + dishLimit);
+    }, [dishItems, dishPage]);
+
     const ingredientItems = useMemo(() => {
         const q = ingredientQuery.trim().toLowerCase();
         if (!q) return ingredients;
         return ingredients.filter((i) => `${i.name} ${i.categoryLabel}`.toLowerCase().includes(q));
     }, [ingredients, ingredientQuery]);
 
+    const ingredientLimit = 10;
+    const totalIngredientPages = Math.max(Math.ceil(ingredientItems.length / ingredientLimit), 1);
+    const paginatedIngredientItems = useMemo(() => {
+        const startIndex = (ingredientPage - 1) * ingredientLimit;
+        return ingredientItems.slice(startIndex, startIndex + ingredientLimit);
+    }, [ingredientItems, ingredientPage]);
+
     const tabItems = useMemo(() => {
         return [
-            { id: "dishes", label: "Pratos", badge: dishes.length },
+            { id: "dishes", label: "Pratos" },
             { id: "ingredients", label: "Ingredientes" },
             { id: "classifications", label: "Classificações" },
         ] satisfies Array<{ id: TabId; label: string; badge?: number }>;
@@ -668,7 +693,7 @@ export default function CardapioPage() {
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                        <h1 className={cx(playfair.className, "text-display-md font-normal text-primary lg:text-display-lg")}>Cardápio</h1>
+                        <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Cardápio</h1>
                         <div className="flex items-center gap-3">
                             {loading ? <LoadingIndicator type="line-spinner" size="sm" label="Carregando..." /> : null}
                             {actionButton}
@@ -726,7 +751,7 @@ export default function CardapioPage() {
                             </div>
 
                             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                {dishItems.map((dish) => (
+                                {paginatedDishItems.map((dish) => (
                                     <article key={dish.id} className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
                                         <div className="relative aspect-[16/9] w-full bg-secondary">
                                             {dish.destaque_site && (
@@ -776,6 +801,30 @@ export default function CardapioPage() {
                                     </article>
                                 ))}
                             </div>
+
+                            {totalDishPages > 1 && (
+                                <div className="flex items-center justify-between border-t border-secondary mt-6 pt-4">
+                                    <Button
+                                        color="secondary"
+                                        size="sm"
+                                        onClick={() => setDishPage((p) => Math.max(p - 1, 1))}
+                                        isDisabled={dishPage === 1}
+                                    >
+                                        Anterior
+                                    </Button>
+                                    <span className="text-sm text-tertiary">
+                                        Página {dishPage} de {totalDishPages}
+                                    </span>
+                                    <Button
+                                        color="secondary"
+                                        size="sm"
+                                        onClick={() => setDishPage((p) => Math.min(p + 1, totalDishPages))}
+                                        isDisabled={dishPage === totalDishPages}
+                                    >
+                                        Próximo
+                                    </Button>
+                                </div>
+                            )}
                         </section>
                     </Tabs.Panel>
 
@@ -817,7 +866,7 @@ export default function CardapioPage() {
                                             <Table.Head id="last" label="Última cotação" className="min-w-[140px]" />
                                             <Table.Head id="actions" label="" className="w-[56px]" />
                                         </Table.Header>
-                                        <Table.Body items={ingredientItems}>
+                                        <Table.Body items={paginatedIngredientItems}>
                                             {(row) => (
                                                 <Table.Row id={row.id}>
                                                     <Table.Cell className="whitespace-nowrap text-sm font-semibold text-primary">{row.name}</Table.Cell>
@@ -847,6 +896,30 @@ export default function CardapioPage() {
                                             )}
                                         </Table.Body>
                                     </Table>
+
+                                    {totalIngredientPages > 1 && (
+                                        <div className="flex items-center justify-between border-t border-secondary px-6 py-4">
+                                            <Button
+                                                color="secondary"
+                                                size="sm"
+                                                onClick={() => setIngredientPage((p) => Math.max(p - 1, 1))}
+                                                isDisabled={ingredientPage === 1}
+                                            >
+                                                Anterior
+                                            </Button>
+                                            <span className="text-sm text-tertiary">
+                                                Página {ingredientPage} de {totalIngredientPages}
+                                            </span>
+                                            <Button
+                                                color="secondary"
+                                                size="sm"
+                                                onClick={() => setIngredientPage((p) => Math.min(p + 1, totalIngredientPages))}
+                                                isDisabled={ingredientPage === totalIngredientPages}
+                                            >
+                                                Próximo
+                                            </Button>
+                                        </div>
+                                    )}
                                 </TableCard.Root>
                             </div>
                         </section>
@@ -1218,7 +1291,7 @@ export default function CardapioPage() {
                                                         <p className="text-sm font-semibold text-primary">Peso/Volume</p>
                                                         <p className="mt-1 text-sm text-tertiary">
                                                             {ingredientView.volumePeso
-                                                                ? `${ingredientView.volumePeso} ${getStringValue(ingredientDetails ?? {}, ["unidade_medida"]) ?? ingredientView.unidade}`
+                                                                ? `${ingredientView.volumePeso}${getStringValue(ingredientDetails ?? {}, ["unidade_medida"]) ?? ingredientView.unidade}`
                                                                 : getStringValue(ingredientDetails ?? {}, ["unidade_medida"]) ?? ingredientView.unidade}
                                                         </p>
                                                     </div>
@@ -1838,7 +1911,7 @@ export default function CardapioPage() {
                                             </div>
                                         ) : (
                                             <div className="rounded-xl border border-secondary bg-primary p-4 shadow-xs">
-                                                <p className="text-sm font-semibold text-primary">Dados básicos</p>
+                                                <p className="text-sm font-semibold text-primary">Nomenclatura</p>
                                                 <div className="mt-4 flex flex-col gap-4">
                                                     <Input
                                                         label="Nome"
@@ -1905,7 +1978,7 @@ export default function CardapioPage() {
                                     )
                                 ) : type === "create" ? (
                                     <div className="rounded-xl border border-secondary bg-primary p-4 shadow-xs">
-                                        <p className="text-sm font-semibold text-primary">Dados básicos</p>
+                                        <p className="text-sm font-semibold text-primary">Nomenclatura</p>
                                         <div className="mt-4 flex flex-col gap-4">
                                             <Input
                                                 label="Nome"

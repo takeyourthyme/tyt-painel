@@ -224,7 +224,7 @@ export default function DishNewPage() {
 
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0">
-                            <h1 className={cx(playfair.className, "text-display-sm font-semibold text-primary md:text-display-md")}>Detalhes do prato</h1>
+                            <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Detalhes do prato</h1>
                             <p className="mt-1 text-sm text-tertiary">Preencha as informações para que seu prato apareça no cardápio e possa ser contratado.</p>
                         </div>
                         <Toggle
@@ -399,6 +399,7 @@ export default function DishNewPage() {
                                         label="Preferência culinária"
                                         size="md"
                                         isRequired
+                                        shortcut={false}
                                         items={prefSelectableItems}
                                         inputValue={foodPreferenceQuery}
                                         onInputChange={setFoodPreferenceQuery}
@@ -428,7 +429,7 @@ export default function DishNewPage() {
                                                                 const next = new Set(prev);
                                                                 next.delete(tagId);
                                                                 return next;
-                                                            })
+                                                             })
                                                         }
                                                     >
                                                         {foodPreferences.find((x) => String(x.id) === id)?.descricao ?? id}
@@ -445,6 +446,7 @@ export default function DishNewPage() {
                                         label="Ingrediente principal"
                                         size="md"
                                         isRequired
+                                        shortcut={false}
                                         items={mainSelectableItems}
                                         inputValue={mainIngredientQuery}
                                         onInputChange={setMainIngredientQuery}
@@ -491,6 +493,7 @@ export default function DishNewPage() {
                                         label="Tipo de cozinha"
                                         size="md"
                                         isRequired
+                                        shortcut={false}
                                         items={cuisineSelectableItems}
                                         inputValue={cuisineTypeQuery}
                                         onInputChange={setCuisineTypeQuery}
@@ -537,6 +540,7 @@ export default function DishNewPage() {
                                         label="Tema"
                                         size="md"
                                         isRequired
+                                        shortcut={false}
                                         items={themeSelectableItems}
                                         inputValue={themeQuery}
                                         onInputChange={setThemeQuery}
@@ -582,6 +586,7 @@ export default function DishNewPage() {
                                         aria-label="Ingredientes"
                                         label="Ingredientes"
                                         size="md"
+                                        shortcut={false}
                                         items={ingredientSelectableItems}
                                         inputValue={ingredientQuery}
                                         onInputChange={setIngredientQuery}

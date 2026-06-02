@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
-import { Download02, Eye, FilterLines, SearchLg } from "@untitledui/icons";
+import { Calendar, Download02, Eye, FilterLines, SearchLg, UserSquare, XCircle } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import type { Key } from "react-aria-components";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
@@ -26,13 +26,28 @@ const tabItems: { id: TabId; label: string }[] = [
     { id: "requests", label: "Solicitações" },
 ];
 
-function MetricCard({ label, value, sublabel }: { label: string; value: ReactNode; sublabel?: string }) {
+function MetricCard({
+    label,
+    value,
+    sublabel,
+    icon: Icon,
+}: {
+    label: string;
+    value: ReactNode;
+    sublabel?: string;
+    icon: typeof UserSquare;
+}) {
     return (
-        <div className="flex flex-1 flex-col gap-1 rounded-xl bg-primary px-5 py-4 shadow-xs ring-1 ring-secondary ring-inset">
-            <p className="text-sm font-medium text-tertiary">{label}</p>
-            <div className="flex items-baseline gap-2">
-                <span className="text-display-sm font-semibold text-primary">{value}</span>
-                {sublabel ? <span className="text-sm text-quaternary">{sublabel}</span> : null}
+        <div className="flex flex-1 items-start gap-4 rounded-xl bg-primary px-5 py-4 shadow-xs ring-1 ring-secondary ring-inset">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#dbeafe]">
+                <Icon className="size-6 text-[#1c398e]" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-tertiary">{label}</p>
+                <div className="mt-1 flex items-baseline gap-2">
+                    <span className="text-display-sm font-semibold text-primary">{value}</span>
+                    {sublabel ? <span className="text-sm text-quaternary">{sublabel}</span> : null}
+                </div>
             </div>
         </div>
     );
@@ -60,7 +75,7 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                        <h1 className={cx(playfair.className, "text-display-md font-normal text-primary lg:text-display-lg")}>Agenda de Serviços</h1>
+                        <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Agenda de Serviços</h1>
                         {loading ? <LoadingIndicator type="line-spinner" size="sm" label="Carregando..." /> : null}
                     </div>
                     <div className="h-px w-full bg-border-secondary" aria-hidden />
@@ -81,10 +96,10 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
                 ) : null}
 
                 <section className="flex flex-col gap-6">
-                    <div className="grid gap-4 md:grid-cols-3">
-                        <MetricCard label="Total de serviços" value={loading ? "—" : String(metrics.total)} />
-                        <MetricCard label="Aguardando Match" value={loading ? "—" : String(metrics.awaitingMatch)} />
-                        <MetricCard label="Serviços recusados pelo Chef" value={loading ? "—" : String(metrics.chefRefused)} />
+                    <div className="grid gap-4 sm:grid-cols-3" aria-label="Métricas">
+                        <MetricCard label="Total de serviços" value={loading ? "—" : String(metrics.total)} icon={Calendar} />
+                        <MetricCard label="Aguardando Match" value={loading ? "—" : String(metrics.awaitingMatch)} icon={UserSquare} />
+                        <MetricCard label="Serviços recusados pelo Chef" value={loading ? "—" : String(metrics.chefRefused)} icon={XCircle} />
                     </div>
 
                     <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="flex w-full flex-col gap-6">
@@ -141,68 +156,66 @@ function SectionTable({
     baseHref: string;
 }) {
     return (
-        <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+        <TableCard.Root>
             <div className="border-b border-secondary px-6 py-5">
                 <p className="text-sm font-semibold text-primary">{title}</p>
                 <p className="mt-1 text-sm text-tertiary">{description}</p>
             </div>
 
-            <TableCard.Root>
-                <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
-                    <Input placeholder="Buscar por ordem" value={query} onChange={onQueryChange} icon={SearchLg} className="min-w-0 md:max-w-sm md:flex-1" />
-                    <div className="flex flex-wrap items-center gap-3">
-                        <Button color="secondary" size="md" iconLeading={Download02}>
-                            Exportar dados
-                        </Button>
-                        <Button color="primary" size="md" iconLeading={FilterLines}>
-                            Filtrar
-                        </Button>
-                    </div>
+            <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+                <Input placeholder="Buscar por ordem" value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:flex-1" />
+                <div className="flex flex-wrap items-center gap-3">
+                    <Button color="secondary" size="md" iconLeading={Download02}>
+                        Exportar dados
+                    </Button>
+                    <Button color="primary" size="md" iconLeading={FilterLines}>
+                        Filtrar
+                    </Button>
                 </div>
+            </div>
 
-                <Table aria-label={title} selectionMode="none">
-                    <Table.Header>
-                        <Table.Head id="order" label="Ordem" isRowHeader className="min-w-[140px]" />
-                        <Table.Head id="type" label="Tipo de serviço" className="min-w-[160px]" />
-                        <Table.Head id="status" label="Status" className="min-w-[180px]" />
-                        <Table.Head id="value" label="Valor" className="min-w-[120px]" />
-                        <Table.Head id="city" label="Local" className="min-w-[140px]" />
-                        <Table.Head id="date" label="Data" className="min-w-[140px]" />
-                        <Table.Head id="actions" label="" className="w-[56px]" />
-                    </Table.Header>
-                    <Table.Body items={rows}>
-                        {(item) => (
-                            <Table.Row id={item.id}>
-                                <Table.Cell className="whitespace-nowrap font-medium text-primary">{item.code}</Table.Cell>
-                                <Table.Cell>
-                                    <Badge size="sm" type="pill-color" color={item.typeColor}>
-                                        {item.typeLabel}
-                                    </Badge>
-                                </Table.Cell>
-                                <Table.Cell>
-                                    <Badge size="sm" type="pill-color" color={item.statusColor}>
-                                        {item.statusLabel}
-                                    </Badge>
-                                </Table.Cell>
-                                <Table.Cell className="whitespace-nowrap text-tertiary">{item.valueLabel}</Table.Cell>
-                                <Table.Cell className="whitespace-nowrap">{item.cityLabel}</Table.Cell>
-                                <Table.Cell className="whitespace-nowrap">{item.dateLabel}</Table.Cell>
-                                <Table.Cell className="!px-4">
-                                    <div className="flex justify-end">
-                                        <ButtonUtility
-                                            size="sm"
-                                            color="tertiary"
-                                            tooltip="Ver ordem"
-                                            icon={Eye}
-                                            href={`${baseHref}/${encodeURIComponent(item.code)}`}
-                                        />
-                                    </div>
-                                </Table.Cell>
-                            </Table.Row>
-                        )}
-                    </Table.Body>
-                </Table>
-            </TableCard.Root>
-        </div>
+            <Table aria-label={title} selectionMode="none">
+                <Table.Header>
+                    <Table.Head id="order" label="Ordem" isRowHeader className="min-w-[140px]" />
+                    <Table.Head id="type" label="Tipo de serviço" className="min-w-[160px]" />
+                    <Table.Head id="status" label="Status" className="min-w-[180px]" />
+                    <Table.Head id="value" label="Valor" className="min-w-[120px]" />
+                    <Table.Head id="city" label="Local" className="min-w-[140px]" />
+                    <Table.Head id="date" label="Data" className="min-w-[140px]" />
+                    <Table.Head id="actions" label="" className="w-[56px]" />
+                </Table.Header>
+                <Table.Body items={rows}>
+                    {(item) => (
+                        <Table.Row id={item.id}>
+                            <Table.Cell className="whitespace-nowrap font-medium text-primary">{item.code}</Table.Cell>
+                            <Table.Cell>
+                                <Badge size="sm" type="pill-color" color={item.typeColor}>
+                                    {item.typeLabel}
+                                </Badge>
+                            </Table.Cell>
+                            <Table.Cell>
+                                <Badge size="sm" type="pill-color" color={item.statusColor}>
+                                    {item.statusLabel}
+                                </Badge>
+                            </Table.Cell>
+                            <Table.Cell className="whitespace-nowrap text-tertiary">{item.valueLabel}</Table.Cell>
+                            <Table.Cell className="whitespace-nowrap">{item.cityLabel}</Table.Cell>
+                            <Table.Cell className="whitespace-nowrap">{item.dateLabel}</Table.Cell>
+                            <Table.Cell className="!px-4">
+                                <div className="flex justify-end">
+                                    <ButtonUtility
+                                        size="sm"
+                                        color="tertiary"
+                                        tooltip="Ver ordem"
+                                        icon={Eye}
+                                        href={`${baseHref}/${encodeURIComponent(item.code)}`}
+                                    />
+                                </div>
+                            </Table.Cell>
+                        </Table.Row>
+                    )}
+                </Table.Body>
+            </Table>
+        </TableCard.Root>
     );
 }

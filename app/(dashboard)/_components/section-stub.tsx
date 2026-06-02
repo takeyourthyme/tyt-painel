@@ -2,8 +2,11 @@
 
 import type { FC } from "react";
 import { SearchLg } from "@untitledui/icons";
+import { Playfair_Display } from "next/font/google";
 import { EmptyState } from "@/components/application/empty-state/empty-state";
 import { cx } from "@/utils/cx";
+
+const playfair = Playfair_Display({ subsets: ["latin"], display: "swap" });
 
 export type SectionStubProps = {
     /** Título principal (equivalente ao “Section header” no Figma). */
@@ -35,10 +38,13 @@ export function SectionStub({
 }: SectionStubProps) {
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8">
-            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-4">
-                <header className="flex flex-col gap-0.5">
-                    <h1 className="text-lg font-semibold text-primary">{title}</h1>
-                    {description ? <p className="text-sm text-tertiary">{description}</p> : null}
+            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
+                <header className="flex flex-col gap-4">
+                    <div>
+                        <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>{title}</h1>
+                        {description ? <p className="mt-1.5 text-sm text-tertiary">{description}</p> : null}
+                    </div>
+                    <div className="h-px w-full bg-border-secondary" aria-hidden />
                 </header>
 
                 <div className={cx("overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs", "min-h-[min(440px,70vh)]")}>

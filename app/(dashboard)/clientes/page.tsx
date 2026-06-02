@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle, Download02, Eye, FilterLines, SearchLg, Users01 } from "@untitledui/icons";
+import { Playfair_Display } from "next/font/google";
+
+const playfair = Playfair_Display({ subsets: ["latin"], display: "swap" });
 import { toast } from "sonner";
 import { SlideoutMenu } from "@/components/application/slideout-menus/slideout-menu";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
@@ -273,7 +276,7 @@ export default function ClientesPage() {
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                        <h1 className="text-display-md font-normal text-primary lg:text-display-lg">Clientes</h1>
+                        <h1 className={`${playfair.className} text-display-xs font-semibold text-primary`}>Clientes</h1>
                         {loading ? <LoadingIndicator type="line-spinner" size="sm" label="Carregando..." /> : null}
                     </div>
                     <div className="h-px w-full bg-border-secondary" aria-hidden />
@@ -297,8 +300,8 @@ export default function ClientesPage() {
                     <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs">
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-3">
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary ring-1 ring-secondary ring-inset">
-                                    <Users01 className="size-5 text-tertiary" aria-hidden />
+                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-utility-brand-50">
+                                    <Users01 className="size-5 text-utility-brand-600" aria-hidden />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Total de clientes na base</p>
@@ -310,8 +313,8 @@ export default function ClientesPage() {
                     <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs">
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-3">
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary ring-1 ring-secondary ring-inset">
-                                    <CheckCircle className="size-5 text-tertiary" aria-hidden />
+                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-utility-success-50">
+                                    <CheckCircle className="size-5 text-utility-success-600" aria-hidden />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Clientes ativos (usando o produto)</p>
@@ -328,16 +331,15 @@ export default function ClientesPage() {
                         <p className="mt-1 text-sm text-tertiary">Acompanhe os clientes cadastrados e seus dados principais.</p>
                     </div>
 
-                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                        <TableCard.Root>
-                            <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
-                                <Input
-                                    placeholder="Pesquisar cliente..."
-                                    icon={SearchLg}
-                                    value={query}
-                                    onChange={setQuery}
-                                    className="min-w-0 md:max-w-md md:flex-1"
-                                />
+                    <TableCard.Root>
+                        <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+                            <Input
+                                placeholder="Pesquisar cliente..."
+                                icon={SearchLg}
+                                value={query}
+                                onChange={setQuery}
+                                className="w-full md:max-w-md"
+                            />
                                 <div className="flex flex-wrap items-center gap-3">
                                     <Button color="secondary" size="md" iconLeading={Download02} isDisabled>
                                         Exportar dados
@@ -392,7 +394,6 @@ export default function ClientesPage() {
                                 </Table.Body>
                             </Table>
                         </TableCard.Root>
-                    </div>
                 </section>
             </div>
 
@@ -429,8 +430,15 @@ export default function ClientesPage() {
                                             <div className="mt-4 grid gap-4">
                                                 <div className="flex items-center gap-3">
                                                     <Avatar size="md" src={details.avatarUrl} alt={details.name} />
-                                                    <div className="min-w-0">
-                                                        <p className="truncate text-sm font-semibold text-primary">{details.name}</p>
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <p className="truncate text-sm font-semibold text-primary">{details.name}</p>
+                                                            {details.createdAt ? (
+                                                                <Badge size="sm" type="pill-color" color="gray">
+                                                                    Cadastrado em {formatDatePtBr(details.createdAt)}
+                                                                </Badge>
+                                                            ) : null}
+                                                        </div>
                                                         <p className="mt-1 truncate text-sm text-tertiary">{details.email ?? "—"}</p>
                                                         <p className="mt-0.5 truncate text-sm text-tertiary">{details.whatsapp ?? "—"}</p>
                                                     </div>
@@ -477,10 +485,6 @@ export default function ClientesPage() {
                                                 </div>
                                             ) : null}
                                         </div>
-
-                                        {details.createdAt ? (
-                                            <p className="text-xs text-tertiary">Cadastrado em {formatDatePtBr(details.createdAt)}</p>
-                                        ) : null}
                                     </div>
                                 ) : (
                                     <p className="text-sm text-tertiary">—</p>
