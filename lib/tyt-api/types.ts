@@ -163,7 +163,7 @@ export type ChefsListQuery = {
 export type UpdateChefStatusBody = {
     id_user: number;
     aprovado: boolean;
-    status_chef: string;
+    status: string;
 };
 
 // ---------------------------------------------------------------------------

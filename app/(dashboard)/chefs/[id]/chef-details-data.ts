@@ -554,7 +554,7 @@ export function useChefApprovalActions() {
             setError(null);
 
             try {
-                const res = await runWithRetry(() => putChefUpdateStatus({ id_user: input.chefUserId, aprovado: input.approved, status_chef: input.status }, token), {
+                const res = await runWithRetry(() => putChefUpdateStatus({ id_user: input.chefUserId, aprovado: input.approved, status: input.status }, token), {
                     retries: 2,
                 });
                 await parseJsonOrThrow<unknown>(res);
