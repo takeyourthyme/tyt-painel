@@ -10,6 +10,7 @@ import { DateRangePicker } from "@/components/application/date-picker/date-range
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
 import { Button } from "@/components/base/buttons/button";
 import { Skeleton } from "@/components/base/skeleton/skeleton";
+import { ButtonGroup, ButtonGroupItem } from "@/components/base/button-group/button-group";
 import { I18nProvider } from "@react-aria/i18n";
 import { cx } from "@/utils/cx";
 import type { DashboardPeriodId } from "./dashboard-data";
@@ -40,16 +41,7 @@ function formatHourTick(v: number) {
     return `${h}h${m.toString().padStart(2, "0")}`;
 }
 
-function PeriodButton({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
-    return (
-        <Button color="secondary" size="md" onClick={onClick} className={cx(selected && "ring-2 ring-[#1c398e] ring-inset")}>
-            <span className="flex items-center gap-2">
-                {selected ? <span className="size-1.5 shrink-0 rounded-full bg-[#1c398e]" aria-hidden /> : null}
-                <span data-text>{label}</span>
-            </span>
-        </Button>
-    );
-}
+
 
 function MetricCard({
     title,
@@ -77,7 +69,7 @@ function MetricCard({
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-secondary">{title}</p>
-                    <p className="mt-1 text-display-sm font-semibold text-primary">{value}</p>
+                    <p className={cx(playfair.className, "mt-1 text-display-sm font-semibold text-primary")}>{value}</p>
                     <p className="mt-2 flex items-center gap-1 text-sm text-tertiary">
                         {trendUp ? (
                             <ArrowUp className="size-4 text-utility-success-600" aria-hidden />
@@ -125,7 +117,7 @@ export function DashboardView() {
 
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
-            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
+            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8">
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                         <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Dashboard</h1>
@@ -133,11 +125,30 @@ export function DashboardView() {
                     </div>
                     <div className="h-px w-full bg-border-secondary" aria-hidden />
                     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                        <div className="flex flex-wrap gap-2">
+                        <ButtonGroup
+                            selectedKeys={new Set([period])}
+                            onSelectionChange={(keys) => {
+                                const selectedKey = Array.from(keys)[0] as PeriodId | undefined;
+                                if (selectedKey) {
+                                    setPeriod(selectedKey);
+                                }
+                            }}
+                            disallowEmptySelection
+                        >
                             {periods.map((p) => (
-                                <PeriodButton key={p.id} label={p.label} selected={period === p.id} onClick={() => setPeriod(p.id)} />
+                                <ButtonGroupItem
+                                    key={p.id}
+                                    id={p.id}
+                                    iconLeading={
+                                        period === p.id ? (
+                                            <span className="size-1.5 shrink-0 rounded-full bg-[#1c398e]" aria-hidden />
+                                        ) : undefined
+                                    }
+                                >
+                                    {p.label}
+                                </ButtonGroupItem>
                             ))}
-                        </div>
+                        </ButtonGroup>
                         <I18nProvider locale="pt-BR">
                             <DateRangePicker
                                 aria-label="Selecionar período"

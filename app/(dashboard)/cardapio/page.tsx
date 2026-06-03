@@ -690,7 +690,7 @@ export default function CardapioPage() {
 
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
-            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
+            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8">
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                         <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Cardápio</h1>
@@ -716,7 +716,7 @@ export default function CardapioPage() {
                     </section>
                 ) : null}
 
-                <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="flex w-full flex-col gap-6">
+                <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="flex w-full flex-col gap-8">
                     <Tabs.List type="underline" size="md" items={tabItems} className="w-full">
                         {(tab) => <Tabs.Item {...tab} id={tab.id} />}
                     </Tabs.List>

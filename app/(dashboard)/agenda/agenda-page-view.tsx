@@ -45,7 +45,7 @@ function MetricCard({
             <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-tertiary">{label}</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-display-sm font-semibold text-primary">{value}</span>
+                    <span className={cx(playfair.className, "text-display-sm font-semibold text-primary")}>{value}</span>
                     {sublabel ? <span className="text-sm text-quaternary">{sublabel}</span> : null}
                 </div>
             </div>
@@ -72,7 +72,7 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
 
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
-            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
+            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8">
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                         <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Agenda de Serviços</h1>
@@ -95,14 +95,14 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
                     </section>
                 ) : null}
 
-                <section className="flex flex-col gap-6">
+                <section className="flex flex-col gap-8">
                     <div className="grid gap-4 sm:grid-cols-3" aria-label="Métricas">
                         <MetricCard label="Total de serviços" value={loading ? "—" : String(metrics.total)} icon={Calendar} />
                         <MetricCard label="Aguardando Match" value={loading ? "—" : String(metrics.awaitingMatch)} icon={UserSquare} />
                         <MetricCard label="Serviços recusados pelo Chef" value={loading ? "—" : String(metrics.chefRefused)} icon={XCircle} />
                     </div>
 
-                    <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="flex w-full flex-col gap-6">
+                    <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="flex w-full flex-col gap-8">
                         <Tabs.List
                             type="underline"
                             size="md"
@@ -163,7 +163,7 @@ function SectionTable({
             </div>
 
             <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
-                <Input placeholder="Buscar por ordem" value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:flex-1" />
+                <Input placeholder="Buscar por ordem" value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:max-w-md" />
                 <div className="flex flex-wrap items-center gap-3">
                     <Button color="secondary" size="md" iconLeading={Download02}>
                         Exportar dados

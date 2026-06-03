@@ -273,7 +273,7 @@ export default function ClientesPage() {
 
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
-            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
+            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8">
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                         <h1 className={`${playfair.className} text-display-xs font-semibold text-primary`}>Clientes</h1>
@@ -305,7 +305,7 @@ export default function ClientesPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Total de clientes na base</p>
-                                    <p className="mt-4 text-display-sm font-semibold text-primary">{totalCount}</p>
+                                    <p className={`${playfair.className} mt-4 text-display-sm font-semibold text-primary`}>{totalCount}</p>
                                 </div>
                             </div>
                         </div>
@@ -318,7 +318,7 @@ export default function ClientesPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Clientes ativos (usando o produto)</p>
-                                    <p className="mt-4 text-display-sm font-semibold text-primary">{activeCount}</p>
+                                    <p className={`${playfair.className} mt-4 text-display-sm font-semibold text-primary`}>{activeCount}</p>
                                 </div>
                             </div>
                         </div>

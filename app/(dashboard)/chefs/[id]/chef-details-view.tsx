@@ -17,6 +17,7 @@ import {
     UserSquare,
     X as CloseIcon,
     XCircle,
+    User01,
 } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import Link from "next/link";
@@ -37,6 +38,7 @@ import { Toggle } from "@/components/base/toggle/toggle";
 import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import { cx } from "@/utils/cx";
 import { formatAvailabilityDayLabel, formatServiceChipLabel, useChefApprovalActions, useChefDetails } from "./chef-details-data";
+import { CalendarCheck, ChefHat } from "lucide-react";
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -135,7 +137,7 @@ function MobileDisclosure({
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 [&::-webkit-details-marker]:hidden">
                 <div className="flex min-w-0 items-start gap-3">
                     <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary ring-1 ring-secondary ring-inset">
-                        <UserSquare className="size-5 text-tertiary" aria-hidden />
+                        <ChefHat className="size-5 text-tertiary" aria-hidden />
                     </div>
                     <div className="min-w-0">
                         <p className="text-sm font-semibold text-primary">{title}</p>
@@ -348,7 +350,7 @@ function ScheduleCard({ item }: { item: ScheduleItem }) {
 }
 
 export function ChefDetailsView({ id }: { id: string }) {
-    const { chef, orders, metrics, loading, error, reload, canManage } = useChefDetails(id);
+    const { chef, orders, loading, error, reload, canManage } = useChefDetails(id);
     const approval = useChefApprovalActions();
     const [selectedTab, setSelectedTab] = useState<Key>("chef_data");
     const [historyPage] = useState(1);
@@ -359,9 +361,8 @@ export function ChefDetailsView({ id }: { id: string }) {
     const headerName = chef?.name ?? "Perfil do Profissional";
     const headerEmail = chef?.email ?? "—";
     const headerInitials = chef ? getInitials(chef.name) : "";
-    const ratingValue = "—";
-    const ratingMeta = "— avaliações";
     const chefStatus = chef ? (normalizeChefStatus(chef.statusLabel) ?? (chef.approved ? "ativo" : "cadastro")) : null;
+    const cadastroAprovado = chef?.approved;
     const isFinalStatus = chefStatus ? isFinalChefStatus(chefStatus) : false;
     const showReviewActions = Boolean(canManage && chef?.chefUserId && chefStatus && !isFinalStatus);
     const showToggle = Boolean(canManage && chef?.chefUserId && chefStatus && isFinalStatus);
@@ -472,6 +473,170 @@ export function ChefDetailsView({ id }: { id: string }) {
         };
     });
 
+    const chefDataPanelContent = (
+        <>
+            {!chef && loading ? (
+                <div className="rounded-xl bg-primary p-6 shadow-xs ring-1 ring-secondary ring-inset">
+                    <LoadingIndicator type="line-spinner" size="md" label="Carregando dados..." />
+                </div>
+            ) : null}
+
+            {chef ? (
+                <>
+                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+                        <div className="border-b border-secondary px-6 py-5">
+                            <SectionHeader title="Sobre o Chef" description="Perfil profissional e especialidades" icon={ChefHat} color="gray" />
+                        </div>
+                        <div className="px-6 py-5">
+                            <div className="flex flex-col gap-5">
+                                <div>
+                                    <p className="text-sm font-medium text-secondary">Apresentação</p>
+                                    <p className="mt-1 text-sm text-tertiary">{chef.about || "—"}</p>
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-4">
+                                    <DataRow label="Escola de formação" value={chef.school || "—"} />
+                                    <DataRow
+                                        label="Instagram"
+                                        value={formatInstagramUsername(chef.username)}
+                                        href={formatInstagramLink(chef.username)}
+                                    />
+                                    <DataRow label="Tipo de serviço desejado" value="Chef" />
+                                    <DataRow label="Tipos de Prato" value="—" />
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-medium text-secondary">Especialidades culinárias</p>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {chef.specialties.length > 0 ? (
+                                            chef.specialties.map((s) => (
+                                                <Badge key={s} size="sm" type="pill-color" color="brand">
+                                                    {s}
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <span className="text-sm text-tertiary">—</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-medium text-secondary">Idiomas</p>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {chef.languages.length > 0 ? (
+                                            chef.languages.map((l) => (
+                                                <Badge key={l} size="sm" type="pill-color" color="brand">
+                                                    {formatLanguageLabel(l)}
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <span className="text-sm text-tertiary">—</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-medium text-secondary">Disponível para</p>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {chef.availableFor.length > 0 ? (
+                                            chef.availableFor.map((v) => (
+                                                <Badge key={v} size="sm" type="pill-color" color="brand">
+                                                    {formatServiceChipLabel(v)}
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <span className="text-sm text-tertiary">—</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+                        <div className="border-b border-secondary px-6 py-5">
+                            <SectionHeader title="Dados básicos" description="Informações de identificação e contato" icon={User01} color="gray" />
+                        </div>
+                        <div className="grid gap-4 px-6 py-5 md:grid-cols-4">
+                            <DataRow label="CPF" value={chef.cpf} />
+                            <DataRow label="E-mail" value={chef.email} href={formatMailto(chef.email)} />
+                            <DataRow label="Data de nascimento" value={chef.birthDate} />
+                            <DataRow label="WhatsApp" value={chef.whatsapp} href={formatWhatsAppLink(chef.whatsapp)} />
+                        </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+                        <div className="border-b border-secondary px-6 py-5">
+                            <SectionHeader title="Localização" description="Endereço e raio de atuação" icon={MarkerPin01} color="gray" />
+                        </div>
+                        <div className="grid gap-4 px-6 py-5 md:grid-cols-4">
+                            <DataRow label="CEP" value={chef.cep || "—"} />
+                            <DataRow label="Endereço" value={addressLine(chef)} />
+                            <DataRow label="Bairro" value={chef.district || "—"} />
+                            <DataRow label="Número" value={chef.number || "—"} />
+                            <DataRow label="Complemento" value={chef.complement || "—"} />
+                            <DataRow label="Cidade/UF" value={cityStateLine(chef)} />
+                            <DataRow label="Disponibilidade para deslocamento" value={formatBooleanLabel(chef.canTravel)} />
+                            <DataRow label="Tipo de transporte" value={chef.transportType || "—"} />
+                        </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+                        <div className="border-b border-secondary px-6 py-5">
+                            <SectionHeader title="Disponibilidade" description="Turnos disponíveis para agendamento de serviços" icon={CalendarCheck} color="gray" />
+                        </div>
+                        <div className="px-6 py-5">
+                            <TableCard.Root>
+                                <Table aria-label="Disponibilidade" selectionMode="none">
+                                    <Table.Header>
+                                        <Table.Head id="day" label="Dia" className="min-w-[180px]" isRowHeader />
+                                        <Table.Head id="morning" label="Manhã" className="min-w-[120px]" />
+                                        <Table.Head id="afternoon" label="Tarde" className="min-w-[120px]" />
+                                        <Table.Head id="night" label="Noite" className="min-w-[120px]" />
+                                    </Table.Header>
+                                    <Table.Body items={availabilityMatrix(chef.availability)}>
+                                        {(item) => (
+                                            <Table.Row id={item.dayKey}>
+                                                <Table.Cell className="whitespace-nowrap">{item.dayLabel}</Table.Cell>
+                                                <Table.Cell>
+                                                    <div className="flex justify-start pl-2">
+                                                        {item.morning ? (
+                                                            <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                                        ) : (
+                                                            <XCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                                        )}
+                                                    </div>
+                                                </Table.Cell>
+                                                <Table.Cell>
+                                                    <div className="flex justify-start pl-2">
+                                                        {item.afternoon ? (
+                                                            <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                                        ) : (
+                                                            <XCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                                        )}
+                                                    </div>
+                                                </Table.Cell>
+                                                <Table.Cell>
+                                                    <div className="flex justify-start pl-2">
+                                                        {item.night ? (
+                                                            <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
+                                                        ) : (
+                                                            <XCircle className="size-5 text-utility-gray-300" aria-hidden />
+                                                        )}
+                                                    </div>
+                                                </Table.Cell>
+                                            </Table.Row>
+                                        )}
+                                    </Table.Body>
+                                </Table>
+                            </TableCard.Root>
+                        </div>
+                    </div>
+                </>
+            ) : null}
+        </>
+    );
+
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
@@ -529,13 +694,13 @@ export function ChefDetailsView({ id }: { id: string }) {
                 </header>
 
                 <header className="hidden flex-col gap-3 md:flex">
-                    <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-tertiary">
+                    <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-4 text-sm text-tertiary">
                         <Link href="/chefs" className="font-medium hover:text-tertiary_hover">
                             Personal Chefs
                         </Link>
                         <span className="text-quaternary">›</span>
                         <Link href="/chefs" className="font-medium hover:text-tertiary_hover">
-                            Todos os Chefs
+                            {cadastroAprovado ? "Todos os Chefs" : "Novos cadastros"}
                         </Link>
                         <span className="text-quaternary">›</span>
                         <span className="font-medium text-secondary">{chef ? chef.name.split(" ")[0] : "Detalhes"}</span>
@@ -663,7 +828,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                     </section>
                 ) : null}
 
-                <section className="hidden rounded-xl bg-utility-blue-light-50 p-4 shadow-xs ring-1 ring-utility-blue-light-200 md:block">
+                <section className="hidden rounded-xl bg-gray-100 p-4 shadow-xs ring-1 ring-gray-200 md:block">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="flex min-w-0 items-start gap-4">
                             <Avatar src={chef?.avatarUrl ?? null} initials={headerInitials} size="lg" alt={headerName} />
@@ -871,7 +1036,7 @@ export function ChefDetailsView({ id }: { id: string }) {
 
                         {chef ? (
                             <>
-                                {isFinalStatus ? (
+                                {isFinalStatus && cadastroAprovado ? (
                                     <>
                                         <Select
                                             aria-label="Seção"
@@ -1231,309 +1396,157 @@ export function ChefDetailsView({ id }: { id: string }) {
                         ) : null}
                     </div>
 
-                    <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="hidden w-full flex-col gap-6 md:flex">
-                        <Tabs.List type="underline" size="md" items={tabItems} className="w-full">
-                            {(tab) => <Tabs.Item {...tab} id={tab.id} />}
-                        </Tabs.List>
+                    {!cadastroAprovado ? (
+                        <div className="hidden w-full flex-col gap-6 md:flex">
+                            {chefDataPanelContent}
+                        </div>
+                    ) : (
+                        <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="hidden w-full flex-col gap-6 md:flex">
+                            <Tabs.List type="underline" size="md" items={tabItems} className="w-full">
+                                {(tab) => <Tabs.Item {...tab} id={tab.id} />}
+                            </Tabs.List>
 
-                        <Tabs.Panel id="chef_data" className="flex flex-col gap-6 outline-hidden">
-                            {!chef && loading ? (
-                                <div className="rounded-xl bg-primary p-6 shadow-xs ring-1 ring-secondary ring-inset">
-                                    <LoadingIndicator type="line-spinner" size="md" label="Carregando dados..." />
-                                </div>
-                            ) : null}
+                            <Tabs.Panel id="chef_data" className="flex flex-col gap-6 outline-hidden">
+                                {chefDataPanelContent}
+                            </Tabs.Panel>
 
-                            {chef ? (
-                                <>
-                                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                                        <div className="border-b border-secondary px-6 py-5">
-                                            <SectionHeader title="Sobre o Chef" description="Perfil profissional e especialidades" icon={UserSquare} color="brand" />
+                            <Tabs.Panel id="schedule" className="outline-hidden">
+                                <div className="flex flex-col gap-6">
+                                    <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+                                        <div className="overflow-hidden rounded-xl border border-secondary bg-primary p-5 shadow-xs">
+                                            <Calendar todayLabel="Hoje" weekdayLetterLen={1} />
                                         </div>
-                                        <div className="px-6 py-5">
-                                            <div className="flex flex-col gap-5">
-                                                <div>
-                                                    <p className="text-sm font-medium text-secondary">Apresentação</p>
-                                                    <p className="mt-1 text-sm text-tertiary">{chef.about || "—"}</p>
-                                                </div>
 
-                                                <div className="grid gap-4 md:grid-cols-4">
-                                                    <DataRow label="Escola de formação" value={chef.school || "—"} />
-                                                    <DataRow
-                                                        label="Instagram"
-                                                        value={formatInstagramUsername(chef.username)}
-                                                        href={formatInstagramLink(chef.username)}
-                                                    />
-                                                    <DataRow label="Tipo de serviço desejado" value="Chef" />
-                                                    <DataRow label="Tipos de Prato" value="—" />
-                                                </div>
-
-                                                <div>
-                                                    <p className="text-sm font-medium text-secondary">Especialidades culinárias</p>
-                                                    <div className="mt-2 flex flex-wrap gap-2">
-                                                        {chef.specialties.length > 0 ? (
-                                                            chef.specialties.map((s) => (
-                                                                <Badge key={s} size="sm" type="pill-color" color="brand">
-                                                                    {s}
-                                                                </Badge>
-                                                            ))
-                                                        ) : (
-                                                            <span className="text-sm text-tertiary">—</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <p className="text-sm font-medium text-secondary">Idiomas</p>
-                                                    <div className="mt-2 flex flex-wrap gap-2">
-                                                        {chef.languages.length > 0 ? (
-                                                            chef.languages.map((l) => (
-                                                                <Badge key={l} size="sm" type="pill-color" color="brand">
-                                                                    {formatLanguageLabel(l)}
-                                                                </Badge>
-                                                            ))
-                                                        ) : (
-                                                            <span className="text-sm text-tertiary">—</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <p className="text-sm font-medium text-secondary">Disponível para</p>
-                                                    <div className="mt-2 flex flex-wrap gap-2">
-                                                        {chef.availableFor.length > 0 ? (
-                                                            chef.availableFor.map((v) => (
-                                                                <Badge key={v} size="sm" type="pill-color" color="brand">
-                                                                    {formatServiceChipLabel(v)}
-                                                                </Badge>
-                                                            ))
-                                                        ) : (
-                                                            <span className="text-sm text-tertiary">—</span>
-                                                        )}
-                                                    </div>
-                                                </div>
+                                        <TableCard.Root>
+                                            <TableCard.Header title="Programação Diária" />
+                                            <div className="flex flex-col gap-3 px-6 py-5">
+                                                {scheduleItems.length > 0 ? (
+                                                    scheduleItems.slice(0, 2).map((item) => <ScheduleCard key={item.id} item={item} />)
+                                                ) : (
+                                                    <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
+                                                )}
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                                        <div className="border-b border-secondary px-6 py-5">
-                                            <SectionHeader title="Dados básicos" description="Informações de identificação e contato" icon={CreditCard02} color="brand" />
-                                        </div>
-                                        <div className="grid gap-4 px-6 py-5 md:grid-cols-4">
-                                            <DataRow label="CPF" value={chef.cpf} />
-                                            <DataRow label="E-mail" value={chef.email} href={formatMailto(chef.email)} />
-                                            <DataRow label="Data de nascimento" value={chef.birthDate} />
-                                            <DataRow label="WhatsApp" value={chef.whatsapp} href={formatWhatsAppLink(chef.whatsapp)} />
-                                        </div>
-                                    </div>
-
-                                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                                        <div className="border-b border-secondary px-6 py-5">
-                                            <SectionHeader title="Localização" description="Endereço e raio de atuação" icon={MarkerPin01} color="brand" />
-                                        </div>
-                                        <div className="grid gap-4 px-6 py-5 md:grid-cols-4">
-                                            <DataRow label="CEP" value={chef.cep || "—"} />
-                                            <DataRow label="Endereço" value={addressLine(chef)} />
-                                            <DataRow label="Bairro" value={chef.district || "—"} />
-                                            <DataRow label="Número" value={chef.number || "—"} />
-                                            <DataRow label="Complemento" value={chef.complement || "—"} />
-                                            <DataRow label="Cidade/UF" value={cityStateLine(chef)} />
-                                            <DataRow label="Disponibilidade para deslocamento" value={formatBooleanLabel(chef.canTravel)} />
-                                            <DataRow label="Tipo de transporte" value={chef.transportType || "—"} />
-                                        </div>
-                                    </div>
-
-                                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                                        <div className="border-b border-secondary px-6 py-5">
-                                            <SectionHeader title="Disponibilidade" description="Turnos disponíveis para agendamento de serviços" icon={CalendarIcon} color="brand" />
-                                        </div>
-                                        <div className="px-6 py-5">
-                                            <TableCard.Root>
-                                                <Table aria-label="Disponibilidade" selectionMode="none">
-                                                    <Table.Header>
-                                                        <Table.Head id="day" label="Dia" className="min-w-[180px]" isRowHeader />
-                                                        <Table.Head id="morning" label="Manhã" className="min-w-[120px]" />
-                                                        <Table.Head id="afternoon" label="Tarde" className="min-w-[120px]" />
-                                                        <Table.Head id="night" label="Noite" className="min-w-[120px]" />
-                                                    </Table.Header>
-                                                    <Table.Body items={availabilityMatrix(chef.availability)}>
-                                                        {(item) => (
-                                                    <Table.Row id={item.dayKey}>
-                                                                <Table.Cell className="whitespace-nowrap">{item.dayLabel}</Table.Cell>
-                                                                <Table.Cell>
-                                                                    <div className="flex justify-start">
-                                                                        {item.morning ? (
-                                                                            <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
-                                                                        ) : (
-                                                                            <XCircle className="size-5 text-utility-gray-300" aria-hidden />
-                                                                        )}
-                                                                    </div>
-                                                                </Table.Cell>
-                                                                <Table.Cell>
-                                                                    <div className="flex justify-start">
-                                                                        {item.afternoon ? (
-                                                                            <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
-                                                                        ) : (
-                                                                            <XCircle className="size-5 text-utility-gray-300" aria-hidden />
-                                                                        )}
-                                                                    </div>
-                                                                </Table.Cell>
-                                                                <Table.Cell>
-                                                                    <div className="flex justify-start">
-                                                                        {item.night ? (
-                                                                            <CheckCircle className="size-5 text-utility-blue-600" aria-hidden />
-                                                                        ) : (
-                                                                            <XCircle className="size-5 text-utility-gray-300" aria-hidden />
-                                                                        )}
-                                                                    </div>
-                                                                </Table.Cell>
-                                                            </Table.Row>
-                                                        )}
-                                                    </Table.Body>
-                                                </Table>
-                                            </TableCard.Root>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : null}
-                        </Tabs.Panel>
-
-                        <Tabs.Panel id="schedule" className="outline-hidden">
-                            <div className="flex flex-col gap-6">
-                                <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-                                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary p-5 shadow-xs">
-                                        <Calendar todayLabel="Hoje" weekdayLetterLen={1} />
+                                        </TableCard.Root>
                                     </div>
 
                                     <TableCard.Root>
-                                        <TableCard.Header title="Programação Diária" />
+                                        <TableCard.Header
+                                            title="Próximos Agendamentos"
+                                            contentTrailing={
+                                                <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+                                                    <Input
+                                                        aria-label="Pesquisar..."
+                                                        placeholder="Pesquisar..."
+                                                        icon={SearchLg}
+                                                        size="sm"
+                                                        value={scheduleQuery}
+                                                        onChange={setScheduleQuery}
+                                                        className="w-full md:w-[320px]"
+                                                    />
+                                                    <Button size="md" color="primary" iconLeading={FilterLines} className="w-full md:w-auto">
+                                                        Filtrar
+                                                    </Button>
+                                                </div>
+                                            }
+                                        />
                                         <div className="flex flex-col gap-3 px-6 py-5">
                                             {scheduleItems.length > 0 ? (
-                                                scheduleItems.slice(0, 2).map((item) => <ScheduleCard key={item.id} item={item} />)
+                                                scheduleItems.map((item) => <ScheduleCard key={item.id} item={item} />)
                                             ) : (
                                                 <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
                                             )}
                                         </div>
                                     </TableCard.Root>
                                 </div>
+                            </Tabs.Panel>
 
+                            <Tabs.Panel id="history" className="outline-hidden">
                                 <TableCard.Root>
-                                    <TableCard.Header
-                                        title="Próximos Agendamentos"
-                                        contentTrailing={
-                                            <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-                                                <Input
-                                                    aria-label="Pesquisar..."
-                                                    placeholder="Pesquisar..."
-                                                    icon={SearchLg}
-                                                    size="sm"
-                                                    value={scheduleQuery}
-                                                    onChange={setScheduleQuery}
-                                                    className="w-full md:w-[320px]"
-                                                />
-                                                <Button size="md" color="primary" iconLeading={FilterLines} className="w-full md:w-auto">
-                                                    Filtrar
-                                                </Button>
-                                            </div>
-                                        }
-                                    />
-                                    <div className="flex flex-col gap-3 px-6 py-5">
-                                        {scheduleItems.length > 0 ? (
-                                            scheduleItems.map((item) => <ScheduleCard key={item.id} item={item} />)
-                                        ) : (
-                                            <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
-                                        )}
+                                    <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 lg:flex-row lg:items-center lg:justify-between md:px-6">
+                                        <p className="text-sm font-semibold text-primary">Registro de Atendimentos</p>
+                                        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:w-auto">
+                                            <Input
+                                                aria-label="Pesquisar..."
+                                                placeholder="Pesquisar..."
+                                                icon={SearchLg}
+                                                size="sm"
+                                                value={historyQuery}
+                                                onChange={setHistoryQuery}
+                                                className="w-full lg:w-[320px]"
+                                            />
+                                            <Button size="md" color="secondary" iconLeading={Download02} className="w-full sm:w-auto">
+                                                Exportar dados
+                                            </Button>
+                                            <Button size="md" color="primary" iconLeading={FilterLines} className="w-full sm:w-auto">
+                                                Filtrar
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {historyRows.length > 0 ? (
+                                        <Table aria-label="Registro de Atendimentos" selectionMode="none">
+                                            <Table.Header>
+                                                <Table.Head id="service" label="Serviço" className="min-w-[160px]" isRowHeader />
+                                                <Table.Head id="value" label="Valor" className="min-w-[140px]" />
+                                                <Table.Head id="status" label="Status" className="min-w-[160px]" />
+                                                <Table.Head id="date" label="Data" className="min-w-[140px]" />
+                                                <Table.Head id="location" label="Localização" className="min-w-[140px]" />
+                                                <Table.Head id="client" label="Cliente" className="min-w-[200px]" />
+                                                <Table.Head id="actions" label="" className="w-[56px]" />
+                                            </Table.Header>
+                                            <Table.Body items={historyRows}>
+                                                {(row) => (
+                                                    <Table.Row id={row.id}>
+                                                        <Table.Cell className="whitespace-nowrap">
+                                                            <Badge size="sm" type="pill-color" color="gray">
+                                                                {row.serviceLabel}
+                                                            </Badge>
+                                                        </Table.Cell>
+                                                        <Table.Cell className="whitespace-nowrap text-tertiary">{row.valueLabel}</Table.Cell>
+                                                        <Table.Cell className="whitespace-nowrap">{historyStatusBadge(row.status)}</Table.Cell>
+                                                        <Table.Cell className="whitespace-nowrap text-tertiary">{row.dateLabel}</Table.Cell>
+                                                        <Table.Cell className="whitespace-nowrap text-tertiary">{row.locationLabel}</Table.Cell>
+                                                        <Table.Cell className="whitespace-nowrap text-tertiary">{row.clientName}</Table.Cell>
+                                                        <Table.Cell>
+                                                            <div className="flex justify-end">
+                                                                <ButtonUtility icon={Eye} color="secondary" size="sm" aria-label="Ver" />
+                                                            </div>
+                                                        </Table.Cell>
+                                                    </Table.Row>
+                                                )}
+                                            </Table.Body>
+                                        </Table>
+                                    ) : (
+                                        <div className="px-6 py-5">
+                                            <p className="text-sm text-tertiary">Nenhum serviço encontrado.</p>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center justify-between border-t border-secondary px-6 py-4">
+                                        <Button color="secondary" size="sm">
+                                            Anterior
+                                        </Button>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                type="button"
+                                                aria-current="page"
+                                                className="flex size-10 items-center justify-center rounded-full bg-primary_hover text-sm font-medium text-secondary"
+                                            >
+                                                {historyPage}
+                                            </button>
+                                            <span className="flex size-10 items-center justify-center text-tertiary">2</span>
+                                            <span className="flex size-10 items-center justify-center text-tertiary">3</span>
+                                            <span className="flex size-10 items-center justify-center text-tertiary">…</span>
+                                            <span className="flex size-10 items-center justify-center text-tertiary">10</span>
+                                        </div>
+                                        <Button color="secondary" size="sm">
+                                            Próximo
+                                        </Button>
                                     </div>
                                 </TableCard.Root>
-                            </div>
-                        </Tabs.Panel>
-
-                        <Tabs.Panel id="history" className="outline-hidden">
-                            <TableCard.Root>
-                                <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 lg:flex-row lg:items-center lg:justify-between md:px-6">
-                                    <p className="text-sm font-semibold text-primary">Registro de Atendimentos</p>
-                                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:w-auto">
-                                        <Input
-                                            aria-label="Pesquisar..."
-                                            placeholder="Pesquisar..."
-                                            icon={SearchLg}
-                                            size="sm"
-                                            value={historyQuery}
-                                            onChange={setHistoryQuery}
-                                            className="w-full lg:w-[320px]"
-                                        />
-                                        <Button size="md" color="secondary" iconLeading={Download02} className="w-full sm:w-auto">
-                                            Exportar dados
-                                        </Button>
-                                        <Button size="md" color="primary" iconLeading={FilterLines} className="w-full sm:w-auto">
-                                            Filtrar
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {historyRows.length > 0 ? (
-                                    <Table aria-label="Registro de Atendimentos" selectionMode="none">
-                                        <Table.Header>
-                                            <Table.Head id="service" label="Serviço" className="min-w-[160px]" isRowHeader />
-                                            <Table.Head id="value" label="Valor" className="min-w-[140px]" />
-                                            <Table.Head id="status" label="Status" className="min-w-[160px]" />
-                                            <Table.Head id="date" label="Data" className="min-w-[140px]" />
-                                            <Table.Head id="location" label="Localização" className="min-w-[140px]" />
-                                            <Table.Head id="client" label="Cliente" className="min-w-[200px]" />
-                                            <Table.Head id="actions" label="" className="w-[56px]" />
-                                        </Table.Header>
-                                        <Table.Body items={historyRows}>
-                                            {(row) => (
-                                                <Table.Row id={row.id}>
-                                                    <Table.Cell className="whitespace-nowrap">
-                                                        <Badge size="sm" type="pill-color" color="gray">
-                                                            {row.serviceLabel}
-                                                        </Badge>
-                                                    </Table.Cell>
-                                                    <Table.Cell className="whitespace-nowrap text-tertiary">{row.valueLabel}</Table.Cell>
-                                                    <Table.Cell className="whitespace-nowrap">{historyStatusBadge(row.status)}</Table.Cell>
-                                                    <Table.Cell className="whitespace-nowrap text-tertiary">{row.dateLabel}</Table.Cell>
-                                                    <Table.Cell className="whitespace-nowrap text-tertiary">{row.locationLabel}</Table.Cell>
-                                                    <Table.Cell className="whitespace-nowrap text-tertiary">{row.clientName}</Table.Cell>
-                                                    <Table.Cell>
-                                                        <div className="flex justify-end">
-                                                            <ButtonUtility icon={Eye} color="secondary" size="sm" aria-label="Ver" />
-                                                        </div>
-                                                    </Table.Cell>
-                                                </Table.Row>
-                                            )}
-                                        </Table.Body>
-                                    </Table>
-                                ) : (
-                                    <div className="px-6 py-5">
-                                        <p className="text-sm text-tertiary">Nenhum serviço encontrado.</p>
-                                    </div>
-                                )}
-
-                                <div className="flex items-center justify-between border-t border-secondary px-6 py-4">
-                                    <Button color="secondary" size="sm">
-                                        Anterior
-                                    </Button>
-                                    <div className="flex items-center gap-1">
-                                        <button
-                                            type="button"
-                                            aria-current="page"
-                                            className="flex size-10 items-center justify-center rounded-full bg-primary_hover text-sm font-medium text-secondary"
-                                        >
-                                            {historyPage}
-                                        </button>
-                                        <span className="flex size-10 items-center justify-center text-tertiary">2</span>
-                                        <span className="flex size-10 items-center justify-center text-tertiary">3</span>
-                                        <span className="flex size-10 items-center justify-center text-tertiary">…</span>
-                                        <span className="flex size-10 items-center justify-center text-tertiary">10</span>
-                                    </div>
-                                    <Button color="secondary" size="sm">
-                                        Próximo
-                                    </Button>
-                                </div>
-                            </TableCard.Root>
-                        </Tabs.Panel>
-                    </Tabs>
+                            </Tabs.Panel>
+                        </Tabs>
+                    )}
                 </section>
             </div>
         </main>

@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download02, Eye, SearchLg, Star01, Users01, UserSquare } from "@untitledui/icons";
+import { Download02, Eye, File06, SearchLg, Star01, Users01, UserSquare } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import type { Key } from "react-aria-components";
 import { EmptyState } from "@/components/application/empty-state/empty-state";
@@ -21,6 +21,7 @@ import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { getChefs } from "@/lib/tyt-api/users";
 import { cx } from "@/utils/cx";
 import { type ChefsFilterOption, ChefsFilterPopover, type ChefsFilterState, emptyChefsFilter } from "./chefs-filter-popover";
+import { ChefHat } from "lucide-react";
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -291,7 +292,7 @@ function MetricCard({
             <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-tertiary">{label}</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-display-sm font-semibold text-primary">{value}</span>
+                    <span className={cx(playfair.className, "text-display-sm font-semibold text-primary")}>{value}</span>
                     {sublabel ? <span className="text-sm text-quaternary">{sublabel}</span> : null}
                 </div>
             </div>
@@ -443,7 +444,7 @@ export function ChefsPageView() {
 
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8">
-            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
+            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8">
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                         <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Personal Chefs</h1>
@@ -467,8 +468,8 @@ export function ChefsPageView() {
                 ) : null}
 
                 <section className="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Métricas">
-                    <MetricCard label="Chefs ativos" value={loading ? "—" : String(metrics.active)} icon={Users01} />
-                    <MetricCard label="Novos cadastros" value={loading ? "—" : String(metrics.recent)} sublabel="últimos 30 dias" icon={UserSquare} />
+                    <MetricCard label="Chefs ativos" value={loading ? "—" : String(metrics.active)} icon={ChefHat} />
+                    <MetricCard label="Novos cadastros" value={loading ? "—" : String(metrics.recent)} sublabel="últimos 30 dias" icon={File06} />
                     <MetricCard
                         label="Avaliação média"
                         value={
@@ -480,7 +481,7 @@ export function ChefsPageView() {
                     />
                 </section>
 
-                <section className="flex flex-col gap-6">
+                <section className="flex flex-col gap-8">
                     <NativeSelect
                         aria-label="Seção"
                         value={selectedTab as string}
@@ -489,12 +490,12 @@ export function ChefsPageView() {
                         className="w-full md:hidden"
                     />
 
-                    <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="hidden w-full flex-col gap-6 md:flex">
+                    <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="hidden w-full flex-col gap-8 md:flex">
                         <Tabs.List type="underline" size="md" items={tabItems} className="w-full">
                             {(tab) => <Tabs.Item {...tab} id={tab.id} />}
                         </Tabs.List>
 
-                        <Tabs.Panel id="todos" className="flex flex-col gap-6 outline-hidden">
+                        <Tabs.Panel id="todos" className="flex flex-col gap-4 outline-hidden">
                             <GestaoChefsTable
                                 mode="all"
                                 query={query}
@@ -508,7 +509,7 @@ export function ChefsPageView() {
                             />
                         </Tabs.Panel>
 
-                        <Tabs.Panel id="novos" className="flex flex-col gap-6 outline-hidden">
+                        <Tabs.Panel id="novos" className="flex flex-col gap-4 outline-hidden">
                             {newChefs.length > 0 || loading ? (
                                 <GestaoChefsTable
                                     mode="new"
@@ -528,7 +529,7 @@ export function ChefsPageView() {
                     </Tabs>
 
                     {/* Mobile: panels sem Tabs do Aria (evita duplicar markup complexo) */}
-                    <div className="flex flex-col gap-6 md:hidden">
+                    <div className="flex flex-col gap-4 md:hidden">
                         {selectedTab === "todos" ? (
                             <GestaoChefsTable
                                 mode="all"
@@ -588,18 +589,18 @@ function GestaoChefsTable({
         <>
             <div className="flex flex-col gap-1">
                 <h2 className="text-lg font-semibold text-primary">
-                    {mode === "new" ? "Novos cadastros" : "Gestão de Chefs"}
+                    {mode === "new" ? "Aprovação de Novos Cadastros" : "Gestão de Chefs"}
                 </h2>
                 <p className="text-sm text-tertiary">
                     {mode === "new"
-                        ? "Aprove novos chefs e gerencie solicitações pendentes."
+                        ? "Gerencie as etapas de entrada e aprove novos chefs parceiros."
                         : "Visualize, filtre e gerencie os chefs cadastrados na plataforma."}
                 </p>
             </div>
 
             <TableCard.Root>
                 <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
-                    <Input placeholder="Pesquisar chef..." value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:flex-1" />
+                    <Input placeholder="Pesquisar chef..." value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:max-w-md" />
                     <div className="flex flex-wrap items-center gap-3">
                         <Button color="secondary" size="md" iconLeading={Download02}>
                             Exportar dados
@@ -618,7 +619,7 @@ function GestaoChefsTable({
                         )}
                         <Table.Head id="servico" label="Serviço" className="min-w-[200px]" />
                         <Table.Head id="local" label="Localização" className="min-w-[140px]" />
-                        {mode !== "new" && <Table.Head id="avaliacao" label="Avaliação" className="min-w-[120px]" />}
+
                         <Table.Head id="cadastro" label="Cadastro há" className="min-w-[100px]" />
                         <Table.Head id="acao" className="w-14 min-w-[56px] !pr-4" />
                     </Table.Header>
@@ -645,11 +646,6 @@ function GestaoChefsTable({
                                         <Table.Cell>
                                             <Skeleton className="h-4 w-20" />
                                         </Table.Cell>
-                                        {mode !== "new" && (
-                                            <Table.Cell>
-                                                <Skeleton className="h-4 w-24" />
-                                            </Table.Cell>
-                                        )}
                                         <Table.Cell>
                                             <Skeleton className="h-4 w-16" />
                                         </Table.Cell>
@@ -695,11 +691,6 @@ function GestaoChefsTable({
                                             </div>
                                         </Table.Cell>
                                         <Table.Cell className="whitespace-nowrap">{item.location}</Table.Cell>
-                                        {mode !== "new" && (
-                                            <Table.Cell>
-                                                <StarRating value={item.rating} />
-                                            </Table.Cell>
-                                        )}
                                         <Table.Cell className="whitespace-nowrap">{item.registeredAgo}</Table.Cell>
                                         <Table.Cell className="!px-4">
                                             <div className="flex justify-end">
