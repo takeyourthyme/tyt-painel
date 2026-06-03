@@ -322,24 +322,29 @@ function historyStatusBadge(status: HistoryStatus) {
 
 function ScheduleCard({ item }: { item: ScheduleItem }) {
     return (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-secondary bg-primary px-5 py-4 shadow-xs">
-            <div className="flex min-w-0 items-center gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-                    <CalendarIcon className="size-5 text-tertiary" aria-hidden />
-                </div>
-                <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-secondary bg-primary p-5 shadow-xs">
+            <div className="flex min-w-0 items-start gap-3">
+                <FeaturedIcon size="sm" theme="light" color="gray" icon={CalendarIcon} className="mt-0.5" />
+                <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-3">
                         <p className="text-sm font-semibold text-primary">{item.serviceLabel}</p>
                         {scheduleStatusBadge(item.status)}
                     </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-tertiary">
-                        <span className="whitespace-nowrap">
-                            {item.dateLabel} às {item.timeLabel}
-                        </span>
-                        <span className="text-quaternary">•</span>
-                        <span className="truncate">{item.locationLabel}</span>
-                        <span className="text-quaternary">•</span>
-                        <span className="whitespace-nowrap">{item.clientName}</span>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-tertiary">
+                        <div className="flex items-center gap-1.5">
+                            <CalendarIcon className="size-4 text-quaternary" aria-hidden />
+                            <span className="whitespace-nowrap">
+                                {item.dateLabel} às {item.timeLabel}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <MarkerPin01 className="size-4 text-quaternary" aria-hidden />
+                            <span className="truncate">{item.locationLabel}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <User01 className="size-4 text-quaternary" aria-hidden />
+                            <span className="whitespace-nowrap">{item.clientName}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -348,6 +353,7 @@ function ScheduleCard({ item }: { item: ScheduleItem }) {
         </div>
     );
 }
+
 
 export function ChefDetailsView({ id }: { id: string }) {
     const { chef, orders, loading, error, reload, canManage } = useChefDetails(id);
@@ -828,7 +834,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                     </section>
                 ) : null}
 
-                <section className="hidden rounded-xl bg-gray-100 p-4 shadow-xs ring-1 ring-gray-200 md:block">
+                <section className={cx("hidden rounded-xl p-4 shadow-xs ring-1 ring-gray-200 md:block", cadastroAprovado ? "bg-brand-secondary" : "bg-gray-100")}>
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="flex min-w-0 items-start gap-4">
                             <Avatar src={chef?.avatarUrl ?? null} initials={headerInitials} size="lg" alt={headerName} />
@@ -1429,9 +1435,10 @@ export function ChefDetailsView({ id }: { id: string }) {
                                         </TableCard.Root>
                                     </div>
 
-                                    <TableCard.Root>
+                                    <TableCard.Root className="border-none bg-secondary ring-transparent shadow-none">
                                         <TableCard.Header
                                             title="Próximos Agendamentos"
+                                            className="border-none bg-secondary"
                                             contentTrailing={
                                                 <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
                                                     <Input
