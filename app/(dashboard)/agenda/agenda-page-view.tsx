@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
-import { Calendar, Download02, Eye, FilterLines, SearchLg, UserSquare, XCircle } from "@untitledui/icons";
+import { Calendar, Download02, Eye, FilterLines, Hourglass03, SearchLg, UserSquare, XCircle } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import type { Key } from "react-aria-components";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
@@ -13,6 +13,7 @@ import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
 import { cx } from "@/utils/cx";
 import { useAgendaOrders } from "./agenda-data";
+import { TriangleAlert, Utensils } from "lucide-react";
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -97,9 +98,9 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
 
                 <section className="flex flex-col gap-8">
                     <div className="grid gap-4 sm:grid-cols-3" aria-label="Métricas">
-                        <MetricCard label="Total de serviços" value={loading ? "—" : String(metrics.total)} icon={Calendar} />
-                        <MetricCard label="Aguardando Match" value={loading ? "—" : String(metrics.awaitingMatch)} icon={UserSquare} />
-                        <MetricCard label="Serviços recusados pelo Chef" value={loading ? "—" : String(metrics.chefRefused)} icon={XCircle} />
+                        <MetricCard label="Total de serviços" value={loading ? "—" : String(metrics.total)} icon={Utensils} />
+                        <MetricCard label="Aguardando Match" value={loading ? "—" : String(metrics.awaitingMatch)} icon={Hourglass03} />
+                        <MetricCard label="Serviços recusados pelo Chef" value={loading ? "—" : String(metrics.chefRefused)} icon={TriangleAlert} />
                     </div>
 
                     <Tabs selectedKey={selectedTab} onSelectionChange={setSelectedTab} className="flex w-full flex-col gap-8">
@@ -114,8 +115,8 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
 
                         <Tabs.Panel id="scheduled" className="flex flex-col gap-4 outline-hidden">
                             <SectionTable
-                                title="Serviços agendados"
-                                description="Acompanhe os serviços com chef definido."
+                                title="Gestão de Agendamentos"
+                                description="Visualize, filtre e gerencie os chefs parceiros cadastrados na plataforma."
                                 query={query}
                                 onQueryChange={setQuery}
                                 rows={selectedTab === "scheduled" ? visible : scheduled}
@@ -156,66 +157,68 @@ function SectionTable({
     baseHref: string;
 }) {
     return (
-        <TableCard.Root>
-            <div className="border-b border-secondary px-6 py-5">
-                <p className="text-sm font-semibold text-primary">{title}</p>
-                <p className="mt-1 text-sm text-tertiary">{description}</p>
+        <>
+            <div className="flex flex-col gap-1">
+                <h2 className="text-lg font-semibold text-primary">{title}</h2>
+                <p className="text-sm text-tertiary">{description}</p>
             </div>
 
-            <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
-                <Input placeholder="Buscar por ordem" value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:max-w-md" />
-                <div className="flex flex-wrap items-center gap-3">
-                    <Button color="secondary" size="md" iconLeading={Download02}>
-                        Exportar dados
-                    </Button>
-                    <Button color="primary" size="md" iconLeading={FilterLines}>
-                        Filtrar
-                    </Button>
+            <TableCard.Root>
+                <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+                    <Input placeholder="Buscar por ordem" value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:max-w-md" />
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Button color="secondary" size="md" iconLeading={Download02}>
+                            Exportar dados
+                        </Button>
+                        <Button color="primary" size="md" iconLeading={FilterLines}>
+                            Filtrar
+                        </Button>
+                    </div>
                 </div>
-            </div>
 
-            <Table aria-label={title} selectionMode="none">
-                <Table.Header>
-                    <Table.Head id="order" label="Ordem" isRowHeader className="min-w-[140px]" />
-                    <Table.Head id="type" label="Tipo de serviço" className="min-w-[160px]" />
-                    <Table.Head id="status" label="Status" className="min-w-[180px]" />
-                    <Table.Head id="value" label="Valor" className="min-w-[120px]" />
-                    <Table.Head id="city" label="Local" className="min-w-[140px]" />
-                    <Table.Head id="date" label="Data" className="min-w-[140px]" />
-                    <Table.Head id="actions" label="" className="w-[56px]" />
-                </Table.Header>
-                <Table.Body items={rows}>
-                    {(item) => (
-                        <Table.Row id={item.id}>
-                            <Table.Cell className="whitespace-nowrap font-medium text-primary">{item.code}</Table.Cell>
-                            <Table.Cell>
-                                <Badge size="sm" type="pill-color" color={item.typeColor}>
-                                    {item.typeLabel}
-                                </Badge>
-                            </Table.Cell>
-                            <Table.Cell>
-                                <Badge size="sm" type="pill-color" color={item.statusColor}>
-                                    {item.statusLabel}
-                                </Badge>
-                            </Table.Cell>
-                            <Table.Cell className="whitespace-nowrap text-tertiary">{item.valueLabel}</Table.Cell>
-                            <Table.Cell className="whitespace-nowrap">{item.cityLabel}</Table.Cell>
-                            <Table.Cell className="whitespace-nowrap">{item.dateLabel}</Table.Cell>
-                            <Table.Cell className="!px-4">
-                                <div className="flex justify-end">
-                                    <ButtonUtility
-                                        size="sm"
-                                        color="tertiary"
-                                        tooltip="Ver ordem"
-                                        icon={Eye}
-                                        href={`${baseHref}/${encodeURIComponent(item.code)}`}
-                                    />
-                                </div>
-                            </Table.Cell>
-                        </Table.Row>
-                    )}
-                </Table.Body>
-            </Table>
-        </TableCard.Root>
+                <Table aria-label={title} selectionMode="none">
+                    <Table.Header>
+                        <Table.Head id="order" label="Ordem" isRowHeader className="min-w-[140px]" />
+                        <Table.Head id="type" label="Tipo de serviço" className="min-w-[160px]" />
+                        <Table.Head id="status" label="Status" className="min-w-[180px]" />
+                        <Table.Head id="value" label="Valor" className="min-w-[120px]" />
+                        <Table.Head id="city" label="Local" className="min-w-[140px]" />
+                        <Table.Head id="date" label="Data" className="min-w-[140px]" />
+                        <Table.Head id="actions" label="" className="w-[56px]" />
+                    </Table.Header>
+                    <Table.Body items={rows}>
+                        {(item) => (
+                            <Table.Row id={item.id}>
+                                <Table.Cell className="whitespace-nowrap font-medium text-primary">{item.code}</Table.Cell>
+                                <Table.Cell>
+                                    <Badge size="sm" type="pill-color" color={item.typeColor}>
+                                        {item.typeLabel}
+                                    </Badge>
+                                </Table.Cell>
+                                <Table.Cell>
+                                    <Badge size="sm" type="pill-color" color={item.statusColor}>
+                                        {item.statusLabel}
+                                    </Badge>
+                                </Table.Cell>
+                                <Table.Cell className="whitespace-nowrap text-tertiary">{item.valueLabel}</Table.Cell>
+                                <Table.Cell className="whitespace-nowrap">{item.cityLabel}</Table.Cell>
+                                <Table.Cell className="whitespace-nowrap">{item.dateLabel}</Table.Cell>
+                                <Table.Cell className="!px-4">
+                                    <div className="flex justify-end">
+                                        <ButtonUtility
+                                            size="sm"
+                                            color="tertiary"
+                                            tooltip="Ver ordem"
+                                            icon={Eye}
+                                            href={`${baseHref}/${encodeURIComponent(item.code)}`}
+                                        />
+                                    </div>
+                                </Table.Cell>
+                            </Table.Row>
+                        )}
+                    </Table.Body>
+                </Table>
+            </TableCard.Root>
+        </>
     );
 }

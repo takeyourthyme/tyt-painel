@@ -14,6 +14,8 @@ import {
     Edit02,
     Eye,
     FilterLines,
+    LayerSingle,
+    LayersThree02,
     LayersTwo01,
     Plus,
     ReceiptCheck,
@@ -25,8 +27,8 @@ import {
     Zap,
 } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
-import type { Key } from "react-aria-components";
-import type { Selection } from "react-aria-components";
+import * as Lucide from "lucide-react";
+import { Button as AriaButton, type Key, type Selection } from "react-aria-components";
 import { toast } from "sonner";
 import { FileUploadDropZone } from "@/components/application/file-upload/file-upload-base";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
@@ -107,20 +109,63 @@ type ClassificationDrawerView =
     | { type: "details"; kind: ClassificationKind; id: number }
     | { type: "edit"; kind: ClassificationKind; id: number };
 
-const ICON_CATALOG: Array<{ id: string; label: string; Icon: ComponentType<{ className?: string }> }> = [
-    { id: "alert-circle", label: "AlertCircle", Icon: AlertCircle },
-    { id: "archive", label: "Archive", Icon: Archive },
-    { id: "arrow-left", label: "ArrowLeft", Icon: ArrowLeft },
-    { id: "arrow-right", label: "ArrowRight", Icon: ArrowRight },
-    { id: "check", label: "Check", Icon: Check },
-    { id: "check-circle", label: "CheckCircle", Icon: CheckCircle },
-    { id: "container", label: "Container", Icon: Container },
-    { id: "layers-two", label: "LayersTwo01", Icon: LayersTwo01 },
-    { id: "receipt", label: "ReceiptCheck", Icon: ReceiptCheck },
-    { id: "settings", label: "Settings01", Icon: Settings01 },
-    { id: "star", label: "Star01", Icon: Star01 },
-    { id: "zap", label: "Zap", Icon: Zap },
-];
+const ICON_CATALOG: Array<{ id: string; label: string; Icon: ComponentType<{ className?: string }> }> = (() => {
+    const processedIds = new Set<string>([
+        "alert-circle",
+        "archive",
+        "arrow-left",
+        "arrow-right",
+        "check",
+        "check-circle",
+        "container",
+        "layers-two",
+        "receipt",
+        "settings",
+        "star",
+        "zap",
+    ]);
+
+    const base = [
+        { id: "alert-circle", label: "AlertCircle", Icon: AlertCircle },
+        { id: "archive", label: "Archive", Icon: Archive },
+        { id: "arrow-left", label: "ArrowLeft", Icon: ArrowLeft },
+        { id: "arrow-right", label: "ArrowRight", Icon: ArrowRight },
+        { id: "check", label: "Check", Icon: Check },
+        { id: "check-circle", label: "CheckCircle", Icon: CheckCircle },
+        { id: "container", label: "Container", Icon: Container },
+        { id: "layers-two", label: "LayersTwo01", Icon: LayersTwo01 },
+        { id: "receipt", label: "ReceiptCheck", Icon: ReceiptCheck },
+        { id: "settings", label: "Settings01", Icon: Settings01 },
+        { id: "star", label: "Star01", Icon: Star01 },
+        { id: "zap", label: "Zap", Icon: Zap },
+    ];
+
+    const lucideItems = Object.keys(Lucide)
+        .filter((key) => {
+            const val = (Lucide as any)[key];
+            return typeof val === "function" || (val && typeof val === "object" && (val as any).$$typeof);
+        })
+        .map((key) => {
+            const id = key
+                .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+                .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
+                .toLowerCase();
+            return {
+                id,
+                label: key,
+                Icon: (Lucide as any)[key] as ComponentType<{ className?: string }>,
+            };
+        })
+        .filter((item) => {
+            if (processedIds.has(item.id)) {
+                return false;
+            }
+            processedIds.add(item.id);
+            return true;
+        });
+
+    return [...base, ...lucideItems];
+})();
 
 function normalizeList<T = unknown>(raw: unknown): T[] {
     if (Array.isArray(raw)) return raw as T[];
@@ -1288,16 +1333,7 @@ export default function CardapioPage() {
                                                     </div>
 
                                                     <div className="mt-4">
-                                                        <p className="text-sm font-semibold text-primary">Peso/Volume</p>
-                                                        <p className="mt-1 text-sm text-tertiary">
-                                                            {ingredientView.volumePeso
-                                                                ? `${ingredientView.volumePeso}${getStringValue(ingredientDetails ?? {}, ["unidade_medida"]) ?? ingredientView.unidade}`
-                                                                : getStringValue(ingredientDetails ?? {}, ["unidade_medida"]) ?? ingredientView.unidade}
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="mt-4">
-                                                        <p className="text-sm font-semibold text-primary">Marca preferida</p>
+                                                        <p className="text-sm font-semibold text-primary">Marca preferencial</p>
                                                         <p className="mt-1 text-sm text-tertiary">
                                                             {getStringValue(ingredientDetails ?? {}, ["marca_pref"]) ?? "—"}
                                                         </p>
@@ -1310,13 +1346,25 @@ export default function CardapioPage() {
                                                         </p>
                                                     </div>
 
-                                                    <div className="mt-4">
+                                                    <hr className="my-4 border-secondary" />
+
+                                                    <div>
                                                         <p className="text-sm font-semibold text-primary">Quantidade</p>
                                                         <p className="mt-1 text-sm text-tertiary">
                                                             {(() => {
                                                                 const n = getNumberValue(ingredientDetails ?? {}, ["quantidade"]);
-                                                                return n !== null ? String(n) : "—";
+                                                                if (n === null) return "—";
+                                                                return `${n} ${n === 1 ? "embalagem" : "embalagens"}`;
                                                             })()}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="mt-4">
+                                                        <p className="text-sm font-semibold text-primary">Medida</p>
+                                                        <p className="mt-1 text-sm text-tertiary">
+                                                            {ingredientView.volumePeso
+                                                                ? `${ingredientView.volumePeso} ${getStringValue(ingredientDetails ?? {}, ["unidade_medida"]) ?? ingredientView.unidade}`
+                                                                : getStringValue(ingredientDetails ?? {}, ["unidade_medida"]) ?? ingredientView.unidade}
                                                         </p>
                                                     </div>
 
@@ -1359,19 +1407,54 @@ export default function CardapioPage() {
                                                             </TagGroup>
                                                         </div>
 
+                                                        <Input
+                                                            label="Marca preferencial"
+                                                            value={ingredientForm.marca_pref}
+                                                            onChange={(v) => setIngredientForm((p) => ({ ...p, marca_pref: v }))}
+                                                            isRequired
+                                                        />
+
+                                                        <Input
+                                                            label="Fornecedor"
+                                                            value={ingredientForm.fornecedor}
+                                                            onChange={(v) => setIngredientForm((p) => ({ ...p, fornecedor: v }))}
+                                                            isRequired
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="rounded-xl border border-secondary bg-primary p-4 shadow-xs">
+                                                    <p className="text-sm font-semibold text-primary">Quantidade (Peso/Vol.)</p>
+                                                    <div className="mt-4 flex flex-col gap-4">
                                                         <div className="grid gap-4 sm:grid-cols-2">
+                                                            <Input
+                                                                label="Volume/Peso"
+                                                                value={ingredientForm.volume_peso}
+                                                                onChange={(v) => setIngredientForm((p) => ({ ...p, volume_peso: v }))}
+                                                                isRequired
+                                                            />
                                                             <Select
                                                                 aria-label="Unidade"
                                                                 label="Unidade"
                                                                 size="md"
                                                                 items={unitOptions}
                                                                 selectedKey={ingredientForm.unidade}
-                                                                onSelectionChange={(key) =>
-                                                                    setIngredientForm((p) => ({ ...p, unidade: key ? String(key) : "g" }))
-                                                                }
+                                                                onSelectionChange={(key) => {
+                                                                    const u = key ? String(key) : "g";
+                                                                    setIngredientForm((p) => ({ ...p, unidade: u, unidade_medida: u }));
+                                                                }}
                                                             >
                                                                 {(item) => <Select.Item {...item} />}
                                                             </Select>
+                                                        </div>
+
+                                                        <div className="grid gap-4 sm:grid-cols-2">
+                                                            <Input
+                                                                label="Quantidade"
+                                                                value={ingredientForm.quantidade}
+                                                                onChange={(v) => setIngredientForm((p) => ({ ...p, quantidade: v }))}
+                                                                isRequired
+                                                            />
                                                             <Input
                                                                 label="Custo unitário"
                                                                 value={ingredientForm.valor}
@@ -1379,44 +1462,6 @@ export default function CardapioPage() {
                                                                 isRequired
                                                             />
                                                         </div>
-
-                                                        <Input
-                                                            label="Marca preferida"
-                                                            value={ingredientForm.marca_pref}
-                                                            onChange={(v) => setIngredientForm((p) => ({ ...p, marca_pref: v }))}
-                                                        />
-
-                                                        <Input
-                                                            label="Fornecedor"
-                                                            value={ingredientForm.fornecedor}
-                                                            onChange={(v) => setIngredientForm((p) => ({ ...p, fornecedor: v }))}
-                                                        />
-
-                                                        <div className="grid gap-4 sm:grid-cols-2">
-                                                            <Input
-                                                                label="Volume/Peso"
-                                                                value={ingredientForm.volume_peso}
-                                                                onChange={(v) => setIngredientForm((p) => ({ ...p, volume_peso: v }))}
-                                                            />
-                                                            <Select
-                                                                aria-label="Unidade de medida"
-                                                                label="Unidade de medida"
-                                                                size="md"
-                                                                items={unitOptions}
-                                                                selectedKey={ingredientForm.unidade_medida}
-                                                                onSelectionChange={(key) =>
-                                                                    setIngredientForm((p) => ({ ...p, unidade_medida: key ? String(key) : "g" }))
-                                                                }
-                                                            >
-                                                                {(item) => <Select.Item {...item} />}
-                                                            </Select>
-                                                        </div>
-
-                                                        <Input
-                                                            label="Quantidade"
-                                                            value={ingredientForm.quantidade}
-                                                            onChange={(v) => setIngredientForm((p) => ({ ...p, quantidade: v }))}
-                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -1478,19 +1523,54 @@ export default function CardapioPage() {
                                                     </TagGroup>
                                                 </div>
 
+                                                <Input
+                                                    label="Marca preferencial"
+                                                    value={ingredientForm.marca_pref}
+                                                    onChange={(v) => setIngredientForm((p) => ({ ...p, marca_pref: v }))}
+                                                    isRequired
+                                                />
+
+                                                <Input
+                                                    label="Fornecedor"
+                                                    value={ingredientForm.fornecedor}
+                                                    onChange={(v) => setIngredientForm((p) => ({ ...p, fornecedor: v }))}
+                                                    isRequired
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-xl border border-secondary bg-primary p-4 shadow-xs">
+                                            <p className="text-sm font-semibold text-primary">Quantidade (Peso/Vol.)</p>
+                                            <div className="mt-4 flex flex-col gap-4">
                                                 <div className="grid gap-4 sm:grid-cols-2">
+                                                    <Input
+                                                        label="Volume/Peso"
+                                                        value={ingredientForm.volume_peso}
+                                                        onChange={(v) => setIngredientForm((p) => ({ ...p, volume_peso: v }))}
+                                                        isRequired
+                                                    />
                                                     <Select
                                                         aria-label="Unidade"
                                                         label="Unidade"
                                                         size="md"
                                                         items={unitOptions}
                                                         selectedKey={ingredientForm.unidade}
-                                                        onSelectionChange={(key) =>
-                                                            setIngredientForm((p) => ({ ...p, unidade: key ? String(key) : "g" }))
-                                                        }
+                                                        onSelectionChange={(key) => {
+                                                            const u = key ? String(key) : "g";
+                                                            setIngredientForm((p) => ({ ...p, unidade: u, unidade_medida: u }));
+                                                        }}
                                                     >
                                                         {(item) => <Select.Item {...item} />}
                                                     </Select>
+                                                </div>
+
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <Input
+                                                        label="Quantidade"
+                                                        value={ingredientForm.quantidade}
+                                                        onChange={(v) => setIngredientForm((p) => ({ ...p, quantidade: v }))}
+                                                        isRequired
+                                                    />
                                                     <Input
                                                         label="Custo unitário"
                                                         value={ingredientForm.valor}
@@ -1498,44 +1578,6 @@ export default function CardapioPage() {
                                                         isRequired
                                                     />
                                                 </div>
-
-                                                <Input
-                                                    label="Marca preferida"
-                                                    value={ingredientForm.marca_pref}
-                                                    onChange={(v) => setIngredientForm((p) => ({ ...p, marca_pref: v }))}
-                                                />
-
-                                                <Input
-                                                    label="Fornecedor"
-                                                    value={ingredientForm.fornecedor}
-                                                    onChange={(v) => setIngredientForm((p) => ({ ...p, fornecedor: v }))}
-                                                />
-
-                                                <div className="grid gap-4 sm:grid-cols-2">
-                                                    <Input
-                                                        label="Volume/Peso"
-                                                        value={ingredientForm.volume_peso}
-                                                        onChange={(v) => setIngredientForm((p) => ({ ...p, volume_peso: v }))}
-                                                    />
-                                                    <Select
-                                                        aria-label="Unidade de medida"
-                                                        label="Unidade de medida"
-                                                        size="md"
-                                                        items={unitOptions}
-                                                        selectedKey={ingredientForm.unidade_medida}
-                                                        onSelectionChange={(key) =>
-                                                            setIngredientForm((p) => ({ ...p, unidade_medida: key ? String(key) : "g" }))
-                                                        }
-                                                    >
-                                                        {(item) => <Select.Item {...item} />}
-                                                    </Select>
-                                                </div>
-
-                                                <Input
-                                                    label="Quantidade"
-                                                    value={ingredientForm.quantidade}
-                                                    onChange={(v) => setIngredientForm((p) => ({ ...p, quantidade: v }))}
-                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -1545,13 +1587,13 @@ export default function CardapioPage() {
                                             type="button"
                                             onClick={() => setPickCreateMode("single")}
                                             className={cx(
-                                                "flex w-full items-center justify-between gap-4 rounded-xl border bg-primary px-4 py-4 text-left shadow-xs",
+                                                "flex w-full items-center justify-between gap-4 rounded-xl border bg-primary px-4 py-4 text-left shadow-xs mt-2",
                                                 pickCreateMode === "single" ? "border-brand ring-1 ring-brand" : "border-secondary",
                                             )}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="flex size-10 items-center justify-center rounded-lg bg-secondary text-tertiary">
-                                                    <Plus className="size-5" />
+                                                    <LayerSingle className="size-5" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-semibold text-primary">Unitário</p>
@@ -1560,10 +1602,14 @@ export default function CardapioPage() {
                                             </div>
                                             <div
                                                 className={cx(
-                                                    "size-5 rounded-md border",
-                                                    pickCreateMode === "single" ? "border-brand bg-brand" : "border-secondary",
+                                                    "size-5 rounded-md border flex items-center justify-center p-0.5",
+                                                    pickCreateMode === "single" ? "border-brand-solid bg-brand-solid" : "border-secondary",
                                                 )}
-                                            />
+                                            >
+                                                {pickCreateMode === "single" && (
+                                                    <Check className="size-5 text-white" />
+                                                )}
+                                            </div>
                                         </button>
 
                                         <button
@@ -1576,7 +1622,7 @@ export default function CardapioPage() {
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="flex size-10 items-center justify-center rounded-lg bg-secondary text-tertiary">
-                                                    <UploadCloud02 className="size-5" />
+                                                    <LayersThree02 className="size-5" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-semibold text-primary">Em lote</p>
@@ -1585,10 +1631,14 @@ export default function CardapioPage() {
                                             </div>
                                             <div
                                                 className={cx(
-                                                    "size-5 rounded-md border",
-                                                    pickCreateMode === "batch" ? "border-brand bg-brand" : "border-secondary",
+                                                    "size-5 rounded-md border flex items-center justify-center p-0.5",
+                                                    pickCreateMode === "batch" ? "border-brand-solid bg-brand-solid" : "border-secondary",
                                                 )}
-                                            />
+                                            >
+                                                {pickCreateMode === "batch" && (
+                                                    <Check className="size-5 text-white" />
+                                                )}
+                                            </div>
                                         </button>
 
                                     </div>
@@ -1679,6 +1729,7 @@ export default function CardapioPage() {
                                                 size="md"
                                                 className="flex-1"
                                                 isLoading={loading}
+                                                iconTrailing={Lucide.Save}
                                                 onClick={async () => {
                                                     const token = getTytAccessToken();
                                                     if (!token) return;
@@ -1693,7 +1744,16 @@ export default function CardapioPage() {
                                                     const unidadeMedida = ingredientForm.unidade_medida.trim();
                                                     const quantidade = parseDecimalValue(ingredientForm.quantidade);
 
-                                                    if (!descricao || !idCategoria || !unidade || valor === null) {
+                                                    if (
+                                                        !descricao ||
+                                                        !idCategoria ||
+                                                        !unidade ||
+                                                        valor === null ||
+                                                        !marcaPref ||
+                                                        !fornecedor ||
+                                                        volumePeso === null ||
+                                                        quantidade === null
+                                                    ) {
                                                         toast.error("Preencha todos os campos obrigatórios.");
                                                         return;
                                                     }
@@ -1734,6 +1794,7 @@ export default function CardapioPage() {
                                                 size="md"
                                                 className="flex-1"
                                                 isLoading={loading}
+                                                iconTrailing={Lucide.Save}
                                                 onClick={async () => {
                                                     const token = getTytAccessToken();
                                                     if (!token || ingredientDrawer?.type !== "edit") return;
@@ -1748,7 +1809,16 @@ export default function CardapioPage() {
                                                     const unidadeMedida = ingredientForm.unidade_medida.trim();
                                                     const quantidade = parseDecimalValue(ingredientForm.quantidade);
 
-                                                    if (!descricao || !idCategoria || !unidade || valor === null) {
+                                                    if (
+                                                        !descricao ||
+                                                        !idCategoria ||
+                                                        !unidade ||
+                                                        valor === null ||
+                                                        !marcaPref ||
+                                                        !fornecedor ||
+                                                        volumePeso === null ||
+                                                        quantidade === null
+                                                    ) {
                                                         toast.error("Preencha todos os campos obrigatórios.");
                                                         return;
                                                     }
@@ -1855,7 +1925,7 @@ export default function CardapioPage() {
                         const q = iconQuery.trim().toLowerCase();
                         if (!q) return true;
                         return `${x.id} ${x.label}`.toLowerCase().includes(q);
-                    });
+                    }).slice(0, 48);
 
                     return (
                         <>
@@ -1924,10 +1994,9 @@ export default function CardapioPage() {
                                                         <div className="flex flex-col gap-1.5">
                                                             <p className="text-sm font-medium text-secondary">Ícone *</p>
                                                             <Dropdown.Root isOpen={iconPickerOpen} onOpenChange={setIconPickerOpen}>
-                                                                <button
-                                                                    type="button"
+                                                                <AriaButton
                                                                     className={cx(
-                                                                        "flex w-full items-center justify-between gap-3 rounded-lg bg-primary px-3 py-2 shadow-xs ring-1 ring-primary ring-inset outline-hidden transition-shadow duration-100 ease-linear",
+                                                                        "flex w-full items-center justify-between gap-3 rounded-lg bg-primary px-3 py-2 shadow-xs ring-1 ring-primary ring-inset outline-hidden transition-shadow duration-100 ease-linear cursor-pointer",
                                                                         iconPickerOpen ? "ring-2 ring-brand" : null,
                                                                     )}
                                                                 >
@@ -1938,7 +2007,7 @@ export default function CardapioPage() {
                                                                         </span>
                                                                     </span>
                                                                     <ChevronDown className="size-4 text-tertiary" />
-                                                                </button>
+                                                                </AriaButton>
 
                                                                 <Dropdown.Popover className="w-[360px] p-3">
                                                                     <Input
@@ -1947,7 +2016,7 @@ export default function CardapioPage() {
                                                                         value={iconQuery}
                                                                         onChange={setIconQuery}
                                                                     />
-                                                                    <div className="mt-3 grid grid-cols-4 gap-2">
+                                                                    <div className="mt-3 grid grid-cols-4 gap-2 max-h-[260px] overflow-y-auto pr-1">
                                                                         {filteredIcons.map((i) => (
                                                                             <button
                                                                                 key={i.id}
@@ -1991,10 +2060,10 @@ export default function CardapioPage() {
                                                 <div className="flex flex-col gap-1.5">
                                                     <p className="text-sm font-medium text-secondary">Ícone *</p>
                                                     <Dropdown.Root isOpen={iconPickerOpen} onOpenChange={setIconPickerOpen}>
-                                                        <button
-                                                            type="button"
+                                                        <AriaButton
+
                                                             className={cx(
-                                                                "flex w-full items-center justify-between gap-3 rounded-lg bg-primary px-3 py-2 shadow-xs ring-1 ring-primary ring-inset outline-hidden transition-shadow duration-100 ease-linear",
+                                                                "flex w-full items-center justify-between gap-3 rounded-lg bg-primary px-3 py-2 shadow-xs ring-1 ring-primary ring-inset outline-hidden transition-shadow duration-100 ease-linear cursor-pointer",
                                                                 iconPickerOpen ? "ring-2 ring-brand" : null,
                                                             )}
                                                         >
@@ -2005,11 +2074,11 @@ export default function CardapioPage() {
                                                                 </span>
                                                             </span>
                                                             <ChevronDown className="size-4 text-tertiary" />
-                                                        </button>
+                                                        </AriaButton>
 
-                                                        <Dropdown.Popover className="w-[360px] p-3">
+                                                        <Dropdown.Popover className="w-[400px] p-3">
                                                             <Input placeholder="Buscar ícone..." icon={SearchLg} value={iconQuery} onChange={setIconQuery} />
-                                                            <div className="mt-3 grid grid-cols-4 gap-2">
+                                                            <div className="mt-3 grid grid-cols-4 gap-2 max-h-[260px] overflow-y-auto pr-1">
                                                                 {filteredIcons.map((i) => (
                                                                     <button
                                                                         key={i.id}

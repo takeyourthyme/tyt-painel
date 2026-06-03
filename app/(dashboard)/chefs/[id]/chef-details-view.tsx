@@ -1467,20 +1467,23 @@ export function ChefDetailsView({ id }: { id: string }) {
                                 </div>
                             </Tabs.Panel>
 
-                            <Tabs.Panel id="history" className="outline-hidden">
+                            <Tabs.Panel id="history" className="outline-hidden flex flex-col gap-6">
+                                <div className="flex flex-col gap-1">
+                                    <h2 className="text-lg font-semibold text-primary">Registro de Atendimentos</h2>
+                                </div>
+
                                 <TableCard.Root>
-                                    <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 lg:flex-row lg:items-center lg:justify-between md:px-6">
-                                        <p className="text-sm font-semibold text-primary">Registro de Atendimentos</p>
-                                        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:w-auto">
-                                            <Input
-                                                aria-label="Pesquisar..."
-                                                placeholder="Pesquisar..."
-                                                icon={SearchLg}
-                                                size="sm"
-                                                value={historyQuery}
-                                                onChange={setHistoryQuery}
-                                                className="w-full lg:w-[320px]"
-                                            />
+                                    <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+                                        <Input
+                                            aria-label="Pesquisar..."
+                                            placeholder="Pesquisar..."
+                                            icon={SearchLg}
+                                            size="sm"
+                                            value={historyQuery}
+                                            onChange={setHistoryQuery}
+                                            className="w-full md:max-w-md"
+                                        />
+                                        <div className="flex flex-wrap items-center gap-3">
                                             <Button size="md" color="secondary" iconLeading={Download02} className="w-full sm:w-auto">
                                                 Exportar dados
                                             </Button>

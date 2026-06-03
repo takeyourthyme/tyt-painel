@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle, Download02, Eye, FilterLines, SearchLg, Users01 } from "@untitledui/icons";
+import { CheckCircle, Download02, Eye, FilterLines, SearchLg, User02, User03, Users01 } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 
 const playfair = Playfair_Display({ subsets: ["latin"], display: "swap" });
@@ -18,6 +18,7 @@ import { Toggle } from "@/components/base/toggle/toggle";
 import { parseApiErrorMessage, parseJsonOrThrow, TytApiError } from "@/lib/tyt-api/errors";
 import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { getClientes, getUserById, putUserToggleStatus } from "@/lib/tyt-api/users";
+import { Check, ChefHat } from "lucide-react";
 
 type ClienteRow = {
     id: string;
@@ -301,7 +302,7 @@ export default function ClientesPage() {
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-3">
                                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-utility-brand-50">
-                                    <Users01 className="size-5 text-utility-brand-600" aria-hidden />
+                                    <User03 className="size-5 text-utility-brand-600" aria-hidden />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Total de clientes na base</p>
@@ -313,8 +314,8 @@ export default function ClientesPage() {
                     <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs">
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-3">
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-utility-success-50">
-                                    <CheckCircle className="size-5 text-utility-success-600" aria-hidden />
+                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-utility-brand-50">
+                                    <Check className="size-5 text-utility-brand-600" aria-hidden />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Clientes ativos (usando o produto)</p>
@@ -340,60 +341,60 @@ export default function ClientesPage() {
                                 onChange={setQuery}
                                 className="w-full md:max-w-md"
                             />
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <Button color="secondary" size="md" iconLeading={Download02} isDisabled>
-                                        Exportar dados
-                                    </Button>
-                                    <Button color="primary" size="md" iconLeading={FilterLines} isDisabled>
-                                        Filtrar
-                                    </Button>
-                                </div>
+                            <div className="flex flex-wrap items-center gap-3">
+                                <Button color="secondary" size="md" iconLeading={Download02} isDisabled>
+                                    Exportar dados
+                                </Button>
+                                <Button color="primary" size="md" iconLeading={FilterLines} isDisabled>
+                                    Filtrar
+                                </Button>
                             </div>
+                        </div>
 
-                            <Table aria-label="Clientes" selectionMode="none">
-                                <Table.Header>
-                                    <Table.Head id="name" label="Nome" isRowHeader className="min-w-[280px]" />
-                                    <Table.Head id="status" label="Status" className="min-w-[140px]" />
-                                    <Table.Head id="location" label="Localização" className="min-w-[180px]" />
-                                    <Table.Head id="orders" label="Pedidos realizado" className="min-w-[160px]" />
-                                    <Table.Head id="actions" label="" className="w-[56px]" />
-                                </Table.Header>
-                                <Table.Body items={filtered}>
-                                    {(row) => (
-                                        <Table.Row id={row.id}>
-                                            <Table.Cell className="whitespace-nowrap text-sm font-semibold text-primary">{row.name}</Table.Cell>
-                                            <Table.Cell>
-                                                <Badge size="sm" type="pill-color" color={row.isActive ? "success" : "warning"}>
-                                                    {row.isActive ? "Ativo" : "Inativo"}
-                                                </Badge>
-                                            </Table.Cell>
-                                            <Table.Cell className="whitespace-nowrap text-sm text-tertiary">
-                                                {row.city ? `${row.city}${row.state ? ` - ${row.state}` : ""}` : "—"}
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                <Badge size="sm" type="pill-color" color="gray">
-                                                    {row.ordersCount !== null ? String(row.ordersCount) : "—"}
-                                                </Badge>
-                                            </Table.Cell>
-                                            <Table.Cell className="!px-4">
-                                                <div className="flex justify-end">
-                                                    <ButtonUtility
-                                                        size="sm"
-                                                        color="tertiary"
-                                                        icon={Eye}
-                                                        tooltip="Detalhes"
-                                                        onClick={() => {
-                                                            setDrawer({ type: "details", id: row.id });
-                                                            void loadClienteDetails(row.id);
-                                                        }}
-                                                    />
-                                                </div>
-                                            </Table.Cell>
-                                        </Table.Row>
-                                    )}
-                                </Table.Body>
-                            </Table>
-                        </TableCard.Root>
+                        <Table aria-label="Clientes" selectionMode="none">
+                            <Table.Header>
+                                <Table.Head id="name" label="Nome" isRowHeader className="min-w-[280px]" />
+                                <Table.Head id="status" label="Status" className="min-w-[140px]" />
+                                <Table.Head id="location" label="Localização" className="min-w-[180px]" />
+                                <Table.Head id="orders" label="Pedidos realizado" className="min-w-[160px]" />
+                                <Table.Head id="actions" label="" className="w-[56px]" />
+                            </Table.Header>
+                            <Table.Body items={filtered}>
+                                {(row) => (
+                                    <Table.Row id={row.id}>
+                                        <Table.Cell className="whitespace-nowrap text-sm font-semibold text-primary">{row.name}</Table.Cell>
+                                        <Table.Cell>
+                                            <Badge size="sm" type="pill-color" color={row.isActive ? "success" : "warning"}>
+                                                {row.isActive ? "Ativo" : "Inativo"}
+                                            </Badge>
+                                        </Table.Cell>
+                                        <Table.Cell className="whitespace-nowrap text-sm text-tertiary">
+                                            {row.city ? `${row.city}${row.state ? ` - ${row.state}` : ""}` : "—"}
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <Badge size="sm" type="pill-color" color="gray">
+                                                {row.ordersCount !== null ? String(row.ordersCount) : "—"}
+                                            </Badge>
+                                        </Table.Cell>
+                                        <Table.Cell className="!px-4">
+                                            <div className="flex justify-end">
+                                                <ButtonUtility
+                                                    size="sm"
+                                                    color="tertiary"
+                                                    icon={Eye}
+                                                    tooltip="Detalhes"
+                                                    onClick={() => {
+                                                        setDrawer({ type: "details", id: row.id });
+                                                        void loadClienteDetails(row.id);
+                                                    }}
+                                                />
+                                            </div>
+                                        </Table.Cell>
+                                    </Table.Row>
+                                )}
+                            </Table.Body>
+                        </Table>
+                    </TableCard.Root>
                 </section>
             </div>
 

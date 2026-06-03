@@ -13,11 +13,13 @@ import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
 import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
+import { Table, TableCard } from "@/components/application/table/table";
 import { parseApiErrorMessage, parseJsonOrThrow, TytApiError } from "@/lib/tyt-api/errors";
 import { getKitchenOrderByCode, putKitchenOrderAssignChef, putKitchenOrderCancel, putKitchenOrderSpecialServiceProposal } from "@/lib/tyt-api/kitchen-orders";
 import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { getChefs } from "@/lib/tyt-api/users";
 import { cx } from "@/utils/cx";
+import { ChefHat } from "lucide-react";
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -125,13 +127,13 @@ function parsePriceValue(raw: string): number | null {
 function statusBadge(
     statusRaw: string,
     typeRaw: string,
-): { label: string; color: "success" | "warning" | "error" | "gray" | "blue" } {
+): { label: string; color: "success" | "warning" | "error" | "gray" | "blue" | "brand" } {
     const status = statusRaw.trim().toUpperCase();
     if (!status) return { label: "—", color: "gray" };
     const type = typeRaw.trim().toUpperCase();
     const isSpecial = type.includes("SPECIAL");
     if (status === "PENDING") return { label: "Aguardando match", color: "warning" };
-    if (status === "IN_REVIEW") return { label: isSpecial ? "Em análise" : "Aguardando chef", color: "blue" };
+    if (status === "IN_REVIEW") return { label: isSpecial ? "Em análise" : "Aguardando chef", color: isSpecial ? "blue" : "brand" };
     if (status === "CONFIRMED") return { label: "Confirmado", color: "success" };
     if (status === "COMPLETED") return { label: "Concluído", color: "success" };
     if (status === "DECLINED") return { label: "Chef recusou", color: "error" };
@@ -362,7 +364,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                             {backHref.includes("servicos-agendados") ? "Serviços agendados" : "Solicitações"}
                         </Link>
                         <span className="text-quaternary">›</span>
-                        <span className="font-medium text-secondary">Ordem</span>
+                        <span className="font-medium text-secondary">{order?.code}</span>
                     </nav>
 
                     <div className="flex flex-wrap items-end justify-between gap-4">
@@ -396,7 +398,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                         <section className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
                             <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between">
                                 <div className="flex min-w-0 items-center gap-3">
-                                    <FeaturedIcon color="brand" icon={CheckCircle} theme="light" size="md" />
+                                    <FeaturedIcon color="brand" icon={ChefHat} theme="light" size="md" className="bg-secondary" />
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <p className="text-sm font-semibold text-primary">{formatServiceLabel(order.type)}</p>
@@ -480,7 +482,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                         </Button>
                                     </div>
 
-                                    <div className="overflow-hidden rounded-xl border border-secondary bg-primary">
+                                    <TableCard.Root className="border border-secondary bg-primary shadow-none ring-0">
                                         <div className="flex items-center justify-between border-b border-secondary px-4 py-4">
                                             <div className="flex items-center gap-2">
                                                 <p className="text-sm font-semibold text-primary">Proposta de Serviço</p>
@@ -501,25 +503,27 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             />
                                         </div>
 
-                                        <div className="divide-y divide-secondary">
-                                            <div className="grid grid-cols-[1fr_120px] gap-3 px-4 py-3 text-xs font-medium text-tertiary">
-                                                <span>Item</span>
-                                                <span className="text-right">Valor</span>
+                                        {proposalItems.length > 0 ? (
+                                            <Table aria-label="Itens da Proposta" selectionMode="none">
+                                                <Table.Header>
+                                                    <Table.Head id="description" label="Item" className="min-w-[200px]" isRowHeader />
+                                                    <Table.Head id="price" label="Valor" className="min-w-[120px]" />
+                                                </Table.Header>
+                                                <Table.Body items={proposalItems.map((item, idx) => ({ ...item, id: `${idx}-${item.description}` }))}>
+                                                    {(item) => (
+                                                        <Table.Row id={item.id}>
+                                                            <Table.Cell className="text-secondary">{item.description}</Table.Cell>
+                                                            <Table.Cell className="text-tertiary">{formatCurrency(item.price)}</Table.Cell>
+                                                        </Table.Row>
+                                                    )}
+                                                </Table.Body>
+                                            </Table>
+                                        ) : (
+                                            <div className="px-4 py-4">
+                                                <p className="text-sm text-tertiary">Nenhuma proposta criada.</p>
                                             </div>
-                                            {proposalItems.length > 0 ? (
-                                                proposalItems.map((item, idx) => (
-                                                    <div key={`${idx}-${item.description}`} className="grid grid-cols-[1fr_120px] gap-3 px-4 py-3">
-                                                        <span className="text-sm text-secondary">{item.description}</span>
-                                                        <span className="text-right text-sm text-tertiary">{formatCurrency(item.price)}</span>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="px-4 py-4">
-                                                    <p className="text-sm text-tertiary">Nenhuma proposta criada.</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                        )}
+                                    </TableCard.Root>
                                 </div>
                             ) : (
                                 <div className="flex flex-wrap gap-3 px-6 py-5">

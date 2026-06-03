@@ -180,6 +180,23 @@ export default function DishNewPage() {
         void loadCatalogs();
     }, [loadCatalogs]);
 
+    const serviceTypeSelection = useMemo(() => {
+        const keys = new Set<string>();
+        if (form.mealPreap) keys.add("meal-prep");
+        if (form.getTogheter) keys.add("get-together");
+        return keys;
+    }, [form.mealPreap, form.getTogheter]);
+
+    const handleServiceTypeChange = (keys: Selection) => {
+        if (keys === "all") return;
+        const selected = Array.from(keys) as string[];
+        setForm((p) => ({
+            ...p,
+            mealPreap: selected.includes("meal-prep"),
+            getTogheter: selected.includes("get-together"),
+        }));
+    };
+
     const categoryCsv = useMemo(() => {
         if (!(categorySelection instanceof Set)) return "";
         return Array.from(categorySelection).map(String).join(",");
@@ -358,20 +375,20 @@ export default function DishNewPage() {
                                 </div>
                             </div>
                             <div className="grid gap-6 px-5 py-5 lg:grid-cols-2">
-                                <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-2">
                                     <p className="text-sm font-medium text-secondary">Tipo de serviço *</p>
-                                    <div className="flex flex-wrap gap-4">
-                                        <Checkbox
-                                            isSelected={form.mealPreap}
-                                            onChange={(v) => setForm((p) => ({ ...p, mealPreap: v }))}
-                                            label="Meal Prep"
-                                        />
-                                        <Checkbox
-                                            isSelected={form.getTogheter}
-                                            onChange={(v) => setForm((p) => ({ ...p, getTogheter: v }))}
-                                            label="Get Together"
-                                        />
-                                    </div>
+                                    <TagGroup
+                                        label="Tipo de serviço"
+                                        size="md"
+                                        selectionMode="multiple"
+                                        selectedKeys={serviceTypeSelection}
+                                        onSelectionChange={handleServiceTypeChange}
+                                    >
+                                        <TagList className="flex flex-wrap gap-2">
+                                            <Tag id="meal-prep">Meal Prep</Tag>
+                                            <Tag id="get-together">Get Together</Tag>
+                                        </TagList>
+                                    </TagGroup>
                                 </div>
 
                                 <div className="flex flex-col gap-2">
@@ -534,52 +551,54 @@ export default function DishNewPage() {
                                     ) : null}
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <Select.ComboBox
-                                        aria-label="Tema"
-                                        label="Tema"
-                                        size="md"
-                                        isRequired
-                                        shortcut={false}
-                                        items={themeSelectableItems}
-                                        inputValue={themeQuery}
-                                        onInputChange={setThemeQuery}
-                                        selectedKey={themeKey}
-                                        onOpenChange={setThemeOpen}
-                                        onSelectionChange={(key) => {
-                                            const id = key ? String(key) : null;
-                                            setThemeKey(null);
-                                            setThemeQuery("");
-                                            if (!id) return;
-                                            setThemeSelection((prev) => new Set(prev).add(id));
-                                            setThemeOpen(false);
-                                        }}
-                                        placeholder="Selecione"
-                                    >
-                                        {(item) => <Select.Item {...item} />}
-                                    </Select.ComboBox>
-                                    {themeSelection.size ? (
-                                        <TagGroup label="Temas selecionados" size="md">
-                                            <TagList className="flex flex-wrap gap-2">
-                                                {Array.from(themeSelection).map((id) => (
-                                                    <Tag
-                                                        key={id}
-                                                        id={id}
-                                                        onClose={(tagId) =>
-                                                            setThemeSelection((prev) => {
-                                                                const next = new Set(prev);
-                                                                next.delete(tagId);
-                                                                return next;
-                                                            })
-                                                        }
-                                                    >
-                                                        {themes.find((x) => String(x.id) === id)?.descricao ?? id}
-                                                    </Tag>
-                                                ))}
-                                            </TagList>
-                                        </TagGroup>
-                                    ) : null}
-                                </div>
+                                {!form.mealPreap ? (
+                                    <div className="flex flex-col gap-2">
+                                        <Select.ComboBox
+                                            aria-label="Tema"
+                                            label="Tema"
+                                            size="md"
+                                            isRequired
+                                            shortcut={false}
+                                            items={themeSelectableItems}
+                                            inputValue={themeQuery}
+                                            onInputChange={setThemeQuery}
+                                            selectedKey={themeKey}
+                                            onOpenChange={setThemeOpen}
+                                            onSelectionChange={(key) => {
+                                                const id = key ? String(key) : null;
+                                                setThemeKey(null);
+                                                setThemeQuery("");
+                                                if (!id) return;
+                                                setThemeSelection((prev) => new Set(prev).add(id));
+                                                setThemeOpen(false);
+                                            }}
+                                            placeholder="Selecione"
+                                        >
+                                            {(item) => <Select.Item {...item} />}
+                                        </Select.ComboBox>
+                                        {themeSelection.size ? (
+                                            <TagGroup label="Temas selecionados" size="md">
+                                                <TagList className="flex flex-wrap gap-2">
+                                                    {Array.from(themeSelection).map((id) => (
+                                                        <Tag
+                                                            key={id}
+                                                            id={id}
+                                                            onClose={(tagId) =>
+                                                                setThemeSelection((prev) => {
+                                                                    const next = new Set(prev);
+                                                                    next.delete(tagId);
+                                                                    return next;
+                                                                })
+                                                            }
+                                                        >
+                                                            {themes.find((x) => String(x.id) === id)?.descricao ?? id}
+                                                        </Tag>
+                                                    ))}
+                                                </TagList>
+                                            </TagGroup>
+                                        ) : null}
+                                    </div>
+                                ) : null}
 
                                 <div className="flex flex-col gap-2 lg:col-span-2">
                                     <Select.ComboBox
@@ -713,7 +732,7 @@ export default function DishNewPage() {
                                             toast.error("Selecione o tipo de serviço.");
                                             return;
                                         }
-                                        if (!foodPreferenceCsv || !cuisineTypeCsv || !mainIngredientCsv || !themeCsv) {
+                                        if (!foodPreferenceCsv || !cuisineTypeCsv || !mainIngredientCsv || (!form.mealPreap && !themeCsv)) {
                                             toast.error("Preencha os campos obrigatórios.");
                                             return;
                                         }
@@ -726,7 +745,7 @@ export default function DishNewPage() {
                                                 ativo: form.ativo,
                                                 categorias: categoryCsv,
                                                 tipos_cozinha: cuisineTypeCsv,
-                                                temas: themeCsv,
+                                                temas: form.mealPreap ? "" : themeCsv,
                                                 ingredientes_principais: mainIngredientCsv,
                                                 pref_culinarias: foodPreferenceCsv,
                                                 ingredientes: ingredientsCsv ? ingredientsCsv : null,

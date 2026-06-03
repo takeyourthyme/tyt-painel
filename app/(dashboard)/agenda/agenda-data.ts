@@ -70,7 +70,7 @@ function statusBadge(statusRaw: string | null | undefined, typeRaw: string | nul
     const isSpecial = type.includes("SPECIAL");
 
     if (status === "PENDING") return { label: "Aguardando match", color: "warning" };
-    if (status === "IN_REVIEW") return { label: isSpecial ? "Em análise" : "Aguardando chef", color: "blue" };
+    if (status === "IN_REVIEW") return { label: isSpecial ? "Em análise" : "Aguardando chef", color: isSpecial ? "blue" : "brand" };
     if (status === "CONFIRMED") return { label: "Confirmado", color: "success" };
     if (status === "COMPLETED") return { label: "Concluído", color: "success" };
     if (status === "DECLINED") return { label: "Chef recusou", color: "error" };
