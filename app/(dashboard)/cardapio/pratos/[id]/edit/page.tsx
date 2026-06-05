@@ -232,7 +232,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                 setFoodPreferenceSelection(new Set(idsFromDishArray("pratos_pref_culinarias")));
                 setCuisineTypeSelection(new Set(idsFromDishArray("pratos_tipos_cozinha")));
                 setMainIngredientSelection(new Set(idsFromDishArray("pratos_ingredientes_principais")));
-                setThemeSelection(new Set(idsFromDishArray("pratos_temas")));
+                setThemeSelection(mealPreap ? new Set() : new Set(idsFromDishArray("pratos_temas")));
                 setIngredientsSelection(new Set(idsFromDishArray("pratos_ingredientes")));
 
                 setRemote({
@@ -279,11 +279,15 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
     const handleServiceTypeChange = (keys: Selection) => {
         if (keys === "all") return;
         const selected = Array.from(keys) as string[];
+        const isMealPrep = selected.includes("meal-prep");
         setForm((p) => ({
             ...p,
-            mealPreap: selected.includes("meal-prep"),
+            mealPreap: isMealPrep,
             getTogheter: selected.includes("get-together"),
         }));
+        if (isMealPrep) {
+            setThemeSelection(new Set());
+        }
     };
 
     const categoryCsv = useMemo(() => {
@@ -869,7 +873,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                             toast.error("Selecione o tipo de serviço.");
                                             return;
                                         }
-                                        if (!foodPreferenceCsv || !cuisineTypeCsv || !mainIngredientCsv || !themeCsv) {
+                                        if (!foodPreferenceCsv || !cuisineTypeCsv || !mainIngredientCsv || (!form.mealPreap && !themeCsv)) {
                                             toast.error("Preencha os campos obrigatórios.");
                                             return;
                                         }
@@ -882,7 +886,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                                 ativo: form.ativo,
                                                 categorias: categoryCsv,
                                                 tipos_cozinha: cuisineTypeCsv,
-                                                temas: themeCsv,
+                                                temas: form.mealPreap ? "" : themeCsv,
                                                 ingredientes_principais: mainIngredientCsv,
                                                 pref_culinarias: foodPreferenceCsv,
                                                 ingredientes: ingredientsCsv ? ingredientsCsv : null,

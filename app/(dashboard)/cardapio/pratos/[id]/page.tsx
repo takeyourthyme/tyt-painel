@@ -334,20 +334,22 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                     </div>
                                 </div>
 
-                                <div>
-                                    <p className="text-sm font-semibold text-primary">Tema</p>
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                        {dish.temas.length ? (
-                                            dish.temas.map((c) => (
-                                                <Badge key={c.id} size="sm" type="pill-color" color="gray">
-                                                    {c.descricao}
-                                                </Badge>
-                                            ))
-                                        ) : (
-                                            <p className="text-sm text-tertiary">—</p>
-                                        )}
+                                {!dish.meal_preap ? (
+                                    <div>
+                                        <p className="text-sm font-semibold text-primary">Tema</p>
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            {dish.temas.length ? (
+                                                dish.temas.map((c) => (
+                                                    <Badge key={c.id} size="sm" type="pill-color" color="gray">
+                                                        {c.descricao}
+                                                    </Badge>
+                                                ))
+                                            ) : (
+                                                <p className="text-sm text-tertiary">—</p>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                ) : null}
                             </div>
                         </section>
 

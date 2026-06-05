@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Calendar, Download02, Eye, FilterLines, Hourglass03, SearchLg, UserSquare, XCircle } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import type { Key } from "react-aria-components";
@@ -14,6 +14,8 @@ import { Input } from "@/components/base/input/input";
 import { cx } from "@/utils/cx";
 import { useAgendaOrders } from "./agenda-data";
 import { TriangleAlert, Utensils } from "lucide-react";
+import { toast } from "sonner";
+import { AgendaFilterPopover, emptyAgendaFilter, type AgendaFilterOption, type AgendaFilterState } from "./agenda-filter-popover";
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -57,17 +59,49 @@ function MetricCard({
 export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId }) {
     const [selectedTab, setSelectedTab] = useState<Key>(initialTab);
     const [query, setQuery] = useState("");
+    const [appliedFilter, setAppliedFilter] = useState<AgendaFilterState>(() => emptyAgendaFilter());
     const { scheduled, requests, metrics, loading, error, reload } = useAgendaOrders();
 
+    const currentTabOrders = useMemo(() => {
+        return selectedTab === "scheduled" ? scheduled : requests;
+    }, [selectedTab, scheduled, requests]);
+
+    const serviceTypeOptions = useMemo<AgendaFilterOption[]>(() => {
+        const types = new Set<string>();
+        currentTabOrders.forEach((r) => {
+            if (r.typeLabel) types.add(r.typeLabel);
+        });
+        return Array.from(types).map((t) => ({ id: t, label: t }));
+    }, [currentTabOrders]);
+
+    const statusOptions = useMemo<AgendaFilterOption[]>(() => {
+        const statuses = new Set<string>();
+        currentTabOrders.forEach((r) => {
+            if (r.statusLabel) statuses.add(r.statusLabel);
+        });
+        return Array.from(statuses).map((s) => ({ id: s, label: s }));
+    }, [currentTabOrders]);
+
     const visible = useMemo(() => {
-        const list = selectedTab === "scheduled" ? scheduled : requests;
+        let filteredList = currentTabOrders;
+        if (appliedFilter.serviceTypes.length > 0) {
+            filteredList = filteredList.filter((r) => appliedFilter.serviceTypes.includes(r.typeLabel));
+        }
+        if (appliedFilter.statuses.length > 0) {
+            filteredList = filteredList.filter((r) => appliedFilter.statuses.includes(r.statusLabel));
+        }
         const q = query.trim().toLowerCase();
-        if (!q) return list;
-        return list.filter((r) => {
+        if (!q) return filteredList;
+        return filteredList.filter((r) => {
             const hay = `${r.code} ${r.typeLabel} ${r.statusLabel} ${r.cityLabel} ${r.chefName ?? ""}`.toLowerCase();
             return hay.includes(q);
         });
-    }, [selectedTab, scheduled, requests, query]);
+    }, [currentTabOrders, query, appliedFilter]);
+
+    useEffect(() => {
+        setAppliedFilter(emptyAgendaFilter());
+        setQuery("");
+    }, [selectedTab]);
 
     const requestsCount = requests.length;
 
@@ -119,8 +153,12 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
                                 description="Visualize, filtre e gerencie os chefs parceiros cadastrados na plataforma."
                                 query={query}
                                 onQueryChange={setQuery}
-                                rows={selectedTab === "scheduled" ? visible : scheduled}
+                                rows={visible}
                                 baseHref="/agenda/servicos-agendados"
+                                appliedFilter={appliedFilter}
+                                onApplyFilter={setAppliedFilter}
+                                serviceTypeOptions={serviceTypeOptions}
+                                statusOptions={statusOptions}
                             />
                         </Tabs.Panel>
 
@@ -130,8 +168,12 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
                                 description="Analise os pedidos recentes e realize o match com os chefs disponíveis."
                                 query={query}
                                 onQueryChange={setQuery}
-                                rows={selectedTab === "requests" ? visible : requests}
+                                rows={visible}
                                 baseHref="/agenda/solicitacoes"
+                                appliedFilter={appliedFilter}
+                                onApplyFilter={setAppliedFilter}
+                                serviceTypeOptions={serviceTypeOptions}
+                                statusOptions={statusOptions}
                             />
                         </Tabs.Panel>
                     </Tabs>
@@ -148,6 +190,10 @@ function SectionTable({
     onQueryChange,
     rows,
     baseHref,
+    appliedFilter,
+    onApplyFilter,
+    serviceTypeOptions,
+    statusOptions,
 }: {
     title: string;
     description: string;
@@ -155,6 +201,10 @@ function SectionTable({
     onQueryChange: (v: string) => void;
     rows: ReturnType<typeof useAgendaOrders>["rows"];
     baseHref: string;
+    appliedFilter: AgendaFilterState;
+    onApplyFilter: (next: AgendaFilterState) => void;
+    serviceTypeOptions: AgendaFilterOption[];
+    statusOptions: AgendaFilterOption[];
 }) {
     return (
         <>
@@ -167,12 +217,23 @@ function SectionTable({
                 <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
                     <Input placeholder="Buscar por ordem" value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:max-w-md" />
                     <div className="flex flex-wrap items-center gap-3">
-                        <Button color="secondary" size="md" iconLeading={Download02}>
+                        <Button
+                            color="secondary"
+                            size="md"
+                            iconLeading={Download02}
+                            onClick={() => {
+                                toast.success("Exportação da agenda iniciada!");
+                                // TODO: Integrar com a API de exportação da agenda
+                            }}
+                        >
                             Exportar dados
                         </Button>
-                        <Button color="primary" size="md" iconLeading={FilterLines}>
-                            Filtrar
-                        </Button>
+                        <AgendaFilterPopover
+                            applied={appliedFilter}
+                            onApply={onApplyFilter}
+                            serviceTypeOptions={serviceTypeOptions}
+                            statusOptions={statusOptions}
+                        />
                     </div>
                 </div>
 

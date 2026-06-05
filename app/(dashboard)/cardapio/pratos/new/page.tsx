@@ -190,11 +190,15 @@ export default function DishNewPage() {
     const handleServiceTypeChange = (keys: Selection) => {
         if (keys === "all") return;
         const selected = Array.from(keys) as string[];
+        const isMealPrep = selected.includes("meal-prep");
         setForm((p) => ({
             ...p,
-            mealPreap: selected.includes("meal-prep"),
+            mealPreap: isMealPrep,
             getTogheter: selected.includes("get-together"),
         }));
+        if (isMealPrep) {
+            setThemeSelection(new Set());
+        }
     };
 
     const categoryCsv = useMemo(() => {

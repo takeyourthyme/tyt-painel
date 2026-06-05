@@ -22,6 +22,7 @@ import { getChefs } from "@/lib/tyt-api/users";
 import { cx } from "@/utils/cx";
 import { type ChefsFilterOption, ChefsFilterPopover, type ChefsFilterState, emptyChefsFilter } from "./chefs-filter-popover";
 import { ChefHat } from "lucide-react";
+import { toast } from "sonner";
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -602,7 +603,15 @@ function GestaoChefsTable({
                 <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
                     <Input placeholder="Pesquisar chef..." value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:max-w-md" />
                     <div className="flex flex-wrap items-center gap-3">
-                        <Button color="secondary" size="md" iconLeading={Download02}>
+                        <Button
+                            color="secondary"
+                            size="md"
+                            iconLeading={Download02}
+                            onClick={() => {
+                                toast.success("Exportação de chefs iniciada!");
+                                // TODO: Integrar com a API de exportação de chefs
+                            }}
+                        >
                             Exportar dados
                         </Button>
                         <ChefsFilterPopover applied={appliedFilter} onApply={onApplyFilter} cityOptions={cityOptions} serviceOptions={serviceOptions} />

@@ -30,6 +30,8 @@ import { Playfair_Display } from "next/font/google";
 import * as Lucide from "lucide-react";
 import { Button as AriaButton, type Key, type Selection } from "react-aria-components";
 import { toast } from "sonner";
+import { DishesFilterPopover, emptyDishesFilter, type DishesFilterOption, type DishesFilterState } from "./dishes-filter-popover";
+import { IngredientsFilterPopover, emptyIngredientsFilter, type IngredientsFilterOption, type IngredientsFilterState } from "./ingredients-filter-popover";
 import { FileUploadDropZone } from "@/components/application/file-upload/file-upload-base";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
@@ -271,6 +273,8 @@ export default function CardapioPage() {
     }, [ingredientQuery]);
 
     const [dishes, setDishes] = useState<DishCard[]>([]);
+    const [appliedDishFilter, setAppliedDishFilter] = useState<DishesFilterState>(() => emptyDishesFilter());
+    const [appliedIngredientFilter, setAppliedIngredientFilter] = useState<IngredientsFilterState>(() => emptyIngredientsFilter());
     const [ingredients, setIngredients] = useState<IngredientRow[]>([]);
     const [categories, setCategories] = useState<IngredienteCategoria[]>([]);
 
@@ -504,11 +508,36 @@ export default function CardapioPage() {
         void reload();
     }, [reload]);
 
+    const dishCategoryOptions = useMemo<DishesFilterOption[]>(() => {
+        const cats = new Set<string>();
+        dishes.forEach((d) => {
+            d.categoryBadges.forEach((cb) => {
+                if (cb.label) cats.add(cb.label);
+            });
+        });
+        return Array.from(cats).map((c) => ({ id: c, label: c }));
+    }, [dishes]);
+
+    const ingredientCategoryOptions = useMemo<IngredientsFilterOption[]>(() => {
+        const cats = new Set<string>();
+        ingredients.forEach((i) => {
+            if (i.categoryLabel) cats.add(i.categoryLabel);
+        });
+        return Array.from(cats).map((c) => ({ id: c, label: c }));
+    }, [ingredients]);
+
     const dishItems = useMemo(() => {
+        let list = dishes;
+        if (appliedDishFilter.serviceTypes.length > 0) {
+            list = list.filter((d) => d.serviceBadges.some((sb) => appliedDishFilter.serviceTypes.includes(sb)));
+        }
+        if (appliedDishFilter.categories.length > 0) {
+            list = list.filter((d) => d.categoryBadges.some((cb) => appliedDishFilter.categories.includes(cb.label)));
+        }
         const q = dishQuery.trim().toLowerCase();
-        if (!q) return dishes;
-        return dishes.filter((d) => `${d.title} ${d.description}`.toLowerCase().includes(q));
-    }, [dishes, dishQuery]);
+        if (!q) return list;
+        return list.filter((d) => `${d.title} ${d.description}`.toLowerCase().includes(q));
+    }, [dishes, dishQuery, appliedDishFilter]);
 
     const dishLimit = 9;
     const totalDishPages = Math.max(Math.ceil(dishItems.length / dishLimit), 1);
@@ -518,10 +547,14 @@ export default function CardapioPage() {
     }, [dishItems, dishPage]);
 
     const ingredientItems = useMemo(() => {
+        let list = ingredients;
+        if (appliedIngredientFilter.categories.length > 0) {
+            list = list.filter((i) => appliedIngredientFilter.categories.includes(i.categoryLabel));
+        }
         const q = ingredientQuery.trim().toLowerCase();
-        if (!q) return ingredients;
-        return ingredients.filter((i) => `${i.name} ${i.categoryLabel}`.toLowerCase().includes(q));
-    }, [ingredients, ingredientQuery]);
+        if (!q) return list;
+        return list.filter((i) => `${i.name} ${i.categoryLabel}`.toLowerCase().includes(q));
+    }, [ingredients, ingredientQuery, appliedIngredientFilter]);
 
     const ingredientLimit = 10;
     const totalIngredientPages = Math.max(Math.ceil(ingredientItems.length / ingredientLimit), 1);
@@ -786,12 +819,22 @@ export default function CardapioPage() {
                                         onChange={setDishQuery}
                                         className="w-full sm:w-[320px]"
                                     />
-                                    <Button color="secondary" size="md" iconLeading={Download02}>
+                                    <Button
+                                        color="secondary"
+                                        size="md"
+                                        iconLeading={Download02}
+                                        onClick={() => {
+                                            toast.success("Exportação de pratos iniciada!");
+                                            // TODO: Integrar com a API de exportação de pratos
+                                        }}
+                                    >
                                         Exportar dados
                                     </Button>
-                                    <Button color="primary" size="md" iconLeading={FilterLines}>
-                                        Filtrar
-                                    </Button>
+                                    <DishesFilterPopover
+                                        applied={appliedDishFilter}
+                                        onApply={setAppliedDishFilter}
+                                        categoryOptions={dishCategoryOptions}
+                                    />
                                 </div>
                             </div>
 
@@ -893,12 +936,22 @@ export default function CardapioPage() {
                                             className="min-w-0 md:max-w-md md:flex-1"
                                         />
                                         <div className="flex flex-wrap items-center gap-3">
-                                            <Button color="secondary" size="md" iconLeading={Download02}>
+                                            <Button
+                                                color="secondary"
+                                                size="md"
+                                                iconLeading={Download02}
+                                                onClick={() => {
+                                                    toast.success("Exportação de ingredientes iniciada!");
+                                                    // TODO: Integrar com a API de exportação de ingredientes
+                                                }}
+                                            >
                                                 Exportar dados
                                             </Button>
-                                            <Button color="primary" size="md" iconLeading={FilterLines}>
-                                                Filtrar
-                                            </Button>
+                                            <IngredientsFilterPopover
+                                                applied={appliedIngredientFilter}
+                                                onApply={setAppliedIngredientFilter}
+                                                categoryOptions={ingredientCategoryOptions}
+                                            />
                                         </div>
                                     </div>
 

@@ -57,6 +57,7 @@ type ScheduleStatus = "pending" | "confirmed";
 
 type ScheduleItem = {
     id: string;
+    code: string;
     serviceLabel: string;
     status: ScheduleStatus;
     dateLabel: string;
@@ -69,6 +70,7 @@ type HistoryStatus = "pending" | "confirmed" | "cancelled";
 
 type HistoryRow = {
     id: string;
+    code: string;
     serviceLabel: string;
     valueLabel: string;
     status: HistoryStatus;
@@ -349,7 +351,13 @@ function ScheduleCard({ item }: { item: ScheduleItem }) {
                 </div>
             </div>
 
-            <ButtonUtility icon={Eye} color="secondary" size="sm" aria-label="Ver" />
+            <ButtonUtility
+                icon={Eye}
+                color="secondary"
+                size="sm"
+                aria-label="Ver"
+                href={`/agenda/servicos-agendados/${encodeURIComponent(item.code)}`}
+            />
         </div>
     );
 }
@@ -457,6 +465,7 @@ export function ChefDetailsView({ id }: { id: string }) {
         const dt = orderEventDateTime(o);
         return {
             id: o.id,
+            code: o.code ?? "",
             serviceLabel: formatServiceChipLabel(o.type ?? "—"),
             status: orderIsConfirmed(o.status) ? "confirmed" : "pending",
             dateLabel: dt ? dt.toLocaleDateString("pt-BR") : "—",
@@ -470,6 +479,7 @@ export function ChefDetailsView({ id }: { id: string }) {
         const dt = orderEventDateTime(o);
         return {
             id: o.id,
+            code: o.code ?? "",
             serviceLabel: formatServiceChipLabel(o.type ?? "—"),
             valueLabel: formatCurrency(o.totalValue),
             status: orderIsCancelled(o.status) ? "cancelled" : orderIsConfirmed(o.status) ? "confirmed" : "pending",
@@ -1519,7 +1529,13 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                         <Table.Cell className="whitespace-nowrap text-tertiary">{row.clientName}</Table.Cell>
                                                         <Table.Cell>
                                                             <div className="flex justify-end">
-                                                                <ButtonUtility icon={Eye} color="secondary" size="sm" aria-label="Ver" />
+                                                                <ButtonUtility
+                                                                    icon={Eye}
+                                                                    color="secondary"
+                                                                    size="sm"
+                                                                    aria-label="Ver"
+                                                                    href={`/agenda/servicos-agendados/${encodeURIComponent(row.code)}`}
+                                                                />
                                                             </div>
                                                         </Table.Cell>
                                                     </Table.Row>

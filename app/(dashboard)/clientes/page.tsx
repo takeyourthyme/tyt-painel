@@ -19,6 +19,7 @@ import { parseApiErrorMessage, parseJsonOrThrow, TytApiError } from "@/lib/tyt-a
 import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { getClientes, getUserById, putUserToggleStatus } from "@/lib/tyt-api/users";
 import { Check, ChefHat } from "lucide-react";
+import { ClientesFilterPopover, emptyClientesFilter, type ClientesFilterOption, type ClientesFilterState } from "./clientes-filter-popover";
 
 type ClienteRow = {
     id: string;
@@ -128,6 +129,7 @@ function DataRow({ label, value }: { label: string; value: string }) {
 
 export default function ClientesPage() {
     const [query, setQuery] = useState("");
+    const [appliedFilter, setAppliedFilter] = useState<ClientesFilterState>(() => emptyClientesFilter());
     const [rows, setRows] = useState<ClienteRow[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -263,11 +265,29 @@ export default function ClientesPage() {
         void loadClientes();
     }, [loadClientes]);
 
+    const cityOptions = useMemo<ClientesFilterOption[]>(() => {
+        const cities = new Set<string>();
+        rows.forEach((r) => {
+            if (r.city) cities.add(r.city);
+        });
+        return Array.from(cities).map((c) => ({ id: c, label: c }));
+    }, [rows]);
+
     const filtered = useMemo(() => {
+        let list = rows;
+        if (appliedFilter.status.length > 0) {
+            list = list.filter((r) => {
+                const statusStr = r.isActive ? "ativo" : "inativo";
+                return appliedFilter.status.includes(statusStr);
+            });
+        }
+        if (appliedFilter.cityIds.length > 0) {
+            list = list.filter((r) => r.city && appliedFilter.cityIds.includes(r.city));
+        }
         const q = query.trim().toLowerCase();
-        if (!q) return rows;
-        return rows.filter((r) => `${r.name} ${r.email ?? ""} ${r.whatsapp ?? ""} ${r.city ?? ""} ${r.state ?? ""}`.toLowerCase().includes(q));
-    }, [query, rows]);
+        if (!q) return list;
+        return list.filter((r) => `${r.name} ${r.email ?? ""} ${r.whatsapp ?? ""} ${r.city ?? ""} ${r.state ?? ""}`.toLowerCase().includes(q));
+    }, [query, rows, appliedFilter]);
 
     const totalCount = rows.length;
     const activeCount = rows.filter((r) => r.isActive).length;
@@ -342,12 +362,18 @@ export default function ClientesPage() {
                                 className="w-full md:max-w-md"
                             />
                             <div className="flex flex-wrap items-center gap-3">
-                                <Button color="secondary" size="md" iconLeading={Download02} isDisabled>
+                                <Button
+                                    color="secondary"
+                                    size="md"
+                                    iconLeading={Download02}
+                                    onClick={() => {
+                                        toast.success("Exportação de clientes iniciada!");
+                                        // TODO: Integrar com a API de exportação de clientes
+                                    }}
+                                >
                                     Exportar dados
                                 </Button>
-                                <Button color="primary" size="md" iconLeading={FilterLines} isDisabled>
-                                    Filtrar
-                                </Button>
+                                <ClientesFilterPopover applied={appliedFilter} onApply={setAppliedFilter} cityOptions={cityOptions} />
                             </div>
                         </div>
 
