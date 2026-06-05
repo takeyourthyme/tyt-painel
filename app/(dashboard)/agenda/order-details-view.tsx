@@ -42,11 +42,21 @@ type KitchenOrderDetails = {
     district: string | null;
     observations: string | null;
     clientRequest: string | null;
-    dishes: Array<{ id: number | null; name: string; quantity: number | null }>;
+    dishes: Array<{
+        id: number | null;
+        name: string;
+        quantity: number | null;
+        category: string | null;
+        observations: string | null;
+        mainIngredients: string[];
+        cuisineTypes: string[];
+        themes: string[];
+    }>;
     proposalStatus: string | null;
     proposalItems: { description: string; price: number }[];
     cliente: { id: number; nome: string; email: string | null; whatsapp: string | null } | null;
     chef: { id: number; nome: string; foto: string | null } | null;
+    themes: string[];
 };
 
 function cleanUrl(raw: unknown): string | null {
@@ -60,7 +70,8 @@ function getRecord(raw: unknown): Record<string, unknown> | null {
     return raw as Record<string, unknown>;
 }
 
-function getStringValue(obj: Record<string, unknown>, keys: string[]): string | null {
+function getStringValue(obj: Record<string, unknown> | null | undefined, keys: string[]): string | null {
+    if (!obj) return null;
     for (const k of keys) {
         const v = obj[k];
         if (typeof v === "string" && v.trim().length > 0) return v;
@@ -68,7 +79,8 @@ function getStringValue(obj: Record<string, unknown>, keys: string[]): string | 
     return null;
 }
 
-function getNumberValue(obj: Record<string, unknown>, keys: string[]): number | null {
+function getNumberValue(obj: Record<string, unknown> | null | undefined, keys: string[]): number | null {
+    if (!obj) return null;
     for (const k of keys) {
         const v = obj[k];
         if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -155,6 +167,30 @@ function isSpecialService(typeRaw: string): boolean {
     return typeRaw.trim().toUpperCase().includes("SPECIAL");
 }
 
+function getDishObservation(dishName: string, orderObservations: string | null): string | null {
+    if (!orderObservations) return null;
+    const lines = orderObservations.split("\n");
+    for (const line of lines) {
+        const parts = line.split(":");
+        if (parts.length >= 2) {
+            const namePart = parts[0].trim().toLowerCase();
+            const notePart = parts.slice(1).join(":").trim();
+            if (dishName.toLowerCase().includes(namePart) || namePart.includes(dishName.toLowerCase())) {
+                return notePart;
+            }
+        }
+        const partsHyphen = line.split("-");
+        if (partsHyphen.length >= 2) {
+            const namePart = partsHyphen[0].trim().toLowerCase();
+            const notePart = partsHyphen.slice(1).join("-").trim();
+            if (dishName.toLowerCase().includes(namePart) || namePart.includes(dishName.toLowerCase())) {
+                return notePart;
+            }
+        }
+    }
+    return null;
+}
+
 function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
     const obj = normalizeDetailsResponse(raw) ?? {};
     const id = getNumberValue(obj, ["id"]);
@@ -186,9 +222,57 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
             if (!name) return null;
             const id = getNumberValue(dish ?? r, ["id", "dish_id", "prato_id"]);
             const quantity = getNumberValue(r, ["quantity", "quantidade"]);
-            return { id, name, quantity };
+
+            // Categorias
+            const catsList = (dish?.pratos_categorias ?? dish?.categorias) as unknown[];
+            const category = Array.isArray(catsList) && catsList.length > 0
+                ? getStringValue(getRecord(getRecord(catsList[0])?.categoria), ["descricao"])
+                : null;
+
+            // Ingredientes principais
+            const mainIngsList = (dish?.pratos_ingredientes_principais ?? dish?.ingredientes_principais) as unknown[];
+            const mainIngredients = Array.isArray(mainIngsList)
+                ? (mainIngsList.map(item => getStringValue(getRecord(getRecord(item)?.ingrediente_principal), ["descricao"])).filter(Boolean) as string[])
+                : [];
+
+            // Tipos de cozinha
+            const cuisinesList = (dish?.pratos_tipos_cozinha ?? dish?.tipos_cozinha) as unknown[];
+            const cuisineTypes = Array.isArray(cuisinesList)
+                ? (cuisinesList.map(item => getStringValue(getRecord(getRecord(item)?.tipo_cozinha), ["descricao"])).filter(Boolean) as string[])
+                : [];
+
+            // Temas
+            const themesList = (dish?.pratos_temas ?? dish?.temas) as unknown[];
+            const themes = Array.isArray(themesList)
+                ? (themesList.map(item => getStringValue(getRecord(getRecord(item)?.tema), ["descricao"])).filter(Boolean) as string[])
+                : [];
+
+            // Observações/restrições
+            const localObs =
+                getStringValue(r, ["notes", "observations", "observacao", "observação", "personalizacao"]) ??
+                getDishObservation(name, observations);
+
+            return {
+                id,
+                name,
+                quantity,
+                category,
+                observations: localObs,
+                mainIngredients,
+                cuisineTypes,
+                themes,
+            };
         })
-        .filter(Boolean) as Array<{ id: number | null; name: string; quantity: number | null }>;
+        .filter(Boolean) as Array<{
+            id: number | null;
+            name: string;
+            quantity: number | null;
+            category: string | null;
+            observations: string | null;
+            mainIngredients: string[];
+            cuisineTypes: string[];
+            themes: string[];
+        }>;
 
     const clienteRaw = getRecord(obj.cliente) ?? getRecord(obj.client);
     const cliente = clienteRaw
@@ -245,6 +329,12 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
     const proposalItems = proposalItemsFromProposal.length ? proposalItemsFromProposal : proposalItemsFromProposals;
     const proposalStatusFromProposals = proposalItemsFromProposals.length > 0 ? "AWAITING_CLIENT" : null;
 
+    const rootThemesRaw = obj.temas as unknown;
+    const rootThemesList = Array.isArray(rootThemesRaw) ? rootThemesRaw : [];
+    const rootThemes = rootThemesList
+        .map((t) => getStringValue(getRecord(t), ["descricao"]))
+        .filter(Boolean) as string[];
+
     return {
         id,
         code,
@@ -265,6 +355,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
         proposalItems,
         cliente,
         chef,
+        themes: rootThemes,
     };
 }
 
@@ -350,6 +441,68 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
     const canSendProposal = isSpecial && !!order?.id ? order.proposalItems.length === 0 || (order.proposalStatus ?? "").trim().toUpperCase() === "DECLINED" : false;
     const proposalItems = order?.proposalItems?.length ? order.proposalItems : proposalPreviewItems;
     const canConfirmSendProposal = canSendProposal && proposalItems.length > 0;
+
+    const isGetTogether = useMemo(() => {
+        if (!order) return false;
+        return order.type.trim().toUpperCase().includes("TOGETHER") || order.type.trim().toUpperCase().includes("TOGHETER");
+    }, [order]);
+
+    const groupedCategories = useMemo(() => {
+        if (!order || !order.dishes) return [];
+        const groups: Record<string, typeof order.dishes> = {};
+
+        order.dishes.forEach((d) => {
+            const cat = d.category || "Outros";
+            let groupName = cat;
+            if (cat.toLowerCase() === "entradas" || cat.toLowerCase() === "entrada") {
+                groupName = "Entrada";
+            } else if (cat.toLowerCase() === "saladas" || cat.toLowerCase() === "salada") {
+                groupName = "Saladas";
+            } else if (cat.toLowerCase() === "pratos principais" || cat.toLowerCase() === "prato principal" || cat.toLowerCase() === "pratos_principais" || cat.toLowerCase() === "principais" || cat.toLowerCase() === "principal") {
+                groupName = "Pratos principais";
+            } else if (cat.toLowerCase() === "sobremesas" || cat.toLowerCase() === "sobremesa") {
+                groupName = "Sobremesas";
+            } else {
+                groupName = cat.charAt(0).toUpperCase() + cat.slice(1);
+            }
+
+            if (!groups[groupName]) {
+                groups[groupName] = [];
+            }
+            groups[groupName].push(d);
+        });
+
+        const orderOfCats = ["Entrada", "Saladas", "Pratos principais", "Sobremesas"];
+        return Object.entries(groups).sort((a, b) => {
+            const idxA = orderOfCats.indexOf(a[0]);
+            const idxB = orderOfCats.indexOf(b[0]);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return a[0].localeCompare(b[0]);
+        });
+    }, [order]);
+
+    const { mainIngredientsLabel, cuisineTypesLabel, themesLabel, serviceLevelLabel } = useMemo(() => {
+        if (!order || !order.dishes) {
+            return {
+                mainIngredientsLabel: "—",
+                cuisineTypesLabel: "—",
+                themesLabel: "—",
+                serviceLevelLabel: "—",
+            };
+        }
+        const uniqueMainIngredients = Array.from(new Set(order.dishes.flatMap(d => d.mainIngredients)));
+        const uniqueCuisineTypes = Array.from(new Set(order.dishes.flatMap(d => d.cuisineTypes)));
+        const uniqueThemes = Array.from(new Set([...(order.themes ?? []), ...order.dishes.flatMap(d => d.themes)]));
+
+        return {
+            mainIngredientsLabel: uniqueMainIngredients.length > 0 ? uniqueMainIngredients.join(", ") : "—",
+            cuisineTypesLabel: uniqueCuisineTypes.length > 0 ? uniqueCuisineTypes.join(", ") : "—",
+            themesLabel: uniqueThemes.length > 0 ? uniqueThemes.join(", ") : "—",
+            serviceLevelLabel: order.dishes.length > 5 ? "Banquete" : "Clássico",
+        };
+    }, [order]);
 
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
@@ -464,83 +617,156 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                         </section>
 
                         <section className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                            <div className="border-b border-secondary px-6 py-5">
-                                <p className="text-sm font-semibold text-primary">{isSpecial ? "Solicitação cliente" : "Menu Planejado"}</p>
-                            </div>
-
                             {isSpecial ? (
-                                <div className="flex flex-col gap-4 px-6 py-5">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <p className="text-sm text-tertiary">{order.clientRequest || "—"}</p>
-                                        <Button
-                                            color="secondary"
-                                            size="sm"
-                                            isDisabled={!canConfirmSendProposal || loading || !order.id}
-                                            onClick={() => setOpenProposalSendConfirm(true)}
-                                        >
-                                            Enviar proposta
-                                        </Button>
+                                <>
+                                    <div className="border-b border-secondary px-6 py-5">
+                                        <p className="text-sm font-semibold text-primary">Solicitação cliente</p>
                                     </div>
-
-                                    <TableCard.Root className="border border-secondary bg-primary shadow-none ring-0">
-                                        <div className="flex items-center justify-between border-b border-secondary px-4 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-sm font-semibold text-primary">Proposta de Serviço</p>
-                                                <Badge size="sm" type="pill-color" color={proposal.color}>
-                                                    {proposal.label}
-                                                </Badge>
-                                            </div>
-                                            <ButtonUtility
+                                    <div className="flex flex-col gap-4 px-6 py-5">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <p className="text-sm text-tertiary">{order.clientRequest || "—"}</p>
+                                            <Button
+                                                color="secondary"
                                                 size="sm"
-                                                color="tertiary"
-                                                icon={Edit02}
-                                                tooltip="Editar"
-                                                onClick={() => {
-                                                    const existing = proposalItems.map((i) => ({ description: i.description, price: String(i.price) }));
-                                                    setProposalDraft(existing.length > 0 ? existing : [{ description: "", price: "" }]);
-                                                    setOpenProposal(true);
-                                                }}
-                                            />
+                                                isDisabled={!canConfirmSendProposal || loading || !order.id}
+                                                onClick={() => setOpenProposalSendConfirm(true)}
+                                            >
+                                                Enviar proposta
+                                            </Button>
                                         </div>
 
-                                        {proposalItems.length > 0 ? (
-                                            <Table aria-label="Itens da Proposta" selectionMode="none">
-                                                <Table.Header>
-                                                    <Table.Head id="description" label="Item" className="min-w-[200px]" isRowHeader />
-                                                    <Table.Head id="price" label="Valor" className="min-w-[120px]" />
-                                                </Table.Header>
-                                                <Table.Body items={proposalItems.map((item, idx) => ({ ...item, id: `${idx}-${item.description}` }))}>
-                                                    {(item) => (
-                                                        <Table.Row id={item.id}>
-                                                            <Table.Cell className="text-secondary">{item.description}</Table.Cell>
-                                                            <Table.Cell className="text-tertiary">{formatCurrency(item.price)}</Table.Cell>
-                                                        </Table.Row>
+                                        <TableCard.Root className="border border-secondary bg-primary shadow-none ring-0">
+                                            <div className="flex items-center justify-between border-b border-secondary px-4 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-semibold text-primary">Proposta de Serviço</p>
+                                                    <Badge size="sm" type="pill-color" color={proposal.color}>
+                                                        {proposal.label}
+                                                    </Badge>
+                                                </div>
+                                                <ButtonUtility
+                                                    size="sm"
+                                                    color="tertiary"
+                                                    icon={Edit02}
+                                                    tooltip="Editar"
+                                                    onClick={() => {
+                                                        const existing = proposalItems.map((i) => ({ description: i.description, price: String(i.price) }));
+                                                        setProposalDraft(existing.length > 0 ? existing : [{ description: "", price: "" }]);
+                                                        setOpenProposal(true);
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {proposalItems.length > 0 ? (
+                                                <Table aria-label="Itens da Proposta" selectionMode="none">
+                                                    <Table.Header>
+                                                        <Table.Head id="description" label="Item" className="min-w-[200px]" isRowHeader />
+                                                        <Table.Head id="price" label="Valor" className="min-w-[120px]" />
+                                                    </Table.Header>
+                                                    <Table.Body items={proposalItems.map((item, idx) => ({ ...item, id: `${idx}-${item.description}` }))}>
+                                                        {(item) => (
+                                                            <Table.Row id={item.id}>
+                                                                <Table.Cell className="text-secondary">{item.description}</Table.Cell>
+                                                                <Table.Cell className="text-tertiary">{formatCurrency(item.price)}</Table.Cell>
+                                                            </Table.Row>
+                                                        )}
+                                                    </Table.Body>
+                                                </Table>
+                                            ) : (
+                                                <div className="px-4 py-4">
+                                                    <p className="text-sm text-tertiary">Nenhuma proposta criada.</p>
+                                                </div>
+                                            )}
+                                        </TableCard.Root>
+                                    </div>
+                                </>
+                            ) : isGetTogether ? (
+                                <>
+                                    <div className="flex items-center justify-between border-b border-secondary px-6 py-5">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm font-semibold text-primary">Menu Planejado</p>
+                                            <Badge size="sm" type="pill-color" color="blue">
+                                                {order.dishes.length} {order.dishes.length === 1 ? "prato" : "pratos"}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-6 px-6 py-5">
+                                        {/* Metadata Row */}
+                                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className="text-xs font-medium text-quaternary">Ingrediente Principal</span>
+                                                <Badge size="sm" type="pill-color" color="gray" className="w-max">
+                                                    {mainIngredientsLabel}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className="text-xs font-medium text-quaternary">Tipo de cozinha</span>
+                                                <Badge size="sm" type="pill-color" color="gray" className="w-max">
+                                                    {cuisineTypesLabel}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className="text-xs font-medium text-quaternary">Tema</span>
+                                                <Badge size="sm" type="pill-color" color="gray" className="w-max">
+                                                    {themesLabel}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className="text-xs font-medium text-quaternary">Niver serviço</span>
+                                                <Badge size="sm" type="pill-color" color="gray" className="w-max">
+                                                    {serviceLevelLabel}
+                                                </Badge>
+                                            </div>
+                                        </div>
+
+                                        {/* Grouped Dishes List with Grey Background Container */}
+                                        <div className="flex flex-col gap-5 rounded-xl bg-secondary_alt p-5 border border-secondary">
+                                            {groupedCategories.map(([categoryName, categoryDishes], catIdx) => (
+                                                <div key={categoryName} className="flex flex-col gap-3">
+                                                    <span className="text-xs font-semibold text-tertiary uppercase tracking-wider">{categoryName}</span>
+                                                    <div className="flex flex-col gap-3 pl-1">
+                                                        {categoryDishes.map((d, dishIdx) => (
+                                                            <div key={`${d.id ?? "dish"}-${dishIdx}`} className="flex flex-col gap-1">
+                                                                <span className="text-sm font-semibold text-primary">{d.name}</span>
+                                                                {d.observations && (
+                                                                    <span className="inline-flex w-max items-center rounded-md border border-utility-warning-200 bg-utility-warning-50 px-2 py-0.5 text-xs font-medium text-utility-warning-700">
+                                                                        {d.observations}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    {catIdx < groupedCategories.length - 1 && (
+                                                        <div className="h-px bg-border-secondary w-full my-2 animate-none" aria-hidden />
                                                     )}
-                                                </Table.Body>
-                                            </Table>
-                                        ) : (
-                                            <div className="px-4 py-4">
-                                                <p className="text-sm text-tertiary">Nenhuma proposta criada.</p>
-                                            </div>
-                                        )}
-                                    </TableCard.Root>
-                                </div>
+                                                </div>
+                                            ))}
+                                            {groupedCategories.length === 0 && (
+                                                <p className="text-sm text-tertiary">Nenhum prato no menu planejado.</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
                             ) : (
-                                <div className="flex flex-wrap gap-3 px-6 py-5">
-                                    {order.dishes.length > 0 ? (
-                                        order.dishes.map((d, idx) => (
-                                            <div key={`${d.id ?? "dish"}-${idx}`} className="inline-flex items-center gap-2 text-sm text-tertiary">
-                                                <CheckCircle className="size-4 text-tertiary" aria-hidden />
-                                                <span>
-                                                    {d.name}
-                                                    {d.quantity !== null ? ` x${d.quantity}` : ""}
-                                                </span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-sm text-tertiary">—</p>
-                                    )}
-                                </div>
+                                <>
+                                    <div className="border-b border-secondary px-6 py-5">
+                                        <p className="text-sm font-semibold text-primary">Menu Planejado</p>
+                                    </div>
+                                    <div className="flex flex-wrap gap-3 px-6 py-5">
+                                        {order.dishes.length > 0 ? (
+                                            order.dishes.map((d, idx) => (
+                                                <div key={`${d.id ?? "dish"}-${idx}`} className="inline-flex items-center gap-2 text-sm text-tertiary">
+                                                    <CheckCircle className="size-4 text-tertiary" aria-hidden />
+                                                    <span>
+                                                        {d.name}
+                                                        {d.quantity !== null ? ` x${d.quantity}` : ""}
+                                                    </span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-tertiary">—</p>
+                                        )}
+                                    </div>
+                                </>
                             )}
                         </section>
 
