@@ -16,6 +16,8 @@ import { Select } from "@/components/base/select/select";
 import { Tag, TagGroup, TagList } from "@/components/base/tags/tags";
 import { TextArea } from "@/components/base/textarea/textarea";
 import { Toggle } from "@/components/base/toggle/toggle";
+import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
+import { ICON_CATALOG } from "@/app/(dashboard)/cardapio/icon-catalog";
 import { parseApiErrorMessage, parseJsonOrThrow, TytApiError } from "@/lib/tyt-api/errors";
 import { getIngredientes } from "@/lib/tyt-api/ingredientes";
 import { postPratoFromFields } from "@/lib/tyt-api/pratos";
@@ -32,7 +34,28 @@ function isWithinUploadLimit(file: File, label: string) {
     return false;
 }
 
-type CatalogItem = { id: number; descricao: string };
+function formatBytes(bytes: number, decimals = 2): string {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+}
+
+function getFileIconType(fileName: string | null | undefined): string {
+    if (!fileName) return "empty";
+    const ext = fileName.split(".").pop()?.toLowerCase();
+    if (!ext) return "empty";
+    if (ext === "pdf") return "pdf";
+    if (["xls", "xlsx", "csv"].includes(ext)) return "xls";
+    if (["doc", "docx"].includes(ext)) return "doc";
+    if (["ppt", "pptx"].includes(ext)) return "ppt";
+    if (["png", "jpg", "jpeg", "svg", "webp"].includes(ext)) return "image";
+    return "empty";
+}
+
+type CatalogItem = { id: number; descricao: string; icone?: string | null };
 
 function getRecord(v: unknown): Record<string, unknown> | null {
     if (!v || typeof v !== "object") return null;
@@ -156,9 +179,10 @@ export default function DishNewPage() {
                         const r = x as Record<string, unknown>;
                         const id = typeof r.id === "number" ? r.id : Number(r.id);
                         const descricao = typeof r.descricao === "string" ? r.descricao : null;
+                        const icone = typeof r.icone === "string" ? r.icone : null;
                         if (!Number.isFinite(id) || !descricao) return null;
                         if (typeof r.ativo === "boolean" && r.ativo === false) return null;
-                        return { id, descricao };
+                        return { id, descricao, icone };
                     })
                     .filter(Boolean) as CatalogItem[];
 
@@ -500,7 +524,16 @@ export default function DishNewPage() {
                                                             })
                                                         }
                                                     >
-                                                        {mainIngredients.find((x) => String(x.id) === id)?.descricao ?? id}
+                                                        {(() => {
+                                                            const item = mainIngredients.find((x) => String(x.id) === id);
+                                                            const iconObj = item?.icone ? ICON_CATALOG.find((x) => x.id === item.icone) : null;
+                                                            return (
+                                                                <span className="inline-flex items-center gap-1.5">
+                                                                    {iconObj ? <iconObj.Icon className="size-3.5" /> : null}
+                                                                    {item?.descricao ?? id}
+                                                                </span>
+                                                            );
+                                                        })()}
                                                     </Tag>
                                                 ))}
                                             </TagList>
@@ -674,11 +707,29 @@ export default function DishNewPage() {
                                             setForm((p) => ({ ...p, fichaTecnicaFile: f }));
                                         }}
                                     />
-                                    {form.fichaTecnicaFile ? <p className="text-sm text-tertiary">{form.fichaTecnicaFile.name}</p> : null}
                                     {form.fichaTecnicaFile ? (
-                                        <Button color="link-destructive" size="sm" onClick={() => setForm((p) => ({ ...p, fichaTecnicaFile: null }))}>
-                                            Remover ficha técnica
-                                        </Button>
+                                        <div className="flex items-center justify-between gap-4 rounded-xl border border-secondary bg-primary p-4 mt-2">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary_alt text-tertiary">
+                                                    <FileTypeIcon type={getFileIconType(form.fichaTecnicaFile.name)} theme="light" variant="default" className="size-6" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-semibold text-primary">
+                                                        {form.fichaTecnicaFile.name}
+                                                    </p>
+                                                    <p className="truncate text-xs text-tertiary">
+                                                        {formatBytes(form.fichaTecnicaFile.size)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                color="link-destructive"
+                                                size="sm"
+                                                onClick={() => setForm((p) => ({ ...p, fichaTecnicaFile: null }))}
+                                            >
+                                                Remover
+                                            </Button>
+                                        </div>
                                     ) : null}
                                 </div>
                             </article>
@@ -699,11 +750,29 @@ export default function DishNewPage() {
                                             setForm((p) => ({ ...p, receitaFile: f }));
                                         }}
                                     />
-                                    {form.receitaFile ? <p className="text-sm text-tertiary">{form.receitaFile.name}</p> : null}
                                     {form.receitaFile ? (
-                                        <Button color="link-destructive" size="sm" onClick={() => setForm((p) => ({ ...p, receitaFile: null }))}>
-                                            Remover receita
-                                        </Button>
+                                        <div className="flex items-center justify-between gap-4 rounded-xl border border-secondary bg-primary p-4 mt-2">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary_alt text-tertiary">
+                                                    <FileTypeIcon type={getFileIconType(form.receitaFile.name)} theme="light" variant="default" className="size-6" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-semibold text-primary">
+                                                        {form.receitaFile.name}
+                                                    </p>
+                                                    <p className="truncate text-xs text-tertiary">
+                                                        {formatBytes(form.receitaFile.size)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                color="link-destructive"
+                                                size="sm"
+                                                onClick={() => setForm((p) => ({ ...p, receitaFile: null }))}
+                                            >
+                                                Remover
+                                            </Button>
+                                        </div>
                                     ) : null}
                                 </div>
                             </article>

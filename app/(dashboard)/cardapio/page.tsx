@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { DishesFilterPopover, emptyDishesFilter, type DishesFilterOption, type DishesFilterState } from "./dishes-filter-popover";
 import { IngredientsFilterPopover, emptyIngredientsFilter, type IngredientsFilterOption, type IngredientsFilterState } from "./ingredients-filter-popover";
 import { FileUploadDropZone } from "@/components/application/file-upload/file-upload-base";
+import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { SlideoutMenu } from "@/components/application/slideout-menus/slideout-menu";
@@ -111,63 +112,7 @@ type ClassificationDrawerView =
     | { type: "details"; kind: ClassificationKind; id: number }
     | { type: "edit"; kind: ClassificationKind; id: number };
 
-const ICON_CATALOG: Array<{ id: string; label: string; Icon: ComponentType<{ className?: string }> }> = (() => {
-    const processedIds = new Set<string>([
-        "alert-circle",
-        "archive",
-        "arrow-left",
-        "arrow-right",
-        "check",
-        "check-circle",
-        "container",
-        "layers-two",
-        "receipt",
-        "settings",
-        "star",
-        "zap",
-    ]);
-
-    const base = [
-        { id: "alert-circle", label: "AlertCircle", Icon: AlertCircle },
-        { id: "archive", label: "Archive", Icon: Archive },
-        { id: "arrow-left", label: "ArrowLeft", Icon: ArrowLeft },
-        { id: "arrow-right", label: "ArrowRight", Icon: ArrowRight },
-        { id: "check", label: "Check", Icon: Check },
-        { id: "check-circle", label: "CheckCircle", Icon: CheckCircle },
-        { id: "container", label: "Container", Icon: Container },
-        { id: "layers-two", label: "LayersTwo01", Icon: LayersTwo01 },
-        { id: "receipt", label: "ReceiptCheck", Icon: ReceiptCheck },
-        { id: "settings", label: "Settings01", Icon: Settings01 },
-        { id: "star", label: "Star01", Icon: Star01 },
-        { id: "zap", label: "Zap", Icon: Zap },
-    ];
-
-    const lucideItems = Object.keys(Lucide)
-        .filter((key) => {
-            const val = (Lucide as any)[key];
-            return typeof val === "function" || (val && typeof val === "object" && (val as any).$$typeof);
-        })
-        .map((key) => {
-            const id = key
-                .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-                .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
-                .toLowerCase();
-            return {
-                id,
-                label: key,
-                Icon: (Lucide as any)[key] as ComponentType<{ className?: string }>,
-            };
-        })
-        .filter((item) => {
-            if (processedIds.has(item.id)) {
-                return false;
-            }
-            processedIds.add(item.id);
-            return true;
-        });
-
-    return [...base, ...lucideItems];
-})();
+import { ICON_CATALOG } from "./icon-catalog";
 
 function normalizeList<T = unknown>(raw: unknown): T[] {
     if (Array.isArray(raw)) return raw as T[];
@@ -184,6 +129,27 @@ function cleanUrl(raw: unknown): string | null {
     if (typeof raw !== "string") return null;
     const cleaned = raw.replace(/`/g, "").trim();
     return cleaned || null;
+}
+
+function formatBytes(bytes: number, decimals = 2): string {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+}
+
+function getFileIconType(fileName: string | null | undefined): string {
+    if (!fileName) return "empty";
+    const ext = fileName.split(".").pop()?.toLowerCase();
+    if (!ext) return "empty";
+    if (ext === "pdf") return "pdf";
+    if (["xls", "xlsx", "csv"].includes(ext)) return "xls";
+    if (["doc", "docx"].includes(ext)) return "doc";
+    if (["ppt", "pptx"].includes(ext)) return "ppt";
+    if (["png", "jpg", "jpeg", "svg", "webp"].includes(ext)) return "image";
+    return "empty";
 }
 
 function formatCurrency(value: number | null): string {
@@ -1543,7 +1509,30 @@ export default function CardapioPage() {
                                         >
                                             Baixar template de exemplo
                                         </Button>
-                                        {batchFile ? <p className="text-sm text-tertiary">{batchFile.name}</p> : null}
+                                        {batchFile ? (
+                                            <div className="flex items-center justify-between gap-4 rounded-xl border border-secondary bg-primary p-4 mt-2">
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary_alt text-tertiary">
+                                                        <FileTypeIcon type={getFileIconType(batchFile.name)} theme="light" variant="default" className="size-6" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="truncate text-sm font-semibold text-primary">
+                                                            {batchFile.name}
+                                                        </p>
+                                                        <p className="truncate text-xs text-tertiary">
+                                                            {formatBytes(batchFile.size)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    color="link-destructive"
+                                                    size="sm"
+                                                    onClick={() => setBatchFile(null)}
+                                                >
+                                                    Remover
+                                                </Button>
+                                            </div>
+                                        ) : null}
                                     </div>
                                 ) : type === "create-single" ? (
                                     <div className="flex flex-col gap-4">

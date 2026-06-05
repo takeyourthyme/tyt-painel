@@ -5,6 +5,7 @@ import { Edit02, Download02 } from "@untitledui/icons";
 import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
 import { Playfair_Display } from "next/font/google";
 import { useRouter } from "next/navigation";
+import { ICON_CATALOG } from "@/app/(dashboard)/cardapio/icon-catalog";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
@@ -45,12 +46,7 @@ function getNumberValue(obj: Record<string, unknown> | null, keys: string[]): nu
 
 function coerceBool(v: unknown): boolean {
     if (typeof v === "boolean") return v;
-    if (typeof v === "number") return v !== 0;
-    if (typeof v === "string") {
-        const s = v.trim().toLowerCase();
-        if (s === "true" || s === "1") return true;
-        if (s === "false" || s === "0") return false;
-    }
+    if (v === "1" || v === 1) return true;
     return false;
 }
 
@@ -74,6 +70,12 @@ function badgeColorByIndex(i: number): BadgeColors {
     return badgeColors[i % badgeColors.length] ?? "gray";
 }
 
+type CatalogItem = {
+    id: number;
+    descricao: string;
+    icone?: string | null;
+};
+
 type DishView = {
     id: string;
     title: string | null;
@@ -90,11 +92,11 @@ type DishView = {
     categorias: Array<{ id: number; descricao: string }>;
     tiposCozinha: Array<{ id: number; descricao: string }>;
     temas: Array<{ id: number; descricao: string }>;
-    ingredientesPrincipais: Array<{ id: number; descricao: string }>;
+    ingredientesPrincipais: CatalogItem[];
     prefCulinarias: Array<{ id: number; descricao: string }>;
 };
 
-function parseCatalogArray(record: Record<string, unknown>, key: string) {
+function parseCatalogArray(record: Record<string, unknown>, key: string): CatalogItem[] {
     const raw = record[key];
     const arr = Array.isArray(raw) ? raw : [];
     return arr
@@ -103,10 +105,11 @@ function parseCatalogArray(record: Record<string, unknown>, key: string) {
             const r = x as Record<string, unknown>;
             const id = getNumberValue(r, ["id"]);
             const descricao = getStringValue(r, ["descricao"]) ?? null;
+            const icone = getStringValue(r, ["icone"]) ?? null;
             if (id === null || !descricao) return null;
-            return { id, descricao };
+            return { id, descricao, icone };
         })
-        .filter(Boolean) as Array<{ id: number; descricao: string }>;
+        .filter(Boolean) as CatalogItem[];
 }
 
 export default function DishDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -322,13 +325,19 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Ingrediente principal</p>
                                     <div className="mt-2 flex flex-wrap gap-2">
-                                        {dish.ingredientesPrincipais.length ? (
-                                            dish.ingredientesPrincipais.map((c) => (
-                                                <Badge key={c.id} size="sm" type="pill-color" color="gray">
-                                                    {c.descricao}
-                                                </Badge>
-                                            ))
-                                        ) : (
+                                         {dish.ingredientesPrincipais.length ? (
+                                             dish.ingredientesPrincipais.map((c) => {
+                                                 const iconObj = c.icone ? ICON_CATALOG.find((x) => x.id === c.icone) : null;
+                                                 return (
+                                                     <Badge key={c.id} size="sm" type="pill-color" color="gray">
+                                                         <span className="inline-flex items-center gap-1.5">
+                                                             {iconObj ? <iconObj.Icon className="size-3.5" /> : null}
+                                                             {c.descricao}
+                                                         </span>
+                                                     </Badge>
+                                                 );
+                                             })
+                                         ) : (
                                             <p className="text-sm text-tertiary">—</p>
                                         )}
                                     </div>
