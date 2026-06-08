@@ -4,6 +4,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Download02, Eye, File06, SearchLg, Star01, Users01, UserSquare } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import type { Key } from "react-aria-components";
+import { useExportData } from "@/hooks/use-export-data";
 import { EmptyState } from "@/components/application/empty-state/empty-state";
 import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
 import { Table, TableCard } from "@/components/application/table/table";
@@ -586,6 +587,7 @@ function GestaoChefsTable({
     serviceOptions: ChefsFilterOption[];
     loading?: boolean;
 }) {
+    const { exportToCsv } = useExportData<ChefRow>();
     return (
         <>
             <div className="flex flex-col gap-1">
@@ -608,8 +610,22 @@ function GestaoChefsTable({
                             size="md"
                             iconLeading={Download02}
                             onClick={() => {
-                                toast.success("Exportação de chefs iniciada!");
-                                // TODO: Integrar com a API de exportação de chefs
+                                exportToCsv(
+                                    chefs,
+                                    [
+                                        { header: "Nome", key: "name" },
+                                        { header: "Username", key: "username" },
+                                        { 
+                                            header: mode === "new" ? "Etapa" : "Status", 
+                                            key: (item) => mode === "new" ? formatChefStageLabel(item.stage) : (item.status === "ativo" ? "Ativo" : "Inativo") 
+                                        },
+                                        { header: "Serviços", key: (item) => item.services.map(s => s.label).join(", ") },
+                                        { header: "Localização", key: "location" },
+                                        { header: "Cadastro", key: "registeredAgo" },
+                                    ],
+                                    mode === "new" ? "novos-chefs.csv" : "chefs.csv"
+                                );
+                                toast.success("Dados dos chefs exportados com sucesso!");
                             }}
                         >
                             Exportar dados

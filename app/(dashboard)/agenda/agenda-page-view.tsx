@@ -12,7 +12,8 @@ import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
 import { cx } from "@/utils/cx";
-import { useAgendaOrders } from "./agenda-data";
+import { useAgendaOrders, type AgendaOrderRow } from "./agenda-data";
+import { useExportData } from "@/hooks/use-export-data";
 import { TriangleAlert, Utensils } from "lucide-react";
 import { toast } from "sonner";
 import { AgendaFilterPopover, emptyAgendaFilter, type AgendaFilterOption, type AgendaFilterState } from "./agenda-filter-popover";
@@ -206,6 +207,8 @@ function SectionTable({
     serviceTypeOptions: AgendaFilterOption[];
     statusOptions: AgendaFilterOption[];
 }) {
+    const { exportToCsv } = useExportData<AgendaOrderRow>();
+
     return (
         <>
             <div className="flex flex-col gap-1">
@@ -222,8 +225,19 @@ function SectionTable({
                             size="md"
                             iconLeading={Download02}
                             onClick={() => {
-                                toast.success("Exportação da agenda iniciada!");
-                                // TODO: Integrar com a API de exportação da agenda
+                                exportToCsv(
+                                    rows,
+                                    [
+                                        { header: "Ordem", key: "code" },
+                                        { header: "Tipo de serviço", key: "typeLabel" },
+                                        { header: "Status", key: "statusLabel" },
+                                        { header: "Valor", key: "valueLabel" },
+                                        { header: "Local", key: "cityLabel" },
+                                        { header: "Data", key: "dateLabel" },
+                                    ],
+                                    `agenda-de-servicos-${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-")}.csv`
+                                );
+                                toast.success("Agenda exportada com sucesso!");
                             }}
                         >
                             Exportar dados

@@ -1,6 +1,7 @@
 "use client";
 
 import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useExportData } from "@/hooks/use-export-data";
 import {
     AlertCircle,
     Archive,
@@ -222,6 +223,8 @@ function parseDecimalValue(raw: string): number | null {
 }
 
 export default function CardapioPage() {
+    const { exportToCsv: exportDishes } = useExportData<DishCard>();
+    const { exportToCsv: exportIngredients } = useExportData<IngredientRow>();
     const [selectedTab, setSelectedTab] = useState<Key>("dishes");
 
     const [dishQuery, setDishQuery] = useState("");
@@ -790,8 +793,18 @@ export default function CardapioPage() {
                                         size="md"
                                         iconLeading={Download02}
                                         onClick={() => {
-                                            toast.success("Exportação de pratos iniciada!");
-                                            // TODO: Integrar com a API de exportação de pratos
+                                            exportDishes(
+                                                dishItems,
+                                                [
+                                                    { header: "Título", key: "title" },
+                                                    { header: "Descrição", key: "description" },
+                                                    { header: "Categorias", key: (item) => item.categoryBadges.map(c => c.label).join(", ") },
+                                                    { header: "Serviços", key: (item) => item.serviceBadges.join(", ") },
+                                                    { header: "Destaque no Site", key: (item) => item.destaque_site ? "Sim" : "Não" },
+                                                ],
+                                                "pratos.csv"
+                                            );
+                                            toast.success("Dados dos pratos exportados com sucesso!");
                                         }}
                                     >
                                         Exportar dados
@@ -907,8 +920,18 @@ export default function CardapioPage() {
                                                 size="md"
                                                 iconLeading={Download02}
                                                 onClick={() => {
-                                                    toast.success("Exportação de ingredientes iniciada!");
-                                                    // TODO: Integrar com a API de exportação de ingredientes
+                                                    exportIngredients(
+                                                        ingredientItems,
+                                                        [
+                                                            { header: "Ingrediente", key: "name" },
+                                                            { header: "Categoria", key: "categoryLabel" },
+                                                            { header: "Peso/Volume", key: "unitLabel" },
+                                                            { header: "Preço Unitário", key: "unitPriceLabel" },
+                                                            { header: "Última Cotação", key: "lastQuoteLabel" },
+                                                        ],
+                                                        "ingredientes.csv"
+                                                    );
+                                                    toast.success("Dados dos ingredientes exportados com sucesso!");
                                                 }}
                                             >
                                                 Exportar dados

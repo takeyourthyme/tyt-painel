@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
+import { useExportData } from "@/hooks/use-export-data";
 import {
     ArrowLeft,
     Calendar as CalendarIcon,
@@ -364,6 +365,7 @@ function ScheduleCard({ item }: { item: ScheduleItem }) {
 
 
 export function ChefDetailsView({ id }: { id: string }) {
+    const { exportToCsv } = useExportData<HistoryRow>();
     const { chef, orders, loading, error, reload, canManage } = useChefDetails(id);
     const approval = useChefApprovalActions();
     const [selectedTab, setSelectedTab] = useState<Key>("chef_data");
@@ -1494,7 +1496,34 @@ export function ChefDetailsView({ id }: { id: string }) {
                                             className="w-full md:max-w-md"
                                         />
                                         <div className="flex flex-wrap items-center gap-3">
-                                            <Button size="md" color="secondary" iconLeading={Download02} className="w-full sm:w-auto">
+                                            <Button
+                                                size="md"
+                                                color="secondary"
+                                                iconLeading={Download02}
+                                                className="w-full sm:w-auto"
+                                                onClick={() => {
+                                                    exportToCsv(
+                                                        historyRows,
+                                                        [
+                                                            { header: "Serviço", key: "serviceLabel" },
+                                                            { header: "Valor", key: "valueLabel" },
+                                                            { 
+                                                                header: "Status", 
+                                                                key: (item) => {
+                                                                    if (item.status === "confirmed") return "Confirmado";
+                                                                    if (item.status === "cancelled") return "Cancelado";
+                                                                    return "Pendente";
+                                                                } 
+                                                            },
+                                                            { header: "Data", key: "dateLabel" },
+                                                            { header: "Localização", key: "locationLabel" },
+                                                            { header: "Cliente", key: "clientName" },
+                                                        ],
+                                                        `historico-atendimentos-${(chef?.name ?? "chef").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-")}.csv`
+                                                    );
+                                                    toast.success("Histórico de atendimentos exportado com sucesso!");
+                                                }}
+                                            >
                                                 Exportar dados
                                             </Button>
                                             <Button size="md" color="primary" iconLeading={FilterLines} className="w-full sm:w-auto">

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle, Download02, Eye, FilterLines, SearchLg, User02, User03, Users01 } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
+import { useExportData } from "@/hooks/use-export-data";
 
 const playfair = Playfair_Display({ subsets: ["latin"], display: "swap" });
 import { toast } from "sonner";
@@ -128,6 +129,7 @@ function DataRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function ClientesPage() {
+    const { exportToCsv } = useExportData<ClienteRow>();
     const [query, setQuery] = useState("");
     const [appliedFilter, setAppliedFilter] = useState<ClientesFilterState>(() => emptyClientesFilter());
     const [rows, setRows] = useState<ClienteRow[]>([]);
@@ -367,8 +369,19 @@ export default function ClientesPage() {
                                     size="md"
                                     iconLeading={Download02}
                                     onClick={() => {
-                                        toast.success("Exportação de clientes iniciada!");
-                                        // TODO: Integrar com a API de exportação de clientes
+                                        exportToCsv(
+                                            filtered,
+                                            [
+                                                { header: "Nome", key: "name" },
+                                                { header: "E-mail", key: (item) => item.email || "—" },
+                                                { header: "WhatsApp", key: (item) => item.whatsapp || "—" },
+                                                { header: "Status", key: (item) => item.isActive ? "Ativo" : "Inativo" },
+                                                { header: "Localização", key: (item) => item.city ? `${item.city}${item.state ? ` - ${item.state}` : ""}` : "—" },
+                                                { header: "Pedidos realizados", key: (item) => item.ordersCount !== null ? String(item.ordersCount) : "0" },
+                                            ],
+                                            "clientes.csv"
+                                        );
+                                        toast.success("Dados dos clientes exportados com sucesso!");
                                     }}
                                 >
                                     Exportar dados
