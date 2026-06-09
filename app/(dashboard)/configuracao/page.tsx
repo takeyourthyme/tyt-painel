@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { Playfair_Display } from "next/font/google";
 import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
 import { CheckCircle, Trash01, UploadCloud02, XCircle } from "@untitledui/icons";
@@ -10,6 +10,12 @@ import { ProgressBar } from "@/components/base/progress-indicators/progress-indi
 import { Toggle } from "@/components/base/toggle/toggle";
 import { cx } from "@/utils/cx";
 import { getReadableFileSize } from "@/components/application/file-upload/file-upload-base";
+import { toast } from "sonner";
+import { LoadingIndicator } from "@/components/application/loading-indicator/loading-indicator";
+import { getConfiguracaoGeral, putConfiguracaoGeral } from "@/lib/tyt-api/configuracao-geral";
+import { getTytAccessToken } from "@/lib/tyt-api/session";
+import { TytApiError, parseApiErrorMessage, parseJsonOrThrow } from "@/lib/tyt-api/errors";
+import type { ConfiguracaoGeralResponse } from "@/lib/tyt-api/configuracao-geral";
 
 const playfair = Playfair_Display({ subsets: ["latin"], display: "swap" });
 
@@ -20,9 +26,16 @@ type UploadItem = {
     progress: number;
     failed: boolean;
     type: string | null;
+    url?: string;
+    file?: File;
 };
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
+function getFileNameFromUrl(url: string | null | undefined): string {
+    if (!url) return "arquivo";
+    return url.split("/").pop() || "arquivo";
+}
 
 function fileTypeFromName(name: string): string | null {
     const ext = name.split(".").pop()?.trim().toLowerCase();
@@ -139,9 +152,22 @@ function UploadItemRow({
             <div className="flex min-w-0 flex-1 flex-col">
                 <div className="flex w-full min-w-0 items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-secondary">{item.name}</p>
+                        {item.url ? (
+                            <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="truncate text-sm font-semibold text-secondary hover:underline hover:text-[#1c398e] dark:hover:text-[#dbeafe]"
+                            >
+                                {item.name}
+                            </a>
+                        ) : (
+                            <p className="truncate text-sm font-semibold text-secondary">{item.name}</p>
+                        )}
                         <div className="mt-0.5 flex flex-wrap items-center gap-2">
-                            <p className="text-sm text-tertiary">{getReadableFileSize(item.size)}</p>
+                            <p className="text-sm text-tertiary">
+                                {item.size > 0 ? getReadableFileSize(item.size) : "Arquivo salvo"}
+                            </p>
                             <span className="h-3 w-px rounded-full bg-border-primary" aria-hidden />
                             <div className="flex items-center gap-1">
                                 {isComplete ? <CheckCircle className="size-4 stroke-[2.5px] text-fg-success-primary" /> : null}
@@ -167,31 +193,183 @@ function UploadItemRow({
 }
 
 export default function ConfiguracaoPage() {
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [originalConfig, setOriginalConfig] = useState<ConfiguracaoGeralResponse | null>(null);
+
     const [showLgpdBanner, setShowLgpdBanner] = useState(true);
     const [showCookiesBanner, setShowCookiesBanner] = useState(true);
 
     const [termsFiles, setTermsFiles] = useState<UploadItem[]>([]);
     const [lgpdFiles, setLgpdFiles] = useState<UploadItem[]>([]);
 
+    const hasFetchedRef = useRef(false);
+
+    const loadConfig = useCallback(async (force = false) => {
+        if (hasFetchedRef.current && !force) return;
+        hasFetchedRef.current = true;
+        setLoading(true);
+        try {
+            console.log("[ConfiguracaoPage] Calling GET /api/configuracao-geral to load settings...");
+            const res = await getConfiguracaoGeral();
+            console.log("[ConfiguracaoPage] GET response status:", res.status);
+            const data = await parseJsonOrThrow<any>(res);
+            const config = data?.data || data;
+
+            if (config) {
+                setOriginalConfig(config);
+                setShowLgpdBanner(config.lgpd_show ?? false);
+                setShowCookiesBanner(config.cookies ?? false);
+
+                if (config.termos_politicas) {
+                    const filename = getFileNameFromUrl(config.termos_politicas);
+                    setTermsFiles([
+                        {
+                            id: "existing-terms",
+                            name: filename,
+                            size: 0,
+                            progress: 100,
+                            failed: false,
+                            type: fileTypeFromName(filename),
+                            url: config.termos_politicas,
+                        },
+                    ]);
+                } else {
+                    setTermsFiles([]);
+                }
+
+                if (config.lgpd) {
+                    const filename = getFileNameFromUrl(config.lgpd);
+                    setLgpdFiles([
+                        {
+                            id: "existing-lgpd",
+                            name: filename,
+                            size: 0,
+                            progress: 100,
+                            failed: false,
+                            type: fileTypeFromName(filename),
+                            url: config.lgpd,
+                        },
+                    ]);
+                } else {
+                    setLgpdFiles([]);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Não foi possível carregar as configurações.");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        void loadConfig(false);
+    }, [loadConfig]);
+
     const addFile = useCallback((file: File, setList: Dispatch<SetStateAction<UploadItem[]>>) => {
         const failed = file.size > MAX_UPLOAD_BYTES;
+        if (failed) {
+            toast.error("Arquivo excede o limite de 10MB.");
+            return;
+        }
         const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-        setList((prev) => [
+        setList([
             {
                 id,
                 name: file.name,
                 size: file.size,
-                progress: failed ? 0 : 100,
-                failed,
+                progress: 100,
+                failed: false,
                 type: fileTypeFromName(file.name),
+                file,
             },
-            ...prev,
         ]);
     }, []);
 
+    const handleSave = async () => {
+        const token = getTytAccessToken();
+        if (!token) {
+            toast.error("Você precisa estar autenticado como administrador.");
+            return;
+        }
+
+        setSaving(true);
+
+        const termsFileToUpload = (() => {
+            if (termsFiles.length === 0) {
+                return originalConfig?.termos_politicas ? null : undefined;
+            }
+            const item = termsFiles[0];
+            if (item.file) {
+                return item.file;
+            }
+            return undefined; // keep existing
+        })();
+
+        const lgpdFileToUpload = (() => {
+            if (lgpdFiles.length === 0) {
+                return originalConfig?.lgpd ? null : undefined;
+            }
+            const item = lgpdFiles[0];
+            if (item.file) {
+                return item.file;
+            }
+            return undefined; // keep existing
+        })();
+
+        try {
+            console.log("[ConfiguracaoPage] Calling PUT /api/configuracao-geral to update settings...");
+            const res = await putConfiguracaoGeral(
+                {
+                    lgpd_show: showLgpdBanner,
+                    cookies: showCookiesBanner,
+                    termos_politicas: termsFileToUpload,
+                    lgpd: lgpdFileToUpload,
+                },
+                token
+            );
+            console.log("[ConfiguracaoPage] PUT response status:", res.status);
+
+            if (!res.ok) {
+                throw new TytApiError(res.status, await res.text());
+            }
+
+            toast.success("Configurações salvas com sucesso!");
+            void loadConfig(true);
+        } catch (err) {
+            if (err instanceof TytApiError) {
+                toast.error("Não foi possível salvar as configurações.", {
+                    description: parseApiErrorMessage(err.body),
+                });
+            } else {
+                toast.error("Não foi possível salvar as configurações.");
+            }
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8">
+                <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8">
+                    <header className="flex flex-col gap-2">
+                        <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Configurações</h1>
+                        <p className="text-sm text-tertiary">Gerencie os documentos legais e as preferências de privacidade da plataforma.</p>
+                        <div className="mt-2 h-px w-full bg-border-secondary" aria-hidden />
+                    </header>
+                    <div className="flex items-center justify-center py-20">
+                        <LoadingIndicator type="line-spinner" size="md" label="Carregando configurações..." />
+                    </div>
+                </div>
+            </main>
+        );
+    }
+
     return (
         <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8">
-            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8">
+            <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8 pb-24">
                 <header className="flex flex-col gap-2">
                     <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Configurações</h1>
                     <p className="text-sm text-tertiary">Gerencie os documentos legais e as preferências de privacidade da plataforma.</p>
@@ -212,7 +390,7 @@ export default function ConfiguracaoPage() {
                         {termsFiles.length ? (
                             <div className="flex flex-col gap-3">
                                 {termsFiles.map((f) => (
-                                    <UploadItemRow key={f.id} item={f} onDelete={() => setTermsFiles((prev) => prev.filter((x) => x.id !== f.id))} />
+                                    <UploadItemRow key={f.id} item={f} onDelete={() => setTermsFiles([])} />
                                 ))}
                             </div>
                         ) : null}
@@ -234,14 +412,14 @@ export default function ConfiguracaoPage() {
                             label="Exibir banner de consentimento e conformidade com a LGPD para os usuários."
                         />
                         <UploadDropZone
-                            accept="image/*"
-                            hint="SVG, PNG, JPG ou GIF (máx. 800x400px)"
+                            accept="image/*,.pdf,.doc,.docx"
+                            hint="PDF, DOC, DOCX ou Imagem (máx. 10MB)"
                             onPickFile={(file) => addFile(file, setLgpdFiles)}
                         />
                         {lgpdFiles.length ? (
                             <div className="flex flex-col gap-3">
                                 {lgpdFiles.map((f) => (
-                                    <UploadItemRow key={f.id} item={f} onDelete={() => setLgpdFiles((prev) => prev.filter((x) => x.id !== f.id))} />
+                                    <UploadItemRow key={f.id} item={f} onDelete={() => setLgpdFiles([])} />
                                 ))}
                             </div>
                         ) : null}
@@ -260,6 +438,19 @@ export default function ConfiguracaoPage() {
                     </div>
                 </section>
             </div>
+
+            <footer className="fixed bottom-0 right-0 left-0 lg:left-[var(--sidebar-width)] border-t border-secondary bg-primary px-4 py-4 md:px-6 lg:px-8 z-10 flex justify-end">
+                <div className="mx-auto flex w-full max-w-[1372px] justify-end">
+                    <Button
+                        color="primary"
+                        size="md"
+                        isLoading={saving}
+                        onClick={handleSave}
+                    >
+                        Salvar alterações
+                    </Button>
+                </div>
+            </footer>
         </main>
     );
 }

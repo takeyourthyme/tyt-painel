@@ -65,4 +65,8 @@ export const tytEndpoints = {
         cancel: (code: string) => `/api/kitchen-orders/${encodeURIComponent(code)}/cancel`,
         assignChef: (hashCodeOrder: string) => `/api/kitchen-orders/${encodeURIComponent(hashCodeOrder)}/assign-chef`,
     },
+    configuracaoGeral: {
+        get: "/api/configuracao-geral",
+        put: "/api/configuracao-geral",
+    },
 } as const;
