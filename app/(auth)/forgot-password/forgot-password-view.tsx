@@ -12,7 +12,7 @@ import { Form } from "@/components/base/form/form";
 import { Input } from "@/components/base/input/input";
 import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import { postForgotPassword } from "@/lib/tyt-api/auth";
-import { readResponseBody } from "@/lib/tyt-api/errors";
+import { parseApiErrorMessage, readResponseBody } from "@/lib/tyt-api/errors";
 
 const emailSchema = z.string().email();
 
@@ -33,9 +33,9 @@ export function ForgotPasswordView() {
         setLoading(true);
         try {
             const res = await postForgotPassword({ email: parsed.data });
+            const text = await readResponseBody(res);
             if (!res.ok) {
-                const text = await readResponseBody(res);
-                setError(text.trim() || "Não foi possível enviar o e-mail. Tente novamente.");
+                setError(parseApiErrorMessage(text, "Não foi possível enviar o e-mail. Tente novamente."));
                 return;
             }
             router.push(`/forgot-password/check-email?email=${encodeURIComponent(parsed.data)}`);

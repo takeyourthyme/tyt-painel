@@ -10,7 +10,7 @@ import { AuthPrimaryButton } from "@/app/(auth)/_components/auth-primary-button"
 import { Button } from "@/components/base/buttons/button";
 import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import { postForgotPassword } from "@/lib/tyt-api/auth";
-import { readResponseBody } from "@/lib/tyt-api/errors";
+import { parseApiErrorMessage, readResponseBody } from "@/lib/tyt-api/errors";
 
 export function CheckEmailView() {
     const searchParams = useSearchParams();
@@ -30,9 +30,9 @@ export function CheckEmailView() {
         setResending(true);
         try {
             const res = await postForgotPassword({ email: emailParam });
+            const text = await readResponseBody(res);
             if (!res.ok) {
-                const text = await readResponseBody(res);
-                setResendError(text.trim() || "Não foi possível reenviar.");
+                setResendError(parseApiErrorMessage(text, "Não foi possível reenviar."));
                 return;
             }
             setResent(true);
@@ -71,12 +71,21 @@ export function CheckEmailView() {
                 }
             />
 
-            <div className="flex w-full flex-col gap-6">
+            <div className="flex w-full flex-col gap-3">
                 <AuthPrimaryButton type="button" onClick={openMailClient}>
                     Abra o aplicativo de e-mail
                 </AuthPrimaryButton>
 
-                <div className="flex flex-wrap items-center justify-center gap-1 text-center">
+                <Button
+                    size="lg"
+                    color="secondary"
+                    className="w-full rounded-md!"
+                    href="/forgot-password/reset"
+                >
+                    Inserir código de redefinição
+                </Button>
+
+                <div className="flex flex-wrap items-center justify-center gap-1 pt-3 text-center">
                     <span className="text-sm text-tertiary">Não recebeu o e-mail?</span>
                     <Button
                         color="link-color"

@@ -12,7 +12,7 @@ import { Form } from "@/components/base/form/form";
 import { Input } from "@/components/base/input/input";
 import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import { postResetPassword } from "@/lib/tyt-api/auth";
-import { readResponseBody } from "@/lib/tyt-api/errors";
+import { parseApiErrorMessage, readResponseBody } from "@/lib/tyt-api/errors";
 import { cx } from "@/utils/cx";
 
 const SPECIAL_RE = /[^A-Za-z0-9\s]/;
@@ -80,9 +80,9 @@ export function ResetPasswordView() {
         setLoading(true);
         try {
             const res = await postResetPassword({ token: token.trim(), novaSenha: password });
+            const text = await readResponseBody(res);
             if (!res.ok) {
-                const text = await readResponseBody(res);
-                setTokenError(text.trim() || "Não foi possível redefinir a senha.");
+                setTokenError(parseApiErrorMessage(text, "Não foi possível redefinir a senha."));
                 return;
             }
             router.push("/forgot-password/success");
