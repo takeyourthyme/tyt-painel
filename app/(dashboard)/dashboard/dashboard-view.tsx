@@ -68,7 +68,7 @@ function MetricCard({
                     <Icon className="size-6 text-[#1c398e]" aria-hidden />
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-secondary">{title}</p>
+                    <p className="text-md font-medium text-secondary">{title}</p>
                     <p className="mt-1 text-display-sm font-semibold text-primary">{value}</p>
                     <p className="mt-2 flex items-center gap-1 text-sm text-tertiary">
                         {trendUp ? (
@@ -227,7 +227,7 @@ export function DashboardView() {
                         <section className="grid gap-4 lg:grid-cols-2 lg:gap-6">
                             <article className="flex flex-col overflow-hidden rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
                                 <div className="border-b border-secondary px-5 py-5">
-                                    <h2 className={cx(playfair.className, "text-lg font-semibold text-primary md:text-xl")}>Serviços finalizados</h2>
+                                    <h2 className={"text-lg font-semibold text-primary md:text-xl"}>Serviços finalizados</h2>
                                     <p className="mt-1 text-sm text-tertiary">Proporção de serviços entregues por categoria.</p>
                                 </div>
                                 <div className="px-2 py-6 md:px-5">
@@ -259,7 +259,7 @@ export function DashboardView() {
 
                             <article className="flex flex-col overflow-hidden rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
                                 <div className="border-b border-secondary px-5 py-5">
-                                    <h2 className={cx(playfair.className, "text-lg font-semibold text-primary md:text-xl")}>Tempo médio Match</h2>
+                                    <h2 className={cx("text-lg font-semibold text-primary md:text-xl")}>Tempo médio Match</h2>
                                     <p className="mt-1 text-sm text-tertiary">Últimos 7 dias · em horas</p>
                                 </div>
                                 <div className="h-[280px] w-full px-2 py-4 md:h-[304px] md:px-4">
