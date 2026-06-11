@@ -104,7 +104,7 @@ function parseCatalogArray(record: Record<string, unknown>, key: string): Catalo
             if (!x || typeof x !== "object") return null;
             const r = x as Record<string, unknown>;
             const id = getNumberValue(r, ["id"]);
-            const descricao = getStringValue(r, ["descricao"]) ?? null;
+            const descricao = getStringValue(r, ["nome", "descricao"]) ?? null;
             const icone = getStringValue(r, ["icone"]) ?? null;
             if (id === null || !descricao) return null;
             return { id, descricao, icone };

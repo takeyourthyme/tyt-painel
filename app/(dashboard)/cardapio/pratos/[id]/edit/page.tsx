@@ -219,11 +219,13 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                         if (!x || typeof x !== "object") return null;
                         const r = x as Record<string, unknown>;
                         const id = typeof r.id === "number" ? r.id : Number(r.id);
-                        const descricao = typeof r.descricao === "string" ? r.descricao : null;
+                        const descricaoVal = (typeof r.nome === "string" && r.nome.trim())
+                            ? r.nome.trim()
+                            : (typeof r.descricao === "string" ? r.descricao : null);
                         const icone = typeof r.icone === "string" ? r.icone : null;
-                        if (!Number.isFinite(id) || !descricao) return null;
+                        if (!Number.isFinite(id) || !descricaoVal) return null;
                         if (typeof r.ativo === "boolean" && r.ativo === false) return null;
-                        return { id, descricao, icone };
+                        return { id, descricao: descricaoVal, icone };
                     })
                     .filter(Boolean) as CatalogItem[];
 

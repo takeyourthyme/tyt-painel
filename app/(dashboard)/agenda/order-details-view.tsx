@@ -245,7 +245,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
             // Temas
             const themesList = (dish?.pratos_temas ?? dish?.temas) as unknown[];
             const themes = Array.isArray(themesList)
-                ? (themesList.map(item => getStringValue(getRecord(getRecord(item)?.tema), ["descricao"])).filter(Boolean) as string[])
+                ? (themesList.map(item => getStringValue(getRecord(getRecord(item)?.tema), ["nome", "descricao"])).filter(Boolean) as string[])
                 : [];
 
             // Observações/restrições
@@ -333,7 +333,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
     const rootThemesRaw = obj.temas as unknown;
     const rootThemesList = Array.isArray(rootThemesRaw) ? rootThemesRaw : [];
     const rootThemes = rootThemesList
-        .map((t) => getStringValue(getRecord(t), ["descricao"]))
+        .map((t) => getStringValue(getRecord(t), ["nome", "descricao"]))
         .filter(Boolean) as string[];
 
     return {
