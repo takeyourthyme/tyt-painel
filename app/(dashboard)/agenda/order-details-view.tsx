@@ -526,9 +526,11 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                             <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Ordem</h1>
                             <p className="mt-1 text-sm text-tertiary">Acompanhe o status e os detalhes da solicitação.</p>
                         </div>
-                        <Button color="primary" size="md" iconLeading={CloseIcon} onClick={() => setOpenCancel(true)} isDisabled={loading || !order}>
-                            Cancelar
-                        </Button>
+                        {order && !["CANCELLED", "FINALIZED", "COMPLETED"].includes(order.status?.trim().toUpperCase()) && (
+                            <Button color="primary" size="md" iconLeading={CloseIcon} onClick={() => setOpenCancel(true)} isDisabled={loading}>
+                                Cancelar
+                            </Button>
+                        )}
                     </div>
                     <div className="h-px w-full bg-border-secondary" aria-hidden />
                 </header>
