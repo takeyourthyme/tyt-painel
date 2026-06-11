@@ -4,6 +4,7 @@ import type {
     CreateUserChefFields,
     CreateUserClienteFields,
     PratoFormFields,
+    TemaFormFields,
     UserFormBaseFields,
 } from "./types";
 
@@ -90,5 +91,15 @@ export function buildPratoFormData(fields: PratoFormFields): FormData {
 export function buildIngredientesUploadFormData(file: File | Blob): FormData {
     const fd = new FormData();
     fd.append("file", file);
+    return fd;
+}
+
+export function buildTemaFormData(fields: TemaFormFields): FormData {
+    const fd = new FormData();
+    appendIfDefined(fd, "nome", fields.nome);
+    appendIfDefined(fd, "descricao", fields.descricao);
+    appendIfDefined(fd, "ativo", fields.ativo);
+    if (fields.foto) appendIfDefined(fd, "foto", fields.foto);
+    if (fields.pratos) appendIfDefined(fd, "pratos", fields.pratos);
     return fd;
 }

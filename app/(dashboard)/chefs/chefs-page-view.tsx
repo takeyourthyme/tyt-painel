@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download02, Eye, File06, SearchLg, Star01, Users01, UserSquare } from "@untitledui/icons";
+import { Download02, Eye, File06, SearchLg, Star01, UserSquare } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import type { Key } from "react-aria-components";
 import { useExportData } from "@/hooks/use-export-data";

@@ -1,37 +1,26 @@
 "use client";
 
-import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useExportData } from "@/hooks/use-export-data";
 import {
-    AlertCircle,
-    Archive,
-    ArrowLeft,
-    ArrowRight,
     Check,
-    CheckCircle,
     ChevronDown,
-    Container,
     Download02,
     Edit02,
     Eye,
-    FilterLines,
     LayerSingle,
     LayersThree02,
-    LayersTwo01,
     Plus,
-    ReceiptCheck,
     SearchLg,
-    Settings01,
     Star01,
     Trash01,
-    UploadCloud02,
-    Zap,
 } from "@untitledui/icons";
 import { Playfair_Display } from "next/font/google";
 import * as Lucide from "lucide-react";
 import { Button as AriaButton, type Key, type Selection } from "react-aria-components";
 import { toast } from "sonner";
 import { DishesFilterPopover, emptyDishesFilter, type DishesFilterOption, type DishesFilterState } from "./dishes-filter-popover";
+import { TemasDrawer } from "./temas-drawer";
 import { IngredientsFilterPopover, emptyIngredientsFilter, type IngredientsFilterOption, type IngredientsFilterState } from "./ingredients-filter-popover";
 import { FileUploadDropZone } from "@/components/application/file-upload/file-upload-base";
 import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
@@ -295,6 +284,7 @@ export default function CardapioPage() {
     const [cuisineTypes, setCuisineTypes] = useState<CatalogItem[]>([]);
     const [mainIngredients, setMainIngredients] = useState<CatalogItem[]>([]);
     const [themes, setThemes] = useState<CatalogItem[]>([]);
+    const [dishesOptions, setDishesOptions] = useState<Array<{ id: number; nome_prato: string; categoryIds: number[] }>>([]);
 
     const [classificationDrawer, setClassificationDrawer] = useState<ClassificationDrawerView | null>(null);
     const [classificationLoading, setClassificationLoading] = useState(false);
@@ -376,7 +366,7 @@ export default function CardapioPage() {
                         if (!x || typeof x !== "object") return null;
                         const r = x as Record<string, unknown>;
                         const id = typeof r.id === "number" ? r.id : Number(r.id);
-                        const title = typeof r.nome_prato === "string" ? r.nome_prato : null;
+                        const title = typeof r.nome_prato === "string" ? r.nome_prato : typeof r.nome === "string" ? r.nome : null;
                         const descricao = typeof r.descricao === "string" ? r.descricao : null;
                         if (!Number.isFinite(id) || !descricao) return null;
                         const icone = typeof r.icone === "string" ? r.icone : null;
@@ -391,6 +381,25 @@ export default function CardapioPage() {
             setThemes(parseCatalogList(temasJson));
             setMainIngredients(parseCatalogList(ingredientesPrincipaisJson));
             setFoodPreferences(parseCatalogList(prefCulinariasJson));
+
+            const parsedDishesOptions = normalizeList<unknown>(pratosJson)
+                .map((x) => {
+                    if (!x || typeof x !== "object") return null;
+                    const r = x as Record<string, unknown>;
+                    const id = typeof r.id === "number" ? r.id : Number(r.id);
+                    const nome_prato = typeof r.nome_prato === "string" ? r.nome_prato : "Sem Nome";
+                    const pCats = Array.isArray(r.pratos_categorias) ? r.pratos_categorias : [];
+                    const categoryIds = pCats
+                        .map((pc: any) => {
+                            if (!pc || typeof pc !== "object") return null;
+                            const cid = pc.id !== undefined ? pc.id : pc.id_categoria;
+                            return typeof cid === "number" ? cid : Number(cid);
+                        })
+                        .filter((cid): cid is number => cid !== null && Number.isFinite(cid));
+                    return { id, nome_prato, categoryIds };
+                })
+                .filter((d): d is { id: number; nome_prato: string; categoryIds: number[] } => d !== null && Number.isFinite(d.id));
+            setDishesOptions(parsedDishesOptions);
 
             const pratosList = normalizeList<unknown>(pratosJson).map((x, idx) => {
                 const r = (x && typeof x === "object" ? (x as Record<string, unknown>) : {}) as Record<string, unknown>;
@@ -1291,7 +1300,7 @@ export default function CardapioPage() {
                                                 }}
                                             >
                                                 <Badge size="sm" type="pill-color" color="gray">
-                                                    {c.descricao}
+                                                    {c.title || c.descricao}
                                                 </Badge>
                                             </button>
                                         ))}
@@ -1938,7 +1947,7 @@ export default function CardapioPage() {
             </SlideoutMenu>
 
             <SlideoutMenu
-                isOpen={classificationDrawer !== null}
+                isOpen={classificationDrawer !== null && classificationDrawer.kind !== "themes"}
                 isDismissable
                 onOpenChange={(open) => (!open ? closeClassificationDrawer() : undefined)}
             >
@@ -2296,6 +2305,19 @@ export default function CardapioPage() {
                     );
                 }}
             </SlideoutMenu>
+
+            {classificationDrawer !== null && classificationDrawer.kind === "themes" && (
+                <TemasDrawer
+                    view={classificationDrawer}
+                    dishCategories={dishCategories}
+                    dishesOptions={dishesOptions}
+                    onClose={closeClassificationDrawer}
+                    onSave={async () => {
+                        await reload();
+                    }}
+                    setView={setClassificationDrawer}
+                />
+            )}
 
             <ModalOverlay
                 isOpen={openClassificationDeleteConfirm}

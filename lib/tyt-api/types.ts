@@ -286,6 +286,14 @@ export type CatalogoDescricaoBody = {
     descricao: string;
 };
 
+export type TemaFormFields = {
+    nome?: string;
+    descricao: string;
+    ativo?: boolean | string;
+    foto?: File | Blob | null;
+    pratos?: string; // JSON array of prato IDs, e.g. "[1,3,5]"
+};
+
 export type IngredientePrincipalBody = {
     descricao: string;
     icone?: string;

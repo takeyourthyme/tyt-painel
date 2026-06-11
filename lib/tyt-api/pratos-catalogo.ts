@@ -1,6 +1,7 @@
 import { tytFetch } from "./client";
 import { tytEndpoints } from "./endpoints";
-import type { CatalogoDescricaoBody, IngredientePrincipalBody, PratoCategoriaBody, ResourceId } from "./types";
+import { buildTemaFormData } from "./form-data";
+import type { CatalogoDescricaoBody, IngredientePrincipalBody, PratoCategoriaBody, ResourceId, TemaFormFields } from "./types";
 
 export type { CatalogoDescricaoBody, IngredientePrincipalBody, PratoCategoriaBody } from "./types";
 
@@ -39,10 +40,16 @@ export const tiposCozinhaApi = {
     getAll: (token: string) => crudJson("tiposCozinha", "GET", token),
 };
 
-/** Pratos — Temas */
+/** Pratos — Temas (usa FormData para suportar upload de foto) */
 export const temasApi = {
-    create: (body: CatalogoDescricaoBody, token: string) => crudJson("temas", "POST", token, { body }),
-    update: (id: ResourceId, body: CatalogoDescricaoBody, token: string) => crudJson("temas", "PUT", token, { id, body }),
+    create: (fields: TemaFormFields, token: string) => {
+        const fd = buildTemaFormData(fields);
+        return tytFetch(tytEndpoints.temas.collection, { method: "POST", token, body: fd });
+    },
+    update: (id: ResourceId, fields: TemaFormFields, token: string) => {
+        const fd = buildTemaFormData(fields);
+        return tytFetch(tytEndpoints.temas.byId(id), { method: "PUT", token, body: fd });
+    },
     remove: (id: ResourceId, token: string) => crudJson("temas", "DELETE", token, { id }),
     getById: (id: ResourceId, token: string) => crudJson("temas", "GET", token, { id }),
     getAll: (token: string) => crudJson("temas", "GET", token),
