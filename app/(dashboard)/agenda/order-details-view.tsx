@@ -506,7 +506,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
     }, [order]);
 
     return (
-        <main className="min-h-0 flex-1 bg-secondary_alt px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
+        <main className="min-h-0 flex-1 bg-primary px-4 py-6 pb-10 md:px-6 lg:px-8" aria-busy={loading}>
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-6">
                 <header className="flex flex-col gap-4">
                     <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-tertiary">
@@ -549,10 +549,10 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
 
                 {order ? (
                     <>
-                        <section className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+                        <section className="overflow-hidden rounded-xl border border-secondary bg-secondary_alt shadow-xs">
                             <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between">
                                 <div className="flex min-w-0 items-center gap-3">
-                                    <FeaturedIcon color="brand" icon={ChefHat} theme="light" size="md" className="bg-secondary" />
+                                    <FeaturedIcon color="gray" icon={ChefHat} theme="light" size="md" className="bg-secondary_alt" />
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <p className="text-sm font-semibold text-primary">{formatServiceLabel(order.type)}</p>
