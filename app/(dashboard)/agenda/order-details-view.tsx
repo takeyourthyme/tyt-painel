@@ -144,13 +144,14 @@ function statusBadge(
     if (!status) return { label: "—", color: "gray" };
     const type = typeRaw.trim().toUpperCase();
     const isSpecial = type.includes("SPECIAL");
-    if (status === "PENDING") return { label: "Aguardando match", color: "warning" };
-    if (status === "IN_REVIEW") return { label: isSpecial ? "Em análise" : "Aguardando chef", color: isSpecial ? "blue" : "brand" };
-    if (status === "CONFIRMED") return { label: "Confirmado", color: "success" };
+    if (status === "PENDING") return { label: "Aguardando match", color: "blue" };
+    if (status === "IN_REVIEW") return { label: isSpecial ? "Em análise" : "Aguardando chef", color: "warning" };
+    if (status === "CONFIRMED") return { label: "Confirmado", color: "brand" };
     if (status === "COMPLETED") return { label: "Concluído", color: "success" };
+    if (status === "FINALIZED") return { label: "Concluído", color: "success" };
     if (status === "DECLINED") return { label: "Chef recusou", color: "error" };
     if (status === "CANCELLED") return { label: "Cancelado", color: "error" };
-    if (status === "CANCELLATION_REQUESTED") return { label: "Cancelamento solicitado", color: "warning" };
+    if (status === "CANCELLATION_REQUESTED") return { label: "Cancelamento solicitado", color: "error" };
     return { label: statusRaw, color: "gray" };
 }
 
