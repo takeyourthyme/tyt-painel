@@ -186,11 +186,11 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                         <Button color="link-gray" size="sm" onClick={() => router.push("/cardapio")}>
                             Cardápio
                         </Button>
-                        <span>/</span>
+                        <span className="text-quaternary">›</span>
                         <Button color="link-gray" size="sm" onClick={() => router.push("/cardapio")}>
                             Pratos
                         </Button>
-                        <span>/</span>
+                        <span className="text-quaternary">›</span>
                         <span className="text-primary">Detalhes do prato</span>
                     </div>
 
@@ -325,19 +325,19 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Ingrediente principal</p>
                                     <div className="mt-2 flex flex-wrap gap-2">
-                                         {dish.ingredientesPrincipais.length ? (
-                                             dish.ingredientesPrincipais.map((c) => {
-                                                 const iconObj = c.icone ? ICON_CATALOG.find((x) => x.id === c.icone) : null;
-                                                 return (
-                                                     <Badge key={c.id} size="sm" type="pill-color" color="gray">
-                                                         <span className="inline-flex items-center gap-1.5">
-                                                             {iconObj ? <iconObj.Icon className="size-3.5" /> : null}
-                                                             {c.descricao}
-                                                         </span>
-                                                     </Badge>
-                                                 );
-                                             })
-                                         ) : (
+                                        {dish.ingredientesPrincipais.length ? (
+                                            dish.ingredientesPrincipais.map((c) => {
+                                                const iconObj = c.icone ? ICON_CATALOG.find((x) => x.id === c.icone) : null;
+                                                return (
+                                                    <Badge key={c.id} size="sm" type="pill-color" color="gray">
+                                                        <span className="inline-flex items-center gap-1.5">
+                                                            {iconObj ? <iconObj.Icon className="size-3.5" /> : null}
+                                                            {c.descricao}
+                                                        </span>
+                                                    </Badge>
+                                                );
+                                            })
+                                        ) : (
                                             <p className="text-sm text-tertiary">—</p>
                                         )}
                                     </div>

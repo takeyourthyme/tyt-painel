@@ -151,7 +151,7 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
                         <Tabs.Panel id="scheduled" className="flex flex-col gap-4 outline-hidden">
                             <SectionTable
                                 title="Gestão de Agendamentos"
-                                description="Visualize, filtre e gerencie os chefs parceiros cadastrados na plataforma."
+                                description="Visualize, filtre e gerencie os serviços agendados."
                                 query={query}
                                 onQueryChange={setQuery}
                                 rows={visible}
