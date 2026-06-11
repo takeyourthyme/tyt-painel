@@ -912,9 +912,9 @@ export default function CardapioPage() {
                                             icon={SearchLg}
                                             value={ingredientQuery}
                                             onChange={setIngredientQuery}
-                                            className="min-w-0 md:max-w-md md:flex-1"
+                                            className="min-w-0 md:flex-1"
                                         />
-                                        <div className="flex flex-wrap items-center gap-3">
+                                        <div className="flex items-center gap-3">
                                             <Button
                                                 color="secondary"
                                                 size="md"

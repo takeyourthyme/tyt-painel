@@ -76,7 +76,7 @@ export function IngredientsFilterPopover({ applied, onApply, categoryOptions }: 
     return (
         <div ref={triggerRef} className="relative inline-flex">
             <Button
-                color={isIngredientsFilterActive(applied) ? "primary" : "secondary"}
+                color="primary"
                 size="md"
                 iconTrailing={FilterLines}
                 onClick={() => setOpen((v) => !v)}

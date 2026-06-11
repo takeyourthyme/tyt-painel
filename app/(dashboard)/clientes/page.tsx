@@ -173,7 +173,7 @@ export default function ClientesPage() {
                     const whatsapp = getStringValue(r, ["whatsapp", "telefone", "phone"]);
                     const avatarUrl = cleanUrl(getStringValue(r, ["foto", "avatar", "avatarUrl"]));
                     const isActive = coerceBool(r.ativo, true);
-                    const ordersCount = getNumberValue(r, ["pedidos_realizados", "orders_count", "ordersCount", "orders"]);
+                    const ordersCount = Array.isArray(r.pedidos) ? r.pedidos.length : 0;
                     return { id: String(id), name, city, state, email, whatsapp, avatarUrl, isActive, ordersCount } satisfies ClienteRow;
                 })
                 .filter(Boolean) as ClienteRow[];
@@ -328,7 +328,7 @@ export default function ClientesPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Total de clientes na base</p>
-                                    <p className={`${playfair.className} mt-4 text-display-sm font-semibold text-primary`}>{totalCount}</p>
+                                    <p className="mt-4 text-display-sm font-semibold text-primary">{totalCount}</p>
                                 </div>
                             </div>
                         </div>
@@ -341,7 +341,7 @@ export default function ClientesPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Clientes ativos (usando o produto)</p>
-                                    <p className={`${playfair.className} mt-4 text-display-sm font-semibold text-primary`}>{activeCount}</p>
+                                    <p className="mt-4 text-display-sm font-semibold text-primary">{activeCount}</p>
                                 </div>
                             </div>
                         </div>
@@ -361,9 +361,9 @@ export default function ClientesPage() {
                                 icon={SearchLg}
                                 value={query}
                                 onChange={setQuery}
-                                className="w-full md:max-w-md"
+                                className="w-full"
                             />
-                            <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-3">
                                 <Button
                                     color="secondary"
                                     size="md"

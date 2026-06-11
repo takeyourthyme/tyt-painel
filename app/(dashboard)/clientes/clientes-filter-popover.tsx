@@ -87,7 +87,7 @@ export function ClientesFilterPopover({ applied, onApply, cityOptions }: Cliente
     return (
         <div ref={triggerRef} className="relative inline-flex">
             <Button
-                color={isClientesFilterActive(applied) ? "primary" : "secondary"}
+                color="primary"
                 size="md"
                 iconTrailing={FilterLines}
                 onClick={() => setOpen((v) => !v)}

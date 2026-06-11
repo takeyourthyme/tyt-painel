@@ -49,7 +49,7 @@ function MetricCard({
             <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-tertiary">{label}</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                    <span className={cx(playfair.className, "text-display-sm font-semibold text-primary")}>{value}</span>
+                    <span className="text-display-sm font-semibold text-primary">{value}</span>
                     {sublabel ? <span className="text-sm text-quaternary">{sublabel}</span> : null}
                 </div>
             </div>
@@ -218,8 +218,8 @@ function SectionTable({
 
             <TableCard.Root>
                 <div className="flex flex-col gap-4 border-b border-secondary px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
-                    <Input placeholder="Buscar por ordem" value={query} onChange={onQueryChange} icon={SearchLg} className="w-full md:max-w-md" />
-                    <div className="flex flex-wrap items-center gap-3">
+                    <Input placeholder="Buscar por ordem" value={query} onChange={onQueryChange} icon={SearchLg} className="w-full" />
+                    <div className="flex items-center gap-3">
                         <Button
                             color="secondary"
                             size="md"

@@ -87,7 +87,7 @@ export function DishesFilterPopover({ applied, onApply, categoryOptions }: Dishe
     return (
         <div ref={triggerRef} className="relative inline-flex">
             <Button
-                color={isDishesFilterActive(applied) ? "primary" : "secondary"}
+                color="primary"
                 size="md"
                 iconTrailing={FilterLines}
                 onClick={() => setOpen((v) => !v)}

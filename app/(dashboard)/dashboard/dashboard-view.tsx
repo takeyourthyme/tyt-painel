@@ -69,7 +69,7 @@ function MetricCard({
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-secondary">{title}</p>
-                    <p className={cx(playfair.className, "mt-1 text-display-sm font-semibold text-primary")}>{value}</p>
+                    <p className="mt-1 text-display-sm font-semibold text-primary">{value}</p>
                     <p className="mt-2 flex items-center gap-1 text-sm text-tertiary">
                         {trendUp ? (
                             <ArrowUp className="size-4 text-utility-success-600" aria-hidden />

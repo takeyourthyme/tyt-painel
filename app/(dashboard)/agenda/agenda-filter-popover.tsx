@@ -83,7 +83,7 @@ export function AgendaFilterPopover({ applied, onApply, serviceTypeOptions, stat
     return (
         <div ref={triggerRef} className="relative inline-flex">
             <Button
-                color={isAgendaFilterActive(applied) ? "primary" : "secondary"}
+                color="primary"
                 size="md"
                 iconTrailing={FilterLines}
                 onClick={() => setOpen((v) => !v)}
