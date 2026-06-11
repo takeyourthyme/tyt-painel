@@ -321,6 +321,7 @@ export type KitchenOrderListItem = {
 export type KitchenOrderDishInput = {
     dish_id: number;
     quantity: number;
+    observations?: string;
 };
 
 export type CreateKitchenOrderBody = {

@@ -751,20 +751,28 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     <div className="border-b border-secondary px-6 py-5">
                                         <p className="text-sm font-semibold text-primary">Menu Planejado</p>
                                     </div>
-                                    <div className="flex flex-wrap gap-3 px-6 py-5">
-                                        {order.dishes.length > 0 ? (
-                                            order.dishes.map((d, idx) => (
-                                                <div key={`${d.id ?? "dish"}-${idx}`} className="inline-flex items-center gap-2 text-sm text-tertiary">
-                                                    <CheckCircle className="size-4 text-tertiary" aria-hidden />
-                                                    <span>
-                                                        {d.name}
-                                                        {d.quantity !== null ? ` x${d.quantity}` : ""}
-                                                    </span>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <p className="text-sm text-tertiary">—</p>
-                                        )}
+                                    <div className="flex flex-col gap-5 px-6 py-5">
+                                        <div className="flex flex-col rounded-xl bg-secondary_alt p-5 border border-secondary">
+                                            {order.dishes.length > 0 ? (
+                                                order.dishes.map((d, idx) => (
+                                                    <div key={`${d.id ?? "dish"}-${idx}`}>
+                                                        <div className="flex flex-col gap-1 py-3">
+                                                            <span className="text-sm font-semibold text-primary">{d.name}</span>
+                                                            {d.observations && (
+                                                                <span className="inline-flex w-max items-center rounded-md border border-utility-warning-200 bg-utility-warning-50 px-2 py-0.5 text-xs font-medium text-utility-warning-700">
+                                                                    {d.observations}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {idx < order.dishes.length - 1 && (
+                                                            <div className="h-px bg-border-secondary w-full" aria-hidden />
+                                                        )}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <p className="text-sm text-tertiary">Nenhum prato no menu planejado.</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </>
                             )}
