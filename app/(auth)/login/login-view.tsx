@@ -37,7 +37,7 @@ export function LoginView() {
         e.preventDefault();
         setFormError(undefined);
         if (!email.trim() || !password) {
-            setFormError("Preencha e-mail e senha.");
+            setFormError("Preencha e-mail e senha");
             return;
         }
         setLoading(true);
@@ -48,9 +48,9 @@ export function LoginView() {
             router.refresh();
         } catch (err) {
             if (err instanceof TytApiError) {
-                setFormError(err.body || "E-mail ou senha inválidos.");
+                setFormError(err.body || "E-mail ou senha inválidos");
             } else {
-                setFormError("Falha de conexão. Tente novamente.");
+                setFormError("Falha de conexão. Tente novamente");
             }
         } finally {
             setLoading(false);
@@ -84,7 +84,7 @@ export function LoginView() {
                         </div>
                         <div className="flex w-full flex-col gap-2 text-center md:gap-3">
                             <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary md:text-display-sm")}>Faça login na sua conta</h1>
-                            <p className="text-md font-normal text-tertiary">Bem-vindo! Por favor, insira seus dados.</p>
+                            <p className="text-md font-normal text-tertiary">Bem-vindo! Por favor, insira seus dados</p>
                         </div>
                     </header>
 

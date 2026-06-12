@@ -452,7 +452,7 @@ export function useChefDetails(chefId: string) {
             setChef(null);
             setOrders([]);
             setMetrics({ totalOrders: null, finishedOrders: null, cancelledOrders: null });
-            setError("Sessão expirada. Faça login novamente.");
+            setError("Sessão expirada. Faça login novamente");
             setLoading(false);
             return;
         }
@@ -511,7 +511,7 @@ export function useChefDetails(chefId: string) {
             } else if (err instanceof Error && err.message) {
                 setError(err.message);
             } else {
-                setError("Ocorreu um erro. Tente novamente.");
+                setError("Ocorreu um erro. Tente novamente");
             }
             setChef(null);
             setOrders([]);
@@ -544,7 +544,7 @@ export function useChefApprovalActions() {
         async (input: { chefUserId: number; approved: boolean; status: string }): Promise<{ ok: boolean; message?: string; error?: string }> => {
             const token = getTytAccessToken();
             if (!token) {
-                const msg = "Sessão expirada. Faça login novamente.";
+                const msg = "Sessão expirada. Faça login novamente";
                 setError(msg);
                 return { ok: false, error: msg };
             }
@@ -558,7 +558,7 @@ export function useChefApprovalActions() {
                     retries: 2,
                 });
                 await parseJsonOrThrow<unknown>(res);
-                const msg = "Status atualizado com sucesso.";
+                const msg = "Status atualizado com sucesso";
                 setMessage(msg);
                 return { ok: true, message: msg };
             } catch (err) {
@@ -568,7 +568,7 @@ export function useChefApprovalActions() {
                 } else if (err instanceof Error && err.message) {
                     msg = err.message;
                 } else {
-                    msg = "Ocorreu um erro. Tente novamente.";
+                    msg = "Ocorreu um erro. Tente novamente";
                 }
                 setError(msg);
                 return { ok: false, error: msg };

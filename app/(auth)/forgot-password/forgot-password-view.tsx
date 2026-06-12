@@ -26,7 +26,7 @@ export function ForgotPasswordView() {
         e.preventDefault();
         const parsed = emailSchema.safeParse(email.trim());
         if (!parsed.success) {
-            setError("Digite um e-mail válido.");
+            setError("Digite um e-mail válido");
             return;
         }
         setError(undefined);
@@ -35,12 +35,12 @@ export function ForgotPasswordView() {
             const res = await postForgotPassword({ email: parsed.data });
             const text = await readResponseBody(res);
             if (!res.ok) {
-                setError(parseApiErrorMessage(text, "Não foi possível enviar o e-mail. Tente novamente."));
+                setError(parseApiErrorMessage(text, "Não foi possível enviar o e-mail. Tente novamente"));
                 return;
             }
             router.push(`/forgot-password/check-email?email=${encodeURIComponent(parsed.data)}`);
         } catch {
-            setError("Falha de conexão. Verifique sua rede e tente novamente.");
+            setError("Falha de conexão. Verifique sua rede e tente novamente");
         } finally {
             setLoading(false);
         }
@@ -53,7 +53,7 @@ export function ForgotPasswordView() {
             <AuthFlowHeader
                 icon={<FeaturedIcon color="gray" theme="modern" size="xl" icon={Key01} />}
                 title="Esqueceu a senha?"
-                description="Sem problemas, enviaremos as instruções de redefinição."
+                description="Sem problemas, enviaremos as instruções de redefinição"
             />
 
             <Form className="flex w-full flex-col gap-6 rounded-xl" onSubmit={handleSubmit}>

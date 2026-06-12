@@ -60,13 +60,13 @@ export function ResetPasswordView() {
         let tErr: string | undefined;
 
         if (!token.trim()) {
-            tErr = "Informe o token enviado por e-mail.";
+            tErr = "Informe o token enviado por e-mail";
         }
         if (!hasLength || !hasSpecial) {
-            pErr = "Digite uma senha válida.";
+            pErr = "Digite uma senha válida";
         }
         if (password !== confirm) {
-            cErr = "As senhas não coincidem.";
+            cErr = "As senhas não coincidem";
         }
 
         setTokenError(tErr);
@@ -82,12 +82,12 @@ export function ResetPasswordView() {
             const res = await postResetPassword({ token: token.trim(), novaSenha: password });
             const text = await readResponseBody(res);
             if (!res.ok) {
-                setTokenError(parseApiErrorMessage(text, "Não foi possível redefinir a senha."));
+                setTokenError(parseApiErrorMessage(text, "Não foi possível redefinir a senha"));
                 return;
             }
             router.push("/forgot-password/success");
         } catch {
-            setTokenError("Falha de conexão. Tente novamente.");
+            setTokenError("Falha de conexão. Tente novamente");
         } finally {
             setLoading(false);
         }
@@ -98,7 +98,7 @@ export function ResetPasswordView() {
             <AuthFlowHeader
                 icon={<FeaturedIcon color="gray" theme="modern" size="xl" icon={Lock01} />}
                 title="Defina uma nova senha"
-                description="Sua nova senha deve ser diferente das senhas usadas anteriormente."
+                description="Sua nova senha deve ser diferente das senhas usadas anteriormente"
             />
 
             <Form className="flex w-full flex-col gap-6 rounded-xl" onSubmit={handleSubmit}>

@@ -106,22 +106,22 @@ export async function loginPanel(body: LoginBody): Promise<LoginResponse> {
     const text = await readResponseBody(res);
 
     if (!res.ok) {
-        throw new TytApiError(res.status, parseApiErrorMessage(text, "E-mail ou senha inválidos."));
+        throw new TytApiError(res.status, parseApiErrorMessage(text, "E-mail ou senha inválidos"));
     }
 
     let data: LoginResponse;
     try {
         data = text ? (JSON.parse(text) as LoginResponse) : ({} as LoginResponse);
     } catch {
-        throw new TytApiError(res.status, "Resposta inválida do servidor.");
+        throw new TytApiError(res.status, "Resposta inválida do servidor");
     }
 
     if (!data.token || !data.user) {
-        throw new TytApiError(res.status, "Login ok, mas o servidor não retornou token ou usuário.");
+        throw new TytApiError(res.status, "Login ok, mas o servidor não retornou token ou usuário");
     }
 
     if (!isTytPanelUser(data.user)) {
-        throw new TytApiError(403, "Acesso restrito a administradores.");
+        throw new TytApiError(403, "Acesso restrito a administradores");
     }
 
     return data;

@@ -388,7 +388,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
         const requestId = ++requestIdRef.current;
         const token = getTytAccessToken();
         if (!token) {
-            setError("Sessão expirada. Faça login novamente.");
+            setError("Sessão expirada. Faça login novamente");
             setOrder(null);
             return;
         }
@@ -423,7 +423,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
             if (requestId !== requestIdRef.current) return;
             if (err instanceof TytApiError) setError(parseApiErrorMessage(err.body));
             else if (err instanceof Error && err.message) setError(err.message);
-            else setError("Ocorreu um erro. Tente novamente.");
+            else setError("Ocorreu um erro. Tente novamente");
             setOrder(null);
         } finally {
             if (requestId !== requestIdRef.current) return;
@@ -524,7 +524,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                     <div className="flex flex-wrap items-end justify-between gap-4">
                         <div className="min-w-0">
                             <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Ordem</h1>
-                            <p className="mt-1 text-sm text-tertiary">Acompanhe o status e os detalhes da solicitação.</p>
+                            <p className="mt-1 text-sm text-tertiary">Acompanhe o status e os detalhes da solicitação</p>
                         </div>
                         {order && !["CANCELLED", "FINALIZED", "COMPLETED"].includes(order.status?.trim().toUpperCase()) && (
                             <Button color="primary" size="md" iconLeading={CloseIcon} onClick={() => setOpenCancel(true)} isDisabled={loading}>
@@ -539,7 +539,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                     <section role="alert" className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold text-primary">Não foi possível carregar a ordem.</p>
+                                <p className="text-sm font-semibold text-primary">Não foi possível carregar a ordem</p>
                                 <p className="mt-1 text-sm text-tertiary">{error}</p>
                             </div>
                             <Button color="secondary" size="md" onClick={() => void load()} isLoading={loading}>
@@ -582,7 +582,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                                 if (key === null) return;
                                                 const token = getTytAccessToken();
                                                 if (!token) {
-                                                    toast.error("Sessão expirada. Faça login novamente.");
+                                                    toast.error("Sessão expirada. Faça login novamente");
                                                     return;
                                                 }
                                                 try {
@@ -591,8 +591,8 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                                     toast.success("Chef associado com sucesso!");
                                                     await load();
                                                 } catch (err) {
-                                                    if (err instanceof TytApiError) toast.error("Não foi possível associar o chef.", { description: parseApiErrorMessage(err.body) });
-                                                    else toast.error("Não foi possível associar o chef.");
+                                                    if (err instanceof TytApiError) toast.error("Não foi possível associar o chef", { description: parseApiErrorMessage(err.body) });
+                                                    else toast.error("Não foi possível associar o chef");
                                                 }
                                             }}
                                         >
@@ -676,7 +676,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                                 </Table>
                                             ) : (
                                                 <div className="px-4 py-4">
-                                                    <p className="text-sm text-tertiary">Nenhuma proposta criada.</p>
+                                                    <p className="text-sm text-tertiary">Nenhuma proposta criada</p>
                                                 </div>
                                             )}
                                         </TableCard.Root>
@@ -744,7 +744,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                                 </div>
                                             ))}
                                             {groupedCategories.length === 0 && (
-                                                <p className="text-sm text-tertiary">Nenhum prato no menu planejado.</p>
+                                                <p className="text-sm text-tertiary">Nenhum prato no menu planejado</p>
                                             )}
                                         </div>
                                     </div>
@@ -773,7 +773,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                                     </div>
                                                 ))
                                             ) : (
-                                                <p className="text-sm text-tertiary">Nenhum prato no menu planejado.</p>
+                                                <p className="text-sm text-tertiary">Nenhum prato no menu planejado</p>
                                             )}
                                         </div>
                                     </div>
@@ -839,7 +839,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                             <div className="flex items-start justify-between gap-4 border-b border-secondary px-6 py-5">
                                 <div className="min-w-0">
                                     <p className="text-md font-semibold text-primary">Proposta de Serviço</p>
-                                    <p className="mt-1 text-sm text-tertiary">Adicione os itens e valores para enviar ao cliente.</p>
+                                    <p className="mt-1 text-sm text-tertiary">Adicione os itens e valores para enviar ao cliente</p>
                                 </div>
                                 <button
                                     type="button"
@@ -914,7 +914,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             .filter(Boolean) as { description: string; price: number }[];
 
                                         if (items.length === 0) {
-                                            toast.error("Adicione ao menos um item válido.");
+                                            toast.error("Adicione ao menos um item válido");
                                             return;
                                         }
                                         setProposalPreviewItems(items);
@@ -942,7 +942,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="min-w-0">
                                             <p className="text-md font-semibold text-primary">Enviar proposta para o cliente?</p>
-                                            <p className="mt-1 text-sm text-tertiary">Confirme para enviar a proposta de serviço ao cliente.</p>
+                                            <p className="mt-1 text-sm text-tertiary">Confirme para enviar a proposta de serviço ao cliente</p>
                                         </div>
 
                                         <button
@@ -969,19 +969,19 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     isDisabled={!canConfirmSendProposal}
                                     onClick={async () => {
                                         if (!order?.code) {
-                                            toast.error("Não foi possível enviar a proposta.");
+                                            toast.error("Não foi possível enviar a proposta");
                                             return;
                                         }
 
                                         const token = getTytAccessToken();
                                         if (!token) {
-                                            toast.error("Sessão expirada. Faça login novamente.");
+                                            toast.error("Sessão expirada. Faça login novamente");
                                             return;
                                         }
 
                                         const items = proposalPreviewItems.length > 0 ? proposalPreviewItems : order.proposalItems;
                                         if (items.length === 0) {
-                                            toast.error("Crie uma proposta antes de enviar.");
+                                            toast.error("Crie uma proposta antes de enviar");
                                             return;
                                         }
 
@@ -994,9 +994,9 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             await load();
                                         } catch (err) {
                                             if (err instanceof TytApiError) {
-                                                toast.error("Não foi possível enviar a proposta.", { description: parseApiErrorMessage(err.body) });
+                                                toast.error("Não foi possível enviar a proposta", { description: parseApiErrorMessage(err.body) });
                                             } else {
-                                                toast.error("Não foi possível enviar a proposta.");
+                                                toast.error("Não foi possível enviar a proposta");
                                             }
                                         }
                                     }}
@@ -1051,7 +1051,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     onClick={async () => {
                                         const token = getTytAccessToken();
                                         if (!token) {
-                                            toast.error("Sessão expirada. Faça login novamente.");
+                                            toast.error("Sessão expirada. Faça login novamente");
                                             return;
                                         }
                                         try {
@@ -1062,8 +1062,8 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             router.push(backHref);
                                             router.refresh();
                                         } catch (err) {
-                                            if (err instanceof TytApiError) toast.error("Não foi possível cancelar o serviço.", { description: parseApiErrorMessage(err.body) });
-                                            else toast.error("Não foi possível cancelar o serviço.");
+                                            if (err instanceof TytApiError) toast.error("Não foi possível cancelar o serviço", { description: parseApiErrorMessage(err.body) });
+                                            else toast.error("Não foi possível cancelar o serviço");
                                         }
                                     }}
                                 >

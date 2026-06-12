@@ -423,7 +423,7 @@ export function computeDashboardDerivedData(input: {
 function errorMessageFromUnknown(err: unknown): string {
     if (err instanceof TytApiError) return parseApiErrorMessage(err.body);
     if (err instanceof Error && err.message) return err.message;
-    return "Ocorreu um erro. Tente novamente.";
+    return "Ocorreu um erro. Tente novamente";
 }
 
 function getRecord(v: unknown): Record<string, unknown> | null {
@@ -566,7 +566,7 @@ export function useDashboardData(period: DashboardPeriodId, customDateValue: unk
         const token = getTytAccessToken();
         if (!token) {
             setDerived(emptyDerived());
-            setErrors([{ scope: "overview", message: "Sessão expirada. Faça login novamente." }]);
+            setErrors([{ scope: "overview", message: "Sessão expirada. Faça login novamente" }]);
             setLoading(false);
             return;
         }

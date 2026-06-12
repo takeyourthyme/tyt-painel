@@ -121,7 +121,7 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
                     <section role="alert" className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold text-primary">Não foi possível carregar a agenda.</p>
+                                <p className="text-sm font-semibold text-primary">Não foi possível carregar a agenda</p>
                                 <p className="mt-1 text-sm text-tertiary">{error}</p>
                             </div>
                             <Button color="secondary" size="md" onClick={() => void reload()} isLoading={loading}>
@@ -151,7 +151,7 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
                         <Tabs.Panel id="scheduled" className="flex flex-col gap-4 outline-hidden">
                             <SectionTable
                                 title="Gestão de Agendamentos"
-                                description="Visualize, filtre e gerencie os serviços agendados."
+                                description="Visualize, filtre e gerencie os serviços agendados"
                                 query={query}
                                 onQueryChange={setQuery}
                                 rows={visible}
@@ -166,7 +166,7 @@ export function AgendaPageView({ initialTab = "requests" }: { initialTab?: TabId
                         <Tabs.Panel id="requests" className="flex flex-col gap-4 outline-hidden">
                             <SectionTable
                                 title="Solicitações"
-                                description="Analise os pedidos recentes e realize o match com os chefs disponíveis."
+                                description="Analise os pedidos recentes e realize o match com os chefs disponíveis"
                                 query={query}
                                 onQueryChange={setQuery}
                                 rows={visible}

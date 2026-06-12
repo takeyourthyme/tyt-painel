@@ -31,7 +31,7 @@ const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 function isWithinUploadLimit(file: File, label: string) {
     if (file.size <= MAX_UPLOAD_BYTES) return true;
-    toast.error(`${label} excede 10MB.`, { description: "Escolha um arquivo com até 10MB." });
+    toast.error(`${label} excede 10MB`, { description: "Escolha um arquivo com até 10MB" });
     return false;
 }
 
@@ -285,7 +285,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
             }
         } catch (err) {
             if (err instanceof TytApiError) setError(parseApiErrorMessage(err.body));
-            else setError("Ocorreu um erro. Tente novamente.");
+            else setError("Ocorreu um erro. Tente novamente");
         } finally {
             setLoading(false);
         }
@@ -361,7 +361,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0">
                             <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Editar prato</h1>
-                            <p className="mt-1 text-sm text-tertiary">Atualize as informações e a disponibilidade do prato.</p>
+                            <p className="mt-1 text-sm text-tertiary">Atualize as informações e a disponibilidade do prato</p>
                         </div>
                         <Toggle
                             size="sm"
@@ -384,7 +384,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                     <section role="alert" className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os dados.</p>
+                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os dados</p>
                                 <p className="mt-1 text-sm text-tertiary">{error}</p>
                             </div>
                             <Button color="secondary" size="md" onClick={() => void load()} isLoading={loading}>
@@ -886,7 +886,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                             <article className="rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
                                 <div className="border-b border-secondary px-5 py-5">
                                     <h2 className="text-sm font-semibold text-primary">Receita</h2>
-                                    <p className="mt-1 text-sm text-tertiary">Suba o arquivo com o passo a passo detalhado para o preparo.</p>
+                                    <p className="mt-1 text-sm text-tertiary">Suba o arquivo com o passo a passo detalhado para o preparo</p>
                                 </div>
                                 <div className="flex flex-col gap-2 px-5 py-5">
                                     <FileUploadDropZone
@@ -985,19 +985,19 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                         const token = getTytAccessToken();
                                         if (!token) return;
                                         if (!form.name.trim()) {
-                                            toast.error("Preencha o nome do prato.");
+                                            toast.error("Preencha o nome do prato");
                                             return;
                                         }
                                         if (!categoryCsv) {
-                                            toast.error("Selecione ao menos uma categoria.");
+                                            toast.error("Selecione ao menos uma categoria");
                                             return;
                                         }
                                         if (!form.mealPreap && !form.getTogheter) {
-                                            toast.error("Selecione o tipo de serviço.");
+                                            toast.error("Selecione o tipo de serviço");
                                             return;
                                         }
                                         if (!foodPreferenceCsv || !cuisineTypeCsv || !mainIngredientCsv || (!form.mealPreap && !themeCsv)) {
-                                            toast.error("Preencha os campos obrigatórios.");
+                                            toast.error("Preencha os campos obrigatórios");
                                             return;
                                         }
                                         setLoading(true);
@@ -1028,8 +1028,8 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                             router.push(`/cardapio/pratos/${dishId}`);
                                         } catch (err) {
                                             if (err instanceof TytApiError)
-                                                toast.error("Não foi possível salvar o prato.", { description: parseApiErrorMessage(err.body) });
-                                            else toast.error("Não foi possível salvar o prato.");
+                                                toast.error("Não foi possível salvar o prato", { description: parseApiErrorMessage(err.body) });
+                                            else toast.error("Não foi possível salvar o prato");
                                         } finally {
                                             setLoading(false);
                                         }
@@ -1076,8 +1076,8 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                             router.push("/cardapio");
                                         } catch (err) {
                                             if (err instanceof TytApiError)
-                                                toast.error("Não foi possível excluir o prato.", { description: parseApiErrorMessage(err.body) });
-                                            else toast.error("Não foi possível excluir o prato.");
+                                                toast.error("Não foi possível excluir o prato", { description: parseApiErrorMessage(err.body) });
+                                            else toast.error("Não foi possível excluir o prato");
                                         } finally {
                                             setLoading(false);
                                         }

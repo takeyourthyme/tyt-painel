@@ -219,7 +219,7 @@ export function TemasDrawer({ view, dishCategories, dishesOptions, onClose, onSa
         } catch (err) {
             console.error(err);
             if (err instanceof TytApiError) setError(parseApiErrorMessage(err.body));
-            else setError("Erro ao carregar detalhes do tema.");
+            else setError("Erro ao carregar detalhes do tema");
         } finally {
             setLoading(false);
         }
@@ -241,7 +241,7 @@ export function TemasDrawer({ view, dishCategories, dishesOptions, onClose, onSa
         if (!token) return;
 
         if (!descricao.trim()) {
-            toast.error("A descrição do tema é obrigatória.");
+            toast.error("A descrição do tema é obrigatória");
             return;
         }
 
@@ -271,9 +271,9 @@ export function TemasDrawer({ view, dishCategories, dishesOptions, onClose, onSa
         } catch (err) {
             console.error(err);
             if (err instanceof TytApiError) {
-                toast.error("Não foi possível salvar o tema.", { description: parseApiErrorMessage(err.body) });
+                toast.error("Não foi possível salvar o tema", { description: parseApiErrorMessage(err.body) });
             } else {
-                toast.error("Não foi possível salvar o tema.");
+                toast.error("Não foi possível salvar o tema");
             }
         } finally {
             setSaveLoading(false);
@@ -309,8 +309,8 @@ export function TemasDrawer({ view, dishCategories, dishesOptions, onClose, onSa
                     view.type === "details"
                         ? "Informações completas do seu tema"
                         : view.type === "edit"
-                        ? "Atualize as informações e o cardápio do tema."
-                        : "Insira as informações e o cardápio do tema.";
+                        ? "Atualize as informações e o cardápio do tema"
+                        : "Insira as informações e o cardápio do tema";
 
                 return (
                     <>

@@ -475,7 +475,7 @@ export default function CardapioPage() {
             if (requestId !== requestIdRef.current) return;
             if (err instanceof TytApiError) setError(parseApiErrorMessage(err.body));
             else if (err instanceof Error && err.message) setError(err.message);
-            else setError("Ocorreu um erro. Tente novamente.");
+            else setError("Ocorreu um erro. Tente novamente");
         } finally {
             if (requestId !== requestIdRef.current) return;
             setLoading(false);
@@ -561,7 +561,7 @@ export default function CardapioPage() {
     const downloadIngredientsTemplate = useCallback(async () => {
         const token = getTytAccessToken();
         if (!token) {
-            toast.error("Sessão expirada. Faça login novamente.");
+            toast.error("Sessão expirada. Faça login novamente");
             return;
         }
 
@@ -569,7 +569,7 @@ export default function CardapioPage() {
         try {
             const res = await getIngredientesTemplate(token);
             if (!res.ok) {
-                let message = "Não foi possível baixar o template.";
+                let message = "Não foi possível baixar o template";
                 try {
                     const body = await res.json();
                     message = parseApiErrorMessage(body);
@@ -595,8 +595,8 @@ export default function CardapioPage() {
             a.remove();
             URL.revokeObjectURL(url);
         } catch (err) {
-            if (err instanceof TytApiError) toast.error("Não foi possível baixar o template.", { description: parseApiErrorMessage(err.body) });
-            else toast.error("Não foi possível baixar o template.");
+            if (err instanceof TytApiError) toast.error("Não foi possível baixar o template", { description: parseApiErrorMessage(err.body) });
+            else toast.error("Não foi possível baixar o template");
         } finally {
             setTemplateDownloading(false);
         }
@@ -637,7 +637,7 @@ export default function CardapioPage() {
         } catch (err) {
             if (err instanceof TytApiError) setClassificationError(parseApiErrorMessage(err.body));
             else if (err instanceof Error && err.message) setClassificationError(err.message);
-            else setClassificationError("Ocorreu um erro. Tente novamente.");
+            else setClassificationError("Ocorreu um erro. Tente novamente");
         } finally {
             setClassificationLoading(false);
         }
@@ -656,7 +656,7 @@ export default function CardapioPage() {
         } catch (err) {
             if (err instanceof TytApiError) setIngredientError(parseApiErrorMessage(err.body));
             else if (err instanceof Error && err.message) setIngredientError(err.message);
-            else setIngredientError("Ocorreu um erro. Tente novamente.");
+            else setIngredientError("Ocorreu um erro. Tente novamente");
         } finally {
             setIngredientLoading(false);
         }
@@ -762,7 +762,7 @@ export default function CardapioPage() {
                     <section role="alert" className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold text-primary">Não foi possível carregar o cardápio.</p>
+                                <p className="text-sm font-semibold text-primary">Não foi possível carregar o cardápio</p>
                                 <p className="mt-1 text-sm text-tertiary">{error}</p>
                             </div>
                             <Button color="secondary" size="md" onClick={() => void reload()} isLoading={loading}>
@@ -909,7 +909,7 @@ export default function CardapioPage() {
                             <div>
                                 <p className="text-md font-semibold text-primary">Ingredientes</p>
                                 <p className="mt-1 text-sm text-tertiary">
-                                    Controle o valor de mercado e a disponibilidade regional dos ingredientes base.
+                                    Controle o valor de mercado e a disponibilidade regional dos ingredientes base
                                 </p>
                             </div>
 
@@ -1025,7 +1025,7 @@ export default function CardapioPage() {
                         <section className="flex flex-col gap-4">
                             <div>
                                 <p className="text-md font-semibold text-primary">Classificações</p>
-                                <p className="mt-1 text-sm text-tertiary">Organize e padronize os critérios que estruturam e categorizam os pratos do cardápio.</p>
+                                <p className="mt-1 text-sm text-tertiary">Organize e padronize os critérios que estruturam e categorizam os pratos do cardápio</p>
                             </div>
 
                             <div className="grid gap-4 lg:grid-cols-2">
@@ -1271,7 +1271,7 @@ export default function CardapioPage() {
                                                     {themes.length}
                                                 </Badge>
                                             </div>
-                                            <p className="mt-1 text-sm text-tertiary">Crie temas com cardápios completos para diferentes ocasiões.</p>
+                                            <p className="mt-1 text-sm text-tertiary">Crie temas com cardápios completos para diferentes ocasiões</p>
                                         </div>
                                         <Button
                                             color="secondary"
@@ -1333,14 +1333,14 @@ export default function CardapioPage() {
 
                     const description =
                         type === "create-single"
-                            ? "Cadastre os detalhes do ingrediente para calcular seus custos."
+                            ? "Cadastre os detalhes do ingrediente para calcular seus custos"
                             : type === "create-batch"
                                 ? "Adicione sua planilha"
                                 : type === "details"
                                     ? "Informações completas para controle de custo e uso nas receitas"
                                     : type === "edit"
-                                        ? "Alterações afetam receitas que usam este ingrediente."
-                                        : "Escolha como deseja incluir novos itens à sua lista de insumos.";
+                                        ? "Alterações afetam receitas que usam este ingrediente"
+                                        : "Escolha como deseja incluir novos itens à sua lista de insumos";
 
                     const unitOptions = [
                         { id: "g", label: "g" },
@@ -1518,7 +1518,7 @@ export default function CardapioPage() {
                                             </div>
                                         )
                                     ) : (
-                                        <p className="text-sm text-tertiary">Não foi possível carregar os detalhes.</p>
+                                        <p className="text-sm text-tertiary">Não foi possível carregar os detalhes</p>
                                     )
                                 ) : type === "create-batch" ? (
                                     <div className="flex flex-col gap-3">
@@ -1790,8 +1790,8 @@ export default function CardapioPage() {
                                                         await reload();
                                                     } catch (err) {
                                                         if (err instanceof TytApiError)
-                                                            toast.error("Não foi possível importar a planilha.", { description: parseApiErrorMessage(err.body) });
-                                                        else toast.error("Não foi possível importar a planilha.");
+                                                            toast.error("Não foi possível importar a planilha", { description: parseApiErrorMessage(err.body) });
+                                                        else toast.error("Não foi possível importar a planilha");
                                                     }
                                                 }}
                                             >
@@ -1828,7 +1828,7 @@ export default function CardapioPage() {
                                                         volumePeso === null ||
                                                         quantidade === null
                                                     ) {
-                                                        toast.error("Preencha todos os campos obrigatórios.");
+                                                        toast.error("Preencha todos os campos obrigatórios");
                                                         return;
                                                     }
 
@@ -1855,8 +1855,8 @@ export default function CardapioPage() {
                                                         await reload();
                                                     } catch (err) {
                                                         if (err instanceof TytApiError)
-                                                            toast.error("Não foi possível criar o ingrediente.", { description: parseApiErrorMessage(err.body) });
-                                                        else toast.error("Não foi possível criar o ingrediente.");
+                                                            toast.error("Não foi possível criar o ingrediente", { description: parseApiErrorMessage(err.body) });
+                                                        else toast.error("Não foi possível criar o ingrediente");
                                                     }
                                                 }}
                                             >
@@ -1893,7 +1893,7 @@ export default function CardapioPage() {
                                                         volumePeso === null ||
                                                         quantidade === null
                                                     ) {
-                                                        toast.error("Preencha todos os campos obrigatórios.");
+                                                        toast.error("Preencha todos os campos obrigatórios");
                                                         return;
                                                     }
 
@@ -1921,8 +1921,8 @@ export default function CardapioPage() {
                                                         await reload();
                                                     } catch (err) {
                                                         if (err instanceof TytApiError)
-                                                            toast.error("Não foi possível atualizar o ingrediente.", { description: parseApiErrorMessage(err.body) });
-                                                        else toast.error("Não foi possível atualizar o ingrediente.");
+                                                            toast.error("Não foi possível atualizar o ingrediente", { description: parseApiErrorMessage(err.body) });
+                                                        else toast.error("Não foi possível atualizar o ingrediente");
                                                     }
                                                 }}
                                             >
@@ -1986,10 +1986,10 @@ export default function CardapioPage() {
 
                     const description =
                         type === "details"
-                            ? "Informações completas desta classificação."
+                            ? "Informações completas desta classificação"
                             : type === "edit"
-                                ? "Atualize as informações da classificação."
-                                : "Preencha o nome abaixo.";
+                                ? "Atualize as informações da classificação"
+                                : "Preencha o nome abaixo";
 
                     const selectedIcon = classificationForm.icone
                         ? ICON_CATALOG.find((x) => x.id === classificationForm.icone) ?? null
@@ -2117,7 +2117,7 @@ export default function CardapioPage() {
                                             </div>
                                         )
                                     ) : (
-                                        <p className="text-sm text-tertiary">Não foi possível carregar os detalhes.</p>
+                                        <p className="text-sm text-tertiary">Não foi possível carregar os detalhes</p>
                                     )
                                 ) : type === "create" ? (
                                     <div className="rounded-xl border border-secondary bg-primary p-4 shadow-xs">
@@ -2237,12 +2237,12 @@ export default function CardapioPage() {
                                                 const icone = classificationForm.icone.trim();
 
                                                 if (!descricao) {
-                                                    toast.error("Preencha o nome.");
+                                                    toast.error("Preencha o nome");
                                                     return;
                                                 }
 
                                                 if (kind === "main-ingredients" && !icone) {
-                                                    toast.error("Selecione um ícone.");
+                                                    toast.error("Selecione um ícone");
                                                     return;
                                                 }
 
@@ -2289,8 +2289,8 @@ export default function CardapioPage() {
                                                     await reload();
                                                 } catch (err) {
                                                     if (err instanceof TytApiError)
-                                                        toast.error("Não foi possível salvar.", { description: parseApiErrorMessage(err.body) });
-                                                    else toast.error("Não foi possível salvar.");
+                                                        toast.error("Não foi possível salvar", { description: parseApiErrorMessage(err.body) });
+                                                    else toast.error("Não foi possível salvar");
                                                 } finally {
                                                     setClassificationLoading(false);
                                                 }
@@ -2379,8 +2379,8 @@ export default function CardapioPage() {
                                             await reload();
                                         } catch (err) {
                                             if (err instanceof TytApiError)
-                                                toast.error("Não foi possível excluir.", { description: parseApiErrorMessage(err.body) });
-                                            else toast.error("Não foi possível excluir.");
+                                                toast.error("Não foi possível excluir", { description: parseApiErrorMessage(err.body) });
+                                            else toast.error("Não foi possível excluir");
                                         } finally {
                                             setClassificationLoading(false);
                                         }
@@ -2429,8 +2429,8 @@ export default function CardapioPage() {
                                             await reload();
                                         } catch (err) {
                                             if (err instanceof TytApiError)
-                                                toast.error("Não foi possível excluir o ingrediente.", { description: parseApiErrorMessage(err.body) });
-                                            else toast.error("Não foi possível excluir o ingrediente.");
+                                                toast.error("Não foi possível excluir o ingrediente", { description: parseApiErrorMessage(err.body) });
+                                            else toast.error("Não foi possível excluir o ingrediente");
                                         }
                                     }}
                                 >

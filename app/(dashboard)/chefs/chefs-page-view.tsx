@@ -318,7 +318,7 @@ export function ChefsPageView() {
         const token = getTytAccessToken();
         if (!token) {
             setRows([]);
-            setError("Sessão expirada. Faça login novamente.");
+            setError("Sessão expirada. Faça login novamente");
             setLoading(false);
             return;
         }
@@ -386,11 +386,11 @@ export function ChefsPageView() {
         } catch (err) {
             if (!mountedRef.current || requestId !== requestIdRef.current) return;
             if (err instanceof TytApiError) {
-                setError(parseApiErrorMessage(err.body));
+                toast.error("Não foi possível carregar os chefs", { description: parseApiErrorMessage(err.body) });
             } else if (err instanceof Error && err.message) {
                 setError(err.message);
             } else {
-                setError("Ocorreu um erro. Tente novamente.");
+                setError("Ocorreu um erro. Tente novamente");
             }
             setRows([]);
         } finally {
@@ -459,7 +459,7 @@ export function ChefsPageView() {
                     <section role="alert" className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os chefs.</p>
+                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os chefs</p>
                                 <p className="mt-1 text-sm text-tertiary">{error}</p>
                             </div>
                             <Button color="secondary" size="md" onClick={() => void reload()} isLoading={loading}>
@@ -596,8 +596,8 @@ function GestaoChefsTable({
                 </h2>
                 <p className="text-sm text-tertiary">
                     {mode === "new"
-                        ? "Gerencie as etapas de entrada e aprove novos chefs parceiros."
-                        : "Visualize, filtre e gerencie os chefs cadastrados na plataforma."}
+                        ? "Gerencie as etapas de entrada e aprove novos chefs parceiros"
+                        : "Visualize, filtre e gerencie os chefs cadastrados na plataforma"}
                 </p>
             </div>
 
@@ -625,7 +625,7 @@ function GestaoChefsTable({
                                     ],
                                     mode === "new" ? "novos-chefs.csv" : "chefs.csv"
                                 );
-                                toast.success("Dados dos chefs exportados com sucesso!");
+                                toast.success("Lista exportada com sucesso!");
                             }}
                         >
                             Exportar dados

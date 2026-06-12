@@ -185,7 +185,7 @@ function UploadItemRow({
                         <ProgressBar labelPosition="right" max={100} min={0} value={item.progress} />
                     </div>
                 ) : (
-                    <p className="mt-2 text-sm text-error-primary">Falha no envio. Tente novamente.</p>
+                    <p className="mt-2 text-sm text-error-primary">Falha no envio. Tente novamente</p>
                 )}
             </div>
         </div>
@@ -257,7 +257,7 @@ export default function ConfiguracaoPage() {
             }
         } catch (err) {
             console.error(err);
-            toast.error("Não foi possível carregar as configurações.");
+            toast.error("Não foi possível carregar as configurações");
         } finally {
             setLoading(false);
         }
@@ -270,7 +270,7 @@ export default function ConfiguracaoPage() {
     const addFile = useCallback((file: File, setList: Dispatch<SetStateAction<UploadItem[]>>) => {
         const failed = file.size > MAX_UPLOAD_BYTES;
         if (failed) {
-            toast.error("Arquivo excede o limite de 10MB.");
+            toast.error("Arquivo excede o limite de 10MB");
             return;
         }
         const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -290,7 +290,7 @@ export default function ConfiguracaoPage() {
     const handleSave = async () => {
         const token = getTytAccessToken();
         if (!token) {
-            toast.error("Você precisa estar autenticado como administrador.");
+            toast.error("Você precisa estar autenticado como administrador");
             return;
         }
 
@@ -339,11 +339,11 @@ export default function ConfiguracaoPage() {
             void loadConfig(true);
         } catch (err) {
             if (err instanceof TytApiError) {
-                toast.error("Não foi possível salvar as configurações.", {
+                toast.error("Não foi possível salvar as configurações", {
                     description: parseApiErrorMessage(err.body),
                 });
             } else {
-                toast.error("Não foi possível salvar as configurações.");
+                toast.error("Não foi possível salvar as configurações");
             }
         } finally {
             setSaving(false);
@@ -356,7 +356,7 @@ export default function ConfiguracaoPage() {
                 <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8">
                     <header className="flex flex-col gap-2">
                         <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Configurações</h1>
-                        <p className="text-sm text-tertiary">Gerencie os documentos legais e as preferências de privacidade da plataforma.</p>
+                        <p className="text-sm text-tertiary">Gerencie os documentos legais e as preferências de privacidade da plataforma</p>
                         <div className="mt-2 h-px w-full bg-border-secondary" aria-hidden />
                     </header>
                     <div className="flex items-center justify-center py-20">
@@ -372,14 +372,14 @@ export default function ConfiguracaoPage() {
             <div className="mx-auto flex w-full max-w-[1372px] flex-col gap-8 pb-24">
                 <header className="flex flex-col gap-2">
                     <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Configurações</h1>
-                    <p className="text-sm text-tertiary">Gerencie os documentos legais e as preferências de privacidade da plataforma.</p>
+                    <p className="text-sm text-tertiary">Gerencie os documentos legais e as preferências de privacidade da plataforma</p>
                     <div className="mt-2 h-px w-full bg-border-secondary" aria-hidden />
                 </header>
 
                 <section className="grid gap-6 md:grid-cols-[240px_1fr] md:items-start">
                     <div>
                         <p className="text-sm font-semibold text-primary">Termos e Políticas</p>
-                        <p className="mt-1 text-sm text-tertiary">Anexe o documento de Termos de Serviço e Política de Privacidade.</p>
+                        <p className="mt-1 text-sm text-tertiary">Anexe o documento de Termos de Serviço e Política de Privacidade</p>
                     </div>
                     <div className="flex flex-col gap-4">
                         <UploadDropZone
@@ -402,14 +402,14 @@ export default function ConfiguracaoPage() {
                 <section className="grid gap-6 md:grid-cols-[240px_1fr] md:items-start">
                     <div>
                         <p className="text-sm font-semibold text-primary">LGPD</p>
-                        <p className="mt-1 text-sm text-tertiary">Ative para exibir o aviso de conformidade com a Lei Geral de Proteção de Dados.</p>
+                        <p className="mt-1 text-sm text-tertiary">Ative para exibir o aviso de conformidade com a Lei Geral de Proteção de Dados</p>
                     </div>
                     <div className="flex flex-col gap-4">
                         <Toggle
                             size="sm"
                             isSelected={showLgpdBanner}
                             onChange={setShowLgpdBanner}
-                            label="Exibir banner de consentimento e conformidade com a LGPD para os usuários."
+                            label="Exibir banner de consentimento e conformidade com a LGPD para os usuários"
                         />
                         <UploadDropZone
                             accept="image/*,.pdf,.doc,.docx"
@@ -431,7 +431,7 @@ export default function ConfiguracaoPage() {
                 <section className="grid gap-6 md:grid-cols-[240px_1fr] md:items-start">
                     <div>
                         <p className="text-sm font-semibold text-primary">Cookies</p>
-                        <p className="mt-1 text-sm text-tertiary">Ative para exibir o banner de consentimento de cookies aos usuários.</p>
+                        <p className="mt-1 text-sm text-tertiary">Ative para exibir o banner de consentimento de cookies aos usuários</p>
                     </div>
                     <div className="flex flex-col gap-4">
                         <Toggle size="sm" isSelected={showCookiesBanner} onChange={setShowCookiesBanner} label="Exibir banner de Cookies" />

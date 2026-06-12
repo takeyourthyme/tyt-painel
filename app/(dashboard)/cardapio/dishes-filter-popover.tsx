@@ -117,7 +117,7 @@ export function DishesFilterPopover({ applied, onApply, categoryOptions }: Dishe
                         <div className="flex flex-col gap-5 px-6 pt-6">
                             <div className="flex flex-col gap-0.5">
                                 <h2 className="text-lg font-semibold text-primary">Filtrar por</h2>
-                                <p className="text-sm text-tertiary">Selecione os critérios para filtrar os pratos.</p>
+                                <p className="text-sm text-tertiary">Selecione os critérios para filtrar os pratos</p>
                             </div>
 
                             <div className="flex flex-col gap-2">

@@ -132,7 +132,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
         } catch (err) {
             if (err instanceof TytApiError) setError(parseApiErrorMessage(err.body));
             else if (err instanceof Error && err.message) setError(err.message);
-            else setError("Ocorreu um erro. Tente novamente.");
+            else setError("Ocorreu um erro. Tente novamente");
         } finally {
             setLoading(false);
         }
@@ -199,7 +199,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                             <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>
                                 {dish?.title ?? "Detalhes do prato"}
                             </h1>
-                            <p className="mt-1 text-sm text-tertiary">Confira como as informações do seu prato aparecem no sistema.</p>
+                            <p className="mt-1 text-sm text-tertiary">Confira como as informações do seu prato aparecem no sistema</p>
                         </div>
                         <Button color="primary" size="md" iconLeading={Edit02} href={`/cardapio/pratos/${dishId}/edit`}>
                             Editar
@@ -212,7 +212,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                     <section role="alert" className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os detalhes do prato.</p>
+                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os detalhes do prato</p>
                                 <p className="mt-1 text-sm text-tertiary">{error}</p>
                             </div>
                             <Button color="secondary" size="md" onClick={() => void load()} isLoading={loading}>

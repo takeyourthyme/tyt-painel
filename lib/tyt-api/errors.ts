@@ -19,7 +19,7 @@ export async function readResponseBody(res: Response): Promise<string> {
 }
 
 /** Extrai mensagem legível de corpo JSON ou texto da API. */
-export function parseApiErrorMessage(body: string, fallback = "Ocorreu um erro. Tente novamente."): string {
+export function parseApiErrorMessage(body: string, fallback = "Ocorreu um erro. Tente novamente"): string {
     const trimmed = body.trim();
     if (!trimmed) return fallback;
     try {

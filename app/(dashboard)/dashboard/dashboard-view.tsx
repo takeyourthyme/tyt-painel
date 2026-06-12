@@ -173,7 +173,7 @@ export function DashboardView() {
                     <section role="alert" className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold text-primary">Não foi possível carregar todos os dados do dashboard.</p>
+                                <p className="text-sm font-semibold text-primary">Não foi possível carregar todos os dados do dashboard</p>
                                 <p className="mt-1 text-sm text-tertiary">{errorSummary}</p>
                             </div>
                             <Button color="secondary" size="md" onClick={() => void reload()} isLoading={loading}>
@@ -228,7 +228,7 @@ export function DashboardView() {
                             <article className="flex flex-col overflow-hidden rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
                                 <div className="border-b border-secondary px-5 py-5">
                                     <h2 className={"text-lg font-semibold text-primary md:text-xl"}>Serviços finalizados</h2>
-                                    <p className="mt-1 text-sm text-tertiary">Proporção de serviços entregues por categoria.</p>
+                                    <p className="mt-1 text-sm text-tertiary">Proporção de serviços entregues por categoria</p>
                                 </div>
                                 <div className="px-2 py-6 md:px-5">
                                     <div className="h-[220px] w-full md:h-[240px]">

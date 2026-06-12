@@ -675,8 +675,8 @@ export function ChefDetailsView({ id }: { id: string }) {
                                 </h1>
                                 <p className="mt-1 text-sm text-tertiary">
                                     {showReviewActions
-                                        ? "Revise as informações profissionais, dados de contato e disponibilidade antes de aprovar o acesso à plataforma."
-                                        : "Visualize o perfil completo e acompanhe a disponibilidade e os serviços realizados pelo profissional na plataforma."}
+                                        ? "Revise as informações profissionais, dados de contato e disponibilidade antes de aprovar o acesso à plataforma"
+                                        : "Visualize o perfil completo e acompanhe a disponibilidade e os serviços realizados pelo profissional na plataforma"}
                                 </p>
                             </div>
                             {loading ? <LoadingIndicator type="line-spinner" size="sm" label="Carregando..." /> : null}
@@ -761,7 +761,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                     <section role="alert" className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os dados do chef.</p>
+                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os dados do chef</p>
                                 <p className="mt-1 text-sm text-tertiary">{error}</p>
                             </div>
                             <Button color="secondary" size="md" onClick={() => void reload()} isLoading={loading}>
@@ -821,8 +821,8 @@ export function ChefDetailsView({ id }: { id: string }) {
                                         <p className="text-sm font-semibold text-primary">{chefStatus === "ativo" ? "Chef Ativo" : "Chef Inativo"}</p>
                                         <p className="mt-1 text-sm text-tertiary">
                                             {chefStatus === "ativo"
-                                                ? "Conta habilitada para acesso e participação em novos trabalhos."
-                                                : "Conta desativada para acesso e participação em novos trabalhos."}
+                                                ? "Conta habilitada para acesso e participação em novos trabalhos"
+                                                : "Conta desativada para acesso e participação em novos trabalhos"}
                                         </p>
                                     </div>
                                     <Toggle
@@ -871,7 +871,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                 <div className="flex w-full items-center gap-3">
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-semibold text-primary">Etapa</p>
-                                        <p className="mt-0.5 text-xs text-tertiary">Atualize a etapa do cadastro do profissional.</p>
+                                        <p className="mt-0.5 text-xs text-tertiary">Atualize a etapa do cadastro do profissional</p>
                                     </div>
                                     <div className="w-[180px]">
                                         <Select
@@ -913,8 +913,8 @@ export function ChefDetailsView({ id }: { id: string }) {
                                             <p className="text-sm font-semibold text-primary">{chefStatus === "ativo" ? "Ativo" : "Inativo"}</p>
                                             <p className="mt-0.5 text-xs text-tertiary">
                                                 {chefStatus === "ativo"
-                                                    ? "Conta habilitada para acesso e participação em novos trabalhos."
-                                                    : "Não habilitada para acesso e participação em novos trabalhos."}
+                                                    ? "Conta habilitada para acesso e participação em novos trabalhos"
+                                                    : "Não habilitada para acesso e participação em novos trabalhos"}
                                             </p>
                                         </div>
                                     </div>
@@ -945,7 +945,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-sm font-semibold text-primary">—</p>
-                                        <p className="mt-0.5 text-xs text-tertiary">Carregando status do profissional.</p>
+                                        <p className="mt-0.5 text-xs text-tertiary">Carregando status do profissional</p>
                                     </div>
                                 </div>
                             )}
@@ -985,7 +985,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                 </p>
                                                 <p className="mt-1 text-sm text-tertiary">
                                                     Você tem certeza que deseja {confirmAction === "reject" ? "reprovar" : "aprovar"} esse chef? Esta ação não
-                                                    pode ser desfeita.
+                                                    pode ser desfeita
                                                 </p>
                                             </div>
 
@@ -1023,13 +1023,13 @@ export function ChefDetailsView({ id }: { id: string }) {
                                             if (result.ok) {
                                                 toast.success(isApprove ? "Chef aprovado com sucesso!" : "Chef reprovado com sucesso!", {
                                                     description: isApprove
-                                                        ? "O profissional agora tem acesso total à plataforma e já pode receber solicitações."
-                                                        : "O profissional não terá acesso à plataforma e não poderá receber solicitações.",
+                                                        ? "O profissional agora tem acesso total à plataforma e já pode receber solicitações"
+                                                        : "O profissional não terá acesso à plataforma e não poderá receber solicitações",
                                                 });
                                                 await reload();
                                             } else {
-                                                toast.error(isApprove ? "Não foi possível aprovar o chef." : "Não foi possível reprovar o chef.", {
-                                                    description: result.error ?? "Ocorreu um erro. Tente novamente.",
+                                                toast.error(isApprove ? "Não foi possível aprovar o chef" : "Não foi possível reprovar o chef", {
+                                                    description: result.error ?? "Ocorreu um erro. Tente novamente",
                                                 });
                                             }
 
@@ -1225,7 +1225,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                     {scheduleItems.length > 0 ? (
                                                         scheduleItems.map((item) => <ScheduleCard key={item.id} item={item} />)
                                                     ) : (
-                                                        <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
+                                                        <p className="text-sm text-tertiary">Nenhum agendamento encontrado</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -1267,7 +1267,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                             </Table>
                                                         </TableCard.Root>
                                                     ) : (
-                                                        <p className="text-sm text-tertiary">Nenhum serviço encontrado.</p>
+                                                        <p className="text-sm text-tertiary">Nenhum serviço encontrado</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -1441,7 +1441,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                 {scheduleItems.length > 0 ? (
                                                     scheduleItems.slice(0, 2).map((item) => <ScheduleCard key={item.id} item={item} />)
                                                 ) : (
-                                                    <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
+                                                    <p className="text-sm text-tertiary">Nenhum agendamento encontrado</p>
                                                 )}
                                             </div>
                                         </TableCard.Root>
@@ -1472,7 +1472,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                             {scheduleItems.length > 0 ? (
                                                 scheduleItems.map((item) => <ScheduleCard key={item.id} item={item} />)
                                             ) : (
-                                                <p className="text-sm text-tertiary">Nenhum agendamento encontrado.</p>
+                                                <p className="text-sm text-tertiary">Nenhum agendamento encontrado</p>
                                             )}
                                         </div>
                                     </TableCard.Root>
@@ -1573,7 +1573,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                         </Table>
                                     ) : (
                                         <div className="px-6 py-5">
-                                            <p className="text-sm text-tertiary">Nenhum serviço encontrado.</p>
+                                            <p className="text-sm text-tertiary">Nenhum serviço encontrado</p>
                                         </div>
                                     )}
 

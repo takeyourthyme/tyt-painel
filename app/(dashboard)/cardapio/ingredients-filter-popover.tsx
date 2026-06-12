@@ -106,7 +106,7 @@ export function IngredientsFilterPopover({ applied, onApply, categoryOptions }: 
                         <div className="flex flex-col gap-5 px-6 pt-6">
                             <div className="flex flex-col gap-0.5">
                                 <h2 className="text-lg font-semibold text-primary">Filtrar por</h2>
-                                <p className="text-sm text-tertiary">Selecione os critérios para filtrar os ingredientes.</p>
+                                <p className="text-sm text-tertiary">Selecione os critérios para filtrar os ingredientes</p>
                             </div>
 
                             {categoryOptions.length > 0 ? (

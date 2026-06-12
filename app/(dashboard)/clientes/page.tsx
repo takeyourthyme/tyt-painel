@@ -149,7 +149,7 @@ export default function ClientesPage() {
         const token = getTytAccessToken();
         if (!token) {
             setRows([]);
-            setError("Sessão expirada. Faça login novamente.");
+            setError("Sessão expirada. Faça login novamente");
             return;
         }
         setLoading(true);
@@ -183,7 +183,7 @@ export default function ClientesPage() {
             if (requestId !== requestIdRef.current) return;
             if (err instanceof TytApiError) setError(parseApiErrorMessage(err.body));
             else if (err instanceof Error && err.message) setError(err.message);
-            else setError("Ocorreu um erro. Tente novamente.");
+            else setError("Ocorreu um erro. Tente novamente");
             setRows([]);
         } finally {
             if (requestId !== requestIdRef.current) return;
@@ -201,7 +201,7 @@ export default function ClientesPage() {
             const json = await parseJsonOrThrow<unknown>(res);
             const record = getRecord(json) ?? null;
             const obj = getRecord(record?.data) ?? record ?? null;
-            if (!obj) throw new Error("Resposta inválida.");
+            if (!obj) throw new Error("Resposta inválida");
 
             const clienteNested = getRecord(obj.cliente) ?? getRecord(obj.usuario_cliente) ?? getRecord(obj.usuarioCliente);
             const proofAddressUrl = cleanUrl(getStringValue(clienteNested, ["comprovante_end", "comprovanteEnd"]));
@@ -230,7 +230,7 @@ export default function ClientesPage() {
         } catch (err) {
             if (err instanceof TytApiError) setDetailsError(parseApiErrorMessage(err.body));
             else if (err instanceof Error && err.message) setDetailsError(err.message);
-            else setDetailsError("Ocorreu um erro. Tente novamente.");
+            else setDetailsError("Ocorreu um erro. Tente novamente");
             setDetails(null);
         } finally {
             setDetailsLoading(false);
@@ -241,7 +241,7 @@ export default function ClientesPage() {
         if (!details?.id) return;
         const token = getTytAccessToken();
         if (!token) {
-            toast.error("Sessão expirada. Faça login novamente.");
+            toast.error("Sessão expirada. Faça login novamente");
             return;
         }
         setToggleStatusLoading(true);
@@ -254,10 +254,10 @@ export default function ClientesPage() {
 
             setDetails((prev) => (prev ? { ...prev, isActive: nextActive } : prev));
             setRows((prev) => prev.map((r) => (r.id === details.id ? { ...r, isActive: nextActive } : r)));
-            toast.success(nextActive ? "Cliente ativado com sucesso!" : "Cliente desativado com sucesso!");
+            toast.success(nextActive ? "Cliente ativado com sucesso" : "Cliente desativado com sucesso");
         } catch (err) {
-            if (err instanceof TytApiError) toast.error("Não foi possível alterar o status do cliente.", { description: parseApiErrorMessage(err.body) });
-            else toast.error("Não foi possível alterar o status do cliente.");
+            if (err instanceof TytApiError) toast.error("Não foi possível alterar o status do cliente", { description: parseApiErrorMessage(err.body) });
+            else toast.error("Não foi possível alterar o status do cliente");
         } finally {
             setToggleStatusLoading(false);
         }
@@ -309,7 +309,7 @@ export default function ClientesPage() {
                     <section role="alert" className="rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os clientes.</p>
+                                <p className="text-sm font-semibold text-primary">Não foi possível carregar os clientes</p>
                                 <p className="mt-1 text-sm text-tertiary">{error}</p>
                             </div>
                             <Button color="secondary" size="md" onClick={() => void loadClientes()} isLoading={loading}>
@@ -351,7 +351,7 @@ export default function ClientesPage() {
                 <section className="flex flex-col gap-4">
                     <div>
                         <p className="text-md font-semibold text-primary">Total de clientes</p>
-                        <p className="mt-1 text-sm text-tertiary">Acompanhe os clientes cadastrados e seus dados principais.</p>
+                        <p className="mt-1 text-sm text-tertiary">Visualize, filtre e gerencie todos os clientes cadastrados</p>
                     </div>
 
                     <TableCard.Root>
@@ -381,7 +381,7 @@ export default function ClientesPage() {
                                             ],
                                             "clientes.csv"
                                         );
-                                        toast.success("Dados dos clientes exportados com sucesso!");
+                                        toast.success("Lista exportada com sucesso");
                                     }}
                                 >
                                     Exportar dados
@@ -495,7 +495,7 @@ export default function ClientesPage() {
                                                     onChange={() => void toggleClienteStatus()}
                                                     isDisabled={toggleStatusLoading}
                                                     label="Cliente ativo"
-                                                    hint="Status exibido conforme cadastro do cliente."
+                                                    hint="Status exibido conforme cadastro do cliente"
                                                 />
                                             </div>
                                         </div>

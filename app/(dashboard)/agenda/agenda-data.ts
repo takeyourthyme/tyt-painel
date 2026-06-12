@@ -130,7 +130,7 @@ export function useAgendaOrders() {
         const token = getTytAccessToken();
         if (!token) {
             setRows([]);
-            setError("Sessão expirada. Faça login novamente.");
+            setError("Sessão expirada. Faça login novamente");
             setLoading(false);
             return;
         }
@@ -174,7 +174,7 @@ export function useAgendaOrders() {
             } else if (err instanceof Error && err.message) {
                 setError(err.message);
             } else {
-                setError("Ocorreu um erro. Tente novamente.");
+                setError("Ocorreu um erro. Tente novamente");
             }
             setRows([]);
         } finally {

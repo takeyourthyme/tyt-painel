@@ -21,9 +21,9 @@ export type SectionStubProps = {
     emptyIcon?: FC<{ className?: string }>;
 };
 
-const defaultDescription = "Área em desenvolvimento. Em breve você poderá gerenciar os dados por aqui.";
+const defaultDescription = "Área em desenvolvimento. Em breve você poderá gerenciar os dados por aqui";
 const defaultEmptyTitle = "Conteúdo em construção";
-const defaultEmptyDescription = "Estamos preparando esta experiência para você.";
+const defaultEmptyDescription = "Estamos preparando esta experiência para você";
 
 /**
  * Layout de página placeholder alinhado ao frame “Todos os Chefs” / Section header + empty state

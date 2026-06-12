@@ -11,7 +11,7 @@ export function ForgotPasswordSuccessView() {
             <AuthFlowHeader
                 icon={<FeaturedIcon color="gray" theme="modern" size="xl" icon={CheckCircle} />}
                 title="Redefinição de senha"
-                description="Sua senha foi redefinida com sucesso. Clique abaixo para fazer login magicamente."
+                description="Sua senha foi redefinida com sucesso. Clique abaixo para fazer login magicamente"
             />
 
             <div className="flex w-full flex-col gap-6">
