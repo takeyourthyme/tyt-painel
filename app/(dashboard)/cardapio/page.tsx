@@ -828,8 +828,8 @@ export default function CardapioPage() {
 
                             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {paginatedDishItems.map((dish) => (
-                                    <article key={dish.id} className="overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
-                                        <div className="relative aspect-[16/9] w-full bg-secondary">
+                                    <article key={dish.id} className="flex flex-col overflow-hidden rounded-xl border border-secondary bg-primary shadow-xs">
+                                        <div className="relative aspect-[16/9] w-full max-h-[245px] bg-secondary">
                                             {dish.destaque_site && (
                                                 <div className="absolute top-3 right-3 z-10">
                                                     <BadgeWithIcon size="sm" type="pill-color" color="brand" iconLeading={Star01}>
@@ -844,7 +844,7 @@ export default function CardapioPage() {
                                             )}
                                         </div>
 
-                                        <div className="flex flex-col gap-3 px-4 py-4">
+                                        <div className="flex flex-1 flex-col gap-3 px-4 py-4">
                                             <div className="min-w-0">
                                                 <p className="text-sm font-semibold text-primary">{dish.title || ""}</p>
                                                 <p className="mt-1 line-clamp-2 text-sm text-tertiary">{dish.description || "—"}</p>
