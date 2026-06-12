@@ -212,7 +212,7 @@ export const FileUploadDropZone = ({
             </FeaturedIcon>
 
             <div className="flex flex-col gap-1 text-center">
-                <div className="flex justify-center gap-1 text-center">
+                <div className="flex flex-col items-center justify-center gap-1 text-center">
                     <input
                         ref={inputRef}
                         id={id}

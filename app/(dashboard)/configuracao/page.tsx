@@ -104,7 +104,7 @@ function UploadDropZone({
             </div>
 
             <div className="flex flex-col gap-1 text-center">
-                <div className="flex justify-center gap-1">
+                <div className="flex justify-center items-center gap-1">
                     <input
                         ref={inputRef}
                         id={inputId}
