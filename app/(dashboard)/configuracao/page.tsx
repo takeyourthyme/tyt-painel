@@ -119,7 +119,7 @@ function UploadDropZone({
                     />
                     <label htmlFor={inputId}>
                         <Button color="link-color" size="md" onClick={() => inputRef.current?.click()}>
-                            Clique para enviar
+                            Clique para selecionar o arquivo
                         </Button>
                     </label>
                     <span className="text-sm text-tertiary">ou arraste o arquivo</span>
