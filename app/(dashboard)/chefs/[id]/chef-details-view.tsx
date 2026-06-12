@@ -594,7 +594,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                             <DataRow label="Número" value={chef.number || "—"} />
                             <DataRow label="Complemento" value={chef.complement || "—"} />
                             <DataRow label="Cidade/UF" value={cityStateLine(chef)} />
-                            <DataRow label="Disponibilidade para deslocamento" value={formatBooleanLabel(chef.canTravel)} />
+                            <DataRow label="Disponibilidade para viagens" value={formatBooleanLabel(chef.canTravel)} />
                             <DataRow label="Tipo de transporte" value={chef.transportType || "—"} />
                         </div>
                     </div>
@@ -1156,7 +1156,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                         <DataRow label="Número" value={chef.number || "—"} />
                                                         <DataRow label="Complemento" value={chef.complement || "—"} />
                                                         <DataRow label="Cidade/UF" value={cityStateLine(chef)} />
-                                                        <DataRow label="Disponibilidade para deslocamento" value={formatBooleanLabel(chef.canTravel)} />
+                                                        <DataRow label="Disponibilidade para viagens" value={formatBooleanLabel(chef.canTravel)} />
                                                         <DataRow label="Tipo de transporte" value={chef.transportType || "—"} />
                                                     </div>
                                                 </MobileDisclosure>
@@ -1357,7 +1357,7 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                 <DataRow label="Número" value={chef.number || "—"} />
                                                 <DataRow label="Complemento" value={chef.complement || "—"} />
                                                 <DataRow label="Cidade/UF" value={cityStateLine(chef)} />
-                                                <DataRow label="Disponibilidade para deslocamento" value={formatBooleanLabel(chef.canTravel)} />
+                                                <DataRow label="Disponibilidade para viagens" value={formatBooleanLabel(chef.canTravel)} />
                                                 <DataRow label="Tipo de transporte" value={chef.transportType || "—"} />
                                             </div>
                                         </MobileDisclosure>
@@ -1507,13 +1507,13 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                         [
                                                             { header: "Serviço", key: "serviceLabel" },
                                                             { header: "Valor", key: "valueLabel" },
-                                                            { 
-                                                                header: "Status", 
+                                                            {
+                                                                header: "Status",
                                                                 key: (item) => {
                                                                     if (item.status === "confirmed") return "Confirmado";
                                                                     if (item.status === "cancelled") return "Cancelado";
                                                                     return "Pendente";
-                                                                } 
+                                                                }
                                                             },
                                                             { header: "Data", key: "dateLabel" },
                                                             { header: "Localização", key: "locationLabel" },
