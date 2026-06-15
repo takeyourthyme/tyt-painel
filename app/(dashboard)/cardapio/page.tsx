@@ -451,17 +451,20 @@ export default function CardapioPage() {
                                 : typeof r.name === "string"
                                     ? r.name
                                     : "—";
-                    const idCategoria = typeof r.id_categoria === "number" ? r.id_categoria : Number(r.id_categoria);
+                    const idCategoria = typeof r.id_categoria === "number" ? r.id_categoria : (typeof r.id_categoria === "string" && r.id_categoria ? Number(r.id_categoria) : null);
                     const categoriaObj = getRecord(r.categoria);
                     const categoryLabel =
-                        categoriasById.get(idCategoria) ?? (categoriaObj ? getStringValue(categoriaObj, ["descricao"]) : null) ?? (typeof r.categoria === "string" ? r.categoria : "—");
-                    const categoryColor = badgeColorByIndex(Math.abs(idCategoria || idx));
-                    const unidade = typeof r.unidade === "string" ? r.unidade : "—";
-                    const unidadeMedida = typeof r.unidade_medida === "string" ? r.unidade_medida : null;
-                    const volumePeso = typeof r.volume_peso === "string" ? r.volume_peso : typeof r.volume_peso === "number" ? String(r.volume_peso) : null;
-                    const unitLabel = volumePeso ? `${volumePeso}${unidadeMedida ?? unidade}` : unidadeMedida ?? unidade;
-                    const valor = typeof r.valor === "number" ? r.valor : typeof r.valor === "string" ? Number(r.valor) : null;
-                    const unitPriceLabel = formatCurrency(Number.isFinite(valor as number) ? (valor as number) : null);
+                        (idCategoria ? categoriasById.get(idCategoria) : null) ??
+                        (categoriaObj ? getStringValue(categoriaObj, ["descricao"]) : null) ??
+                        (typeof r.categoria === "string" ? r.categoria : "—");
+                    const categoryColor = idCategoria ? badgeColorByIndex(idCategoria) : "gray";
+                    const cleanUnidade = typeof r.unidade === "string" && r.unidade.trim().length > 0 ? r.unidade.trim().toLowerCase() : "";
+                    const cleanUnidadeMedida = typeof r.unidade_medida === "string" && r.unidade_medida.trim().length > 0 ? r.unidade_medida.trim().toLowerCase() : null;
+                    const finalUnidade = cleanUnidadeMedida ?? cleanUnidade;
+                    const volumePeso = typeof r.volume_peso === "string" && r.volume_peso.trim().length > 0 ? r.volume_peso.trim() : typeof r.volume_peso === "number" ? String(r.volume_peso) : null;
+                    const unitLabel = volumePeso ? (finalUnidade ? `${volumePeso} ${finalUnidade}` : volumePeso) : (finalUnidade || "—");
+                    const valor = typeof r.valor === "number" ? r.valor : typeof r.valor === "string" && r.valor.trim() ? Number(r.valor) : null;
+                    const unitPriceLabel = formatCurrency(valor !== null && Number.isFinite(valor) ? valor : null);
                     const lastQuoteLabel =
                         typeof r.updatedAt === "string"
                             ? formatDatePtBr(r.updatedAt)
@@ -682,7 +685,8 @@ export default function CardapioPage() {
             (idCategoria ? categories.find((c) => c.id === idCategoria)?.descricao : null) ??
             (getRecord(record.categoria) ? getStringValue(getRecord(record.categoria)!, ["descricao", "nome"]) : null) ??
             "—";
-        const unidade = getStringValue(record, ["unidade"]) ?? "—";
+        const rawUnidade = getStringValue(record, ["unidade"]);
+        const unidade = rawUnidade ? rawUnidade.trim().toLowerCase() : "—";
         const volumePesoRaw = getStringValue(record, ["volume_peso"]) ?? null;
         const volumePeso = volumePesoRaw ?? (getNumberValue(record, ["volume_peso"]) !== null ? String(getNumberValue(record, ["volume_peso"])!) : null);
         const unitPrice = getNumberValue(record, ["valor", "custo_unitario"]) ?? null;
@@ -1377,7 +1381,7 @@ export default function CardapioPage() {
                                                     <div className="mt-4">
                                                         <p className="text-sm font-semibold text-primary">Categorias</p>
                                                         <div className="mt-2">
-                                                            <Badge size="sm" type="pill-color" color={badgeColorByIndex((ingredientView.idCategoria ?? 1) - 1)}>
+                                                            <Badge size="sm" type="pill-color" color={ingredientView.idCategoria ? badgeColorByIndex(ingredientView.idCategoria) : "gray"}>
                                                                 {ingredientView.categoryLabel}
                                                             </Badge>
                                                         </div>
@@ -1739,8 +1743,8 @@ export default function CardapioPage() {
                                                         getStringValue(getRecord((ingredientDetails ?? {}).categoria) ?? {}, ["marca_pref"]) ??
                                                         "",
                                                     fornecedor: getStringValue(ingredientDetails ?? {}, ["fornecedor"]) ?? "",
-                                                    volume_peso: getStringValue(ingredientDetails ?? {}, ["volume_peso"]) ?? "",
-                                                    unidade_medida: (getStringValue(ingredientDetails ?? {}, ["unidade_medida"]) ?? "g").toLowerCase(),
+                                                    volume_peso: getStringValue(ingredientDetails ?? {}, ["volume_peso"]) ?? (getNumberValue(ingredientDetails ?? {}, ["volume_peso"]) !== null ? String(getNumberValue(ingredientDetails ?? {}, ["volume_peso"])!) : ""),
+                                                    unidade_medida: (getStringValue(ingredientDetails ?? {}, ["unidade_medida"]) ?? getStringValue(ingredientDetails ?? {}, ["unidade"]) ?? "g").toLowerCase(),
                                                     quantidade: (() => {
                                                         const n = getNumberValue(ingredientDetails ?? {}, ["quantidade"]);
                                                         return n !== null ? String(n) : "1";
