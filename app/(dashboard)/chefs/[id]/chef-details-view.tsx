@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState, useMemo } from "react";
 import { useExportData } from "@/hooks/use-export-data";
 import {
     ArrowLeft,
@@ -40,6 +40,7 @@ import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-ic
 import { cx } from "@/utils/cx";
 import { formatAvailabilityDayLabel, formatServiceChipLabel, useChefApprovalActions, useChefDetails } from "./chef-details-data";
 import { CalendarCheck, ChefHat } from "lucide-react";
+import { AgendaFilterPopover, emptyAgendaFilter, type AgendaFilterState, type AgendaFilterOption } from "@/app/(dashboard)/agenda/agenda-filter-popover";
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -373,6 +374,8 @@ export function ChefDetailsView({ id }: { id: string }) {
     const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
     const [scheduleQuery, setScheduleQuery] = useState("");
     const [historyQuery, setHistoryQuery] = useState("");
+    const [appliedScheduleFilter, setAppliedScheduleFilter] = useState<AgendaFilterState>(() => emptyAgendaFilter());
+    const [appliedHistoryFilter, setAppliedHistoryFilter] = useState<AgendaFilterState>(() => emptyAgendaFilter());
 
     const headerName = chef?.name ?? "Perfil do Profissional";
     const headerEmail = chef?.email ?? "—";
@@ -435,25 +438,66 @@ export function ChefDetailsView({ id }: { id: string }) {
         }
     };
 
-    const scheduleOrders = safeOrders
+    const serviceTypeOptions = useMemo<AgendaFilterOption[]>(() => {
+        const types = new Set<string>();
+        safeOrders.forEach((o) => {
+            if (o.type) types.add(o.type);
+        });
+        return Array.from(types).map((t) => ({ id: t, label: formatServiceChipLabel(t) }));
+    }, [safeOrders]);
+
+    const scheduleStatusOptions = [
+        { id: "confirmed", label: "Confirmado" },
+        { id: "pending", label: "Pendente" }
+    ];
+
+    const historyStatusOptions = [
+        { id: "confirmed", label: "Confirmado" },
+        { id: "pending", label: "Pendente" },
+        { id: "cancelled", label: "Cancelado" }
+    ];
+
+    const allFutureOrders = safeOrders
         .filter((o) => {
             const dt = orderEventDateTime(o);
             if (!dt) return false;
             return dt.getTime() >= Date.now() && !orderIsCancelled(o.status);
+        })
+        .sort((a, b) => (orderEventDateTime(a)?.getTime() ?? 0) - (orderEventDateTime(b)?.getTime() ?? 0));
+
+    const scheduleOrders = allFutureOrders
+        .filter((o) => {
+            if (appliedScheduleFilter.serviceTypes.length > 0) {
+                if (!o.type || !appliedScheduleFilter.serviceTypes.includes(o.type)) return false;
+            }
+            if (appliedScheduleFilter.statuses.length > 0) {
+                const itemStatus = orderIsConfirmed(o.status) ? "confirmed" : "pending";
+                if (!appliedScheduleFilter.statuses.includes(itemStatus)) return false;
+            }
+            return true;
         })
         .filter((o) => {
             const q = scheduleQuery.trim().toLowerCase();
             if (!q) return true;
             const hay = `${o.code ?? ""} ${o.type ?? ""} ${o.city ?? ""} ${o.clientName ?? ""}`.toLowerCase();
             return hay.includes(q);
-        })
-        .sort((a, b) => (orderEventDateTime(a)?.getTime() ?? 0) - (orderEventDateTime(b)?.getTime() ?? 0));
+        });
 
     const historyOrders = safeOrders
         .filter((o) => {
             const dt = orderEventDateTime(o);
             if (!dt) return false;
             return dt.getTime() < Date.now() || orderIsCancelled(o.status);
+        })
+        .filter((o) => {
+            if (appliedHistoryFilter.serviceTypes.length > 0) {
+                if (!o.type || !appliedHistoryFilter.serviceTypes.includes(o.type)) return false;
+            }
+            if (appliedHistoryFilter.statuses.length > 0) {
+                const itemStatus = orderIsCancelled(o.status) ? "cancelled" : orderIsConfirmed(o.status) ? "confirmed" : "pending";
+                if (!appliedHistoryFilter.statuses.includes(itemStatus)) return false;
+            }
+            return true;
         })
         .filter((o) => {
             const q = historyQuery.trim().toLowerCase();
@@ -464,6 +508,20 @@ export function ChefDetailsView({ id }: { id: string }) {
         .sort((a, b) => (orderEventDateTime(b)?.getTime() ?? 0) - (orderEventDateTime(a)?.getTime() ?? 0));
 
     const scheduleItems: ScheduleItem[] = scheduleOrders.map((o) => {
+        const dt = orderEventDateTime(o);
+        return {
+            id: o.id,
+            code: o.code ?? "",
+            serviceLabel: formatServiceChipLabel(o.type ?? "—"),
+            status: orderIsConfirmed(o.status) ? "confirmed" : "pending",
+            dateLabel: dt ? dt.toLocaleDateString("pt-BR") : "—",
+            timeLabel: formatTimeLabel(o.eventTime),
+            locationLabel: formatLocationLabel(o),
+            clientName: o.clientName ?? "—",
+        };
+    });
+
+    const dailyScheduleItems: ScheduleItem[] = allFutureOrders.map((o) => {
         const dt = orderEventDateTime(o);
         return {
             id: o.id,
@@ -1438,8 +1496,8 @@ export function ChefDetailsView({ id }: { id: string }) {
                                         <TableCard.Root>
                                             <TableCard.Header title="Programação Diária" />
                                             <div className="flex flex-col gap-3 px-6 py-5">
-                                                {scheduleItems.length > 0 ? (
-                                                    scheduleItems.slice(0, 2).map((item) => <ScheduleCard key={item.id} item={item} />)
+                                                {dailyScheduleItems.length > 0 ? (
+                                                    dailyScheduleItems.slice(0, 2).map((item) => <ScheduleCard key={item.id} item={item} />)
                                                 ) : (
                                                     <p className="text-sm text-tertiary">Nenhum agendamento encontrado</p>
                                                 )}
@@ -1462,9 +1520,12 @@ export function ChefDetailsView({ id }: { id: string }) {
                                                         onChange={setScheduleQuery}
                                                         className="w-full md:w-[320px]"
                                                     />
-                                                    <Button size="md" color="primary" iconLeading={FilterLines} className="w-full md:w-auto">
-                                                        Filtrar
-                                                    </Button>
+                                                    <AgendaFilterPopover
+                                                        applied={appliedScheduleFilter}
+                                                        onApply={setAppliedScheduleFilter}
+                                                        serviceTypeOptions={serviceTypeOptions}
+                                                        statusOptions={scheduleStatusOptions}
+                                                    />
                                                 </div>
                                             }
                                         />
@@ -1526,12 +1587,14 @@ export function ChefDetailsView({ id }: { id: string }) {
                                             >
                                                 Exportar dados
                                             </Button>
-                                            <Button size="md" color="primary" iconLeading={FilterLines} className="w-full sm:w-auto">
-                                                Filtrar
-                                            </Button>
+                                            <AgendaFilterPopover
+                                                applied={appliedHistoryFilter}
+                                                onApply={setAppliedHistoryFilter}
+                                                serviceTypeOptions={serviceTypeOptions}
+                                                statusOptions={historyStatusOptions}
+                                            />
                                         </div>
                                     </div>
-
                                     {historyRows.length > 0 ? (
                                         <Table aria-label="Registro de Atendimentos" selectionMode="none">
                                             <Table.Header>
