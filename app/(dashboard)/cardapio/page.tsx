@@ -1999,11 +1999,88 @@ export default function CardapioPage() {
                         ? ICON_CATALOG.find((x) => x.id === classificationForm.icone) ?? null
                         : null;
 
+                    const FOOD_BEVERAGE_ICON_IDS = new Set([
+                        "amphora",
+                        "apple",
+                        "banana",
+                        "barrel",
+                        "bean",
+                        "bean-off",
+                        "beef",
+                        "beef-off",
+                        "beer",
+                        "beer-off",
+                        "blender",
+                        "bottle-wine",
+                        "broccoli",
+                        "cake",
+                        "cake-slice",
+                        "candy",
+                        "candy-cane",
+                        "candy-off",
+                        "carrot",
+                        "chef-hat",
+                        "cherry",
+                        "citrus",
+                        "coffee",
+                        "cookie",
+                        "cooking-pot",
+                        "croissant",
+                        "cuboid",
+                        "cup-soda",
+                        "dessert",
+                        "dna-off",
+                        "donut",
+                        "drumstick",
+                        "egg",
+                        "egg-fried",
+                        "egg-off",
+                        "fish",
+                        "fish-off",
+                        "fish-symbol",
+                        "glass-water",
+                        "grape",
+                        "ham",
+                        "hamburger",
+                        "hand-platter",
+                        "hop",
+                        "hop-off",
+                        "ice-cream-bowl",
+                        "ice-cream-cone",
+                        "leafy-green",
+                        "lollipop",
+                        "martini",
+                        "microwave",
+                        "milk",
+                        "milk-off",
+                        "nut",
+                        "nut-off",
+                        "pizza",
+                        "popcorn",
+                        "popsicle",
+                        "refrigerator",
+                        "salad",
+                        "sandwich",
+                        "shell",
+                        "snail",
+                        "soup",
+                        "torus",
+                        "tractor",
+                        "utensils",
+                        "utensils-crossed",
+                        "vegan",
+                        "wheat",
+                        "wheat-off",
+                        "wine",
+                        "wine-off"
+                    ]);
+
                     const filteredIcons = ICON_CATALOG.filter((x) => {
+                        if (!FOOD_BEVERAGE_ICON_IDS.has(x.id)) return false;
                         const q = iconQuery.trim().toLowerCase();
                         if (!q) return true;
                         return `${x.id} ${x.label}`.toLowerCase().includes(q);
-                    }).slice(0, 48);
+                    });
 
                     return (
                         <>
