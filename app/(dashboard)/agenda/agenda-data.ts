@@ -156,7 +156,7 @@ export function useAgendaOrders() {
                     typeColor: type.color,
                     statusLabel: status.label,
                     statusColor: status.color,
-                    valueLabel: formatCurrency(null),
+                    valueLabel: formatCurrency(o.service_value ?? null),
                     cityLabel: o.city || "—",
                     dateLabel: formatDatePtBr(o.event_date),
                     chefId: o.chef?.id ?? null,

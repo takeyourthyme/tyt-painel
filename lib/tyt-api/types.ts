@@ -322,6 +322,7 @@ export type KitchenOrderListItem = {
     event_date: string;
     people_quantity: number;
     createdAt: string;
+    service_value?: number;
     cliente?: { id: number; nome: string; foto?: string | null } | null;
     chef?: { id: number; nome: string; foto?: string | null } | null;
 };
