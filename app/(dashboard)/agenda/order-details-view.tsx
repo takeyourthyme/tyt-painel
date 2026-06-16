@@ -57,6 +57,7 @@ type KitchenOrderDetails = {
     cliente: { id: number; nome: string; email: string | null; whatsapp: string | null } | null;
     chef: { id: number; nome: string; foto: string | null } | null;
     themes: string[];
+    serviceValue: number | null;
 };
 
 function cleanUrl(raw: unknown): string | null {
@@ -208,7 +209,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
     const district = getStringValue(obj, ["district", "bairro"]);
     const observations = getStringValue(obj, ["observations", "observacao", "observação"]);
     const clientRequest = getStringValue(obj, ["client_request", "clientRequest", "solicitacao_cliente", "solicitacao", "pedido_cliente"]);
-
+    const serviceValue = getNumberValue(obj, ["service_value"]);
     const dishesRaw = (obj.dishes ?? obj.pratos ?? obj.menu) as unknown;
     const dishesList = Array.isArray(dishesRaw) ? dishesRaw : [];
     const dishes = dishesList
@@ -357,6 +358,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
         cliente,
         chef,
         themes: rootThemes,
+        serviceValue,
     };
 }
 
@@ -810,7 +812,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     </Button>
                                 </div>
                                 <div className="grid gap-4 px-6 py-5 md:grid-cols-2">
-                                    <DataRow label="Valor do serviço" value="—" />
+                                    <DataRow label="Valor do serviço" value={formatCurrency(order.serviceValue ?? 0)} />
                                     <DataRow label="Data do pagamento" value="—" />
                                     <DataRow label="Método de Pagamento" value="—" />
                                 </div>
