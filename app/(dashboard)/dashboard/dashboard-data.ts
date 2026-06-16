@@ -8,7 +8,7 @@ import { getTytAccessToken } from "@/lib/tyt-api/session";
 
 export type DashboardPeriodId = "current" | "previous" | "3months" | "custom";
 
-export type DashboardFinishedCategory = "Meal Prep" | "Get Together" | "Season Special";
+export type DashboardFinishedCategory = "Meal Prep" | "Get Together" | "Special Service";
 
 export type DashboardFinishedByCategoryItem = {
     name: DashboardFinishedCategory;
@@ -213,13 +213,13 @@ function isCanceledStatus(statusRaw: string): boolean {
 }
 
 function getOrderTypeLabel(order: unknown): DashboardFinishedCategory {
-    if (!order || typeof order !== "object") return "Season Special";
+    if (!order || typeof order !== "object") return "Special Service";
     const raw = (order as Record<string, unknown>).type;
     const t = typeof raw === "string" ? raw.toLowerCase() : String(raw ?? "").toLowerCase();
     if (t.includes("meal")) return "Meal Prep";
     if (t.includes("get")) return "Get Together";
-    if (t.includes("season")) return "Season Special";
-    return "Season Special";
+    if (t.includes("season")) return "Special Service";
+    return "Special Service";
 }
 
 function getOrderDate(order: unknown): Date | null {
@@ -343,7 +343,7 @@ export function computeDashboardDerivedData(input: {
         const base: DashboardFinishedByCategoryItem[] = [
             { name: "Meal Prep", value: 0, className: "text-[#22c55e]" },
             { name: "Get Together", value: 0, className: "text-[#a855f7]" },
-            { name: "Season Special", value: 0, className: "text-[#f97316]" },
+            { name: "Special Service", value: 0, className: "text-[#f97316]" },
         ];
 
         if (!currentOrders) return base.map((x) => ({ ...x, value: 0 }));
@@ -470,7 +470,7 @@ function emptyDerived(): DashboardDerivedData {
         finishedByCategory: [
             { name: "Meal Prep", value: 0, className: "text-[#22c55e]" },
             { name: "Get Together", value: 0, className: "text-[#a855f7]" },
-            { name: "Season Special", value: 0, className: "text-[#f97316]" },
+            { name: "Special Service", value: 0, className: "text-[#f97316]" },
         ],
         matchTimeByDay: [],
     };
@@ -488,7 +488,7 @@ function mapOverviewToDerived(raw: unknown): DashboardDerivedData {
     const finishedByCategoryBase: DashboardFinishedByCategoryItem[] = [
         { name: "Meal Prep", value: 0, className: "text-[#22c55e]" },
         { name: "Get Together", value: 0, className: "text-[#a855f7]" },
-        { name: "Season Special", value: 0, className: "text-[#f97316]" },
+        { name: "Special Service", value: 0, className: "text-[#f97316]" },
     ];
 
     const finishedRaw = obj.finished_services_chart;
@@ -500,7 +500,7 @@ function mapOverviewToDerived(raw: unknown): DashboardDerivedData {
         const total = typeof r.total === "number" ? r.total : Number(r.total);
         if (!Number.isFinite(total)) continue;
         const label: DashboardFinishedCategory | null =
-            type === "MEAL_PREP" ? "Meal Prep" : type.includes("TOGETHER") ? "Get Together" : type.includes("SPECIAL") ? "Season Special" : null;
+            type === "MEAL_PREP" ? "Meal Prep" : type.includes("TOGETHER") ? "Get Together" : type.includes("SPECIAL") ? "Special Service" : null;
         if (!label) continue;
         const idx = finishedByCategoryBase.findIndex((x) => x.name === label);
         if (idx >= 0) finishedByCategoryBase[idx] = { ...finishedByCategoryBase[idx], value: total };
