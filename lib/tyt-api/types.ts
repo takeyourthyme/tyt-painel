@@ -236,7 +236,7 @@ export type PratoByIdQuery = {
 export type PratoFormFields = {
     nome_prato: string;
     descricao: string;
-    quantidade: number | string;
+    servings: number | string;
     ativo: boolean | string;
     categorias: string;
     tipos_cozinha: string;
@@ -256,7 +256,7 @@ export type PratoFormFields = {
 export const PRATO_FORM_KEYS = [
     "nome_prato",
     "descricao",
-    "quantidade",
+    "servings",
     "ativo",
     "categorias",
     "tipos_cozinha",

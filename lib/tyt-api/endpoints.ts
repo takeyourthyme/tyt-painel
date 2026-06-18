@@ -36,6 +36,7 @@ export const tytEndpoints = {
     pratos: {
         collection: "/api/pratos",
         byId: (id: number | string) => `/api/pratos/${id}`,
+        templateDownload: "/api/pratos/template/download",
     },
     pratosCategorias: {
         collection: "/api/pratos-categorias",

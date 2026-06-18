@@ -33,3 +33,8 @@ export function getPratos(token: string, query?: PratosListQuery) {
 export function getPratoById(id: ResourceId, token: string, query?: PratoByIdQuery) {
     return tytFetch(`${tytEndpoints.pratos.byId(id)}${toQueryString(query)}`, { method: "GET", token });
 }
+
+// RETORNA O TEMPLATE DA FICHA TECNICA DO PRATO
+export function getPratoTemplate(token: string) {
+    return tytFetch(tytEndpoints.pratos.templateDownload, { method: "GET", token });
+}

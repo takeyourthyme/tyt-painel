@@ -11,7 +11,6 @@ import { LoadingIndicator } from "@/components/application/loading-indicator/loa
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
-import { Checkbox } from "@/components/base/checkbox/checkbox";
 import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
 import { Tag, TagGroup, TagList } from "@/components/base/tags/tags";
@@ -20,8 +19,7 @@ import { Toggle } from "@/components/base/toggle/toggle";
 import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
 import { ICON_CATALOG } from "@/app/(dashboard)/cardapio/icon-catalog";
 import { parseApiErrorMessage, parseJsonOrThrow, TytApiError } from "@/lib/tyt-api/errors";
-import { getIngredientes } from "@/lib/tyt-api/ingredientes";
-import { deletePrato, getPratoById, putPratoFromFields } from "@/lib/tyt-api/pratos";
+import { deletePrato, getPratoById, getPratoTemplate, putPratoFromFields } from "@/lib/tyt-api/pratos";
 import { ingredientesPrincipaisApi, pratosCategoriasApi, prefCulinariasApi, temasApi, tiposCozinhaApi } from "@/lib/tyt-api/pratos-catalogo";
 import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { cx } from "@/utils/cx";
@@ -124,20 +122,63 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+    const [templateDownloading, setTemplateDownloading] = useState(false);
+
+    const downloadPratoTemplate = useCallback(async () => {
+        const token = getTytAccessToken();
+        if (!token) {
+            toast.error("Sessão expirada. Faça login novamente");
+            return;
+        }
+
+        setTemplateDownloading(true);
+        try {
+            const res = await getPratoTemplate(token);
+            if (!res.ok) {
+                let message = "Não foi possível baixar o template";
+                try {
+                    const body = await res.json();
+                    message = parseApiErrorMessage(body);
+                } catch { }
+                toast.error(message);
+                return;
+            }
+
+            const blob = await res.blob();
+            const cd = res.headers.get("content-disposition") ?? res.headers.get("Content-Disposition");
+            const filename =
+                cd?.match(/filename\*=UTF-8''([^;]+)/i)?.[1]?.trim().replace(/^"+|"+$/g, "") ??
+                cd?.match(/filename=([^;]+)/i)?.[1]?.trim().replace(/^"+|"+$/g, "") ??
+                "template_pratos.xlsx";
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = decodeURIComponent(filename);
+            a.rel = "noopener";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            if (err instanceof TytApiError) toast.error("Não foi possível baixar o template", { description: parseApiErrorMessage(err.body) });
+            else toast.error("Não foi possível baixar o template");
+        } finally {
+            setTemplateDownloading(false);
+        }
+    }, []);
 
     const [dishCategories, setDishCategories] = useState<CatalogItem[]>([]);
     const [foodPreferences, setFoodPreferences] = useState<CatalogItem[]>([]);
     const [cuisineTypes, setCuisineTypes] = useState<CatalogItem[]>([]);
     const [mainIngredients, setMainIngredients] = useState<CatalogItem[]>([]);
     const [themes, setThemes] = useState<CatalogItem[]>([]);
-    const [ingredients, setIngredients] = useState<CatalogItem[]>([]);
 
     const [categorySelection, setCategorySelection] = useState<Selection>(new Set());
     const [foodPreferenceSelection, setFoodPreferenceSelection] = useState<Set<string>>(new Set());
     const [cuisineTypeSelection, setCuisineTypeSelection] = useState<Set<string>>(new Set());
     const [mainIngredientSelection, setMainIngredientSelection] = useState<Set<string>>(new Set());
     const [themeSelection, setThemeSelection] = useState<Set<string>>(new Set());
-    const [ingredientsSelection, setIngredientsSelection] = useState<Set<string>>(new Set());
 
     const [foodPreferenceKey, setFoodPreferenceKey] = useState<string | null>(null);
     const [foodPreferenceQuery, setFoodPreferenceQuery] = useState("");
@@ -147,17 +188,14 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
     const [mainIngredientQuery, setMainIngredientQuery] = useState("");
     const [themeKey, setThemeKey] = useState<string | null>(null);
     const [themeQuery, setThemeQuery] = useState("");
-    const [ingredientKey, setIngredientKey] = useState<string | null>(null);
-    const [ingredientQuery, setIngredientQuery] = useState("");
     const [foodPreferenceOpen, setFoodPreferenceOpen] = useState(false);
     const [mainIngredientOpen, setMainIngredientOpen] = useState(false);
     const [cuisineTypeOpen, setCuisineTypeOpen] = useState(false);
     const [themeOpen, setThemeOpen] = useState(false);
-    const [ingredientOpen, setIngredientOpen] = useState(false);
     const [form, setForm] = useState<{
         name: string;
         descriptionText: string;
-        quantity: string;
+        servings: string;
         ativo: boolean;
         mealPreap: boolean;
         getTogheter: boolean;
@@ -169,7 +207,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
     }>({
         name: "",
         descriptionText: "",
-        quantity: "1",
+        servings: "2",
         ativo: true,
         mealPreap: false,
         getTogheter: false,
@@ -192,23 +230,21 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
         setLoading(true);
         setError(null);
         try {
-            const [dishRes, catsRes, cuisineRes, themesRes, mainRes, prefRes, ingredientsRes] = await Promise.all([
+            const [dishRes, catsRes, cuisineRes, themesRes, mainRes, prefRes] = await Promise.all([
                 getPratoById(dishId, token),
                 pratosCategoriasApi.getAll(token),
                 tiposCozinhaApi.getAll(token),
                 temasApi.getAll(token),
                 ingredientesPrincipaisApi.getAll(token),
                 prefCulinariasApi.getAll(token),
-                getIngredientes(token),
             ]);
-            const [dishJson, catsJson, cuisineJson, themesJson, mainJson, prefJson, ingredientsJson] = await Promise.all([
+            const [dishJson, catsJson, cuisineJson, themesJson, mainJson, prefJson] = await Promise.all([
                 parseJsonOrThrow<unknown>(dishRes),
                 parseJsonOrThrow<unknown>(catsRes),
                 parseJsonOrThrow<unknown>(cuisineRes),
                 parseJsonOrThrow<unknown>(themesRes),
                 parseJsonOrThrow<unknown>(mainRes),
                 parseJsonOrThrow<unknown>(prefRes),
-                parseJsonOrThrow<unknown>(ingredientsRes),
             ]);
 
             const dishRecord = getRecord(dishJson) ?? getRecord(getRecord(dishJson)?.data) ?? null;
@@ -234,12 +270,11 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
             setThemes(mapItems(normalizeList(themesJson)));
             setMainIngredients(mapItems(normalizeList(mainJson)));
             setFoodPreferences(mapItems(normalizeList(prefJson)));
-            setIngredients(mapItems(normalizeList(ingredientsJson)));
 
             if (dishRecord) {
                 const name = getStringValue(dishRecord, ["nome_prato"]) ?? "";
                 const descriptionText = getStringValue(dishRecord, ["descricao"]) ?? "";
-                const quantity = getNumberValue(dishRecord, ["quantidade"]) ?? null;
+                const servings = getNumberValue(dishRecord, ["servings"]) ?? null;
                 const ativo = coerceBool(dishRecord.ativo);
                 const mealPreap = coerceBool(dishRecord.meal_preap);
                 const getTogheter = coerceBool(dishRecord.get_togheter);
@@ -259,7 +294,6 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                 setCuisineTypeSelection(new Set(idsFromDishArray("pratos_tipos_cozinha")));
                 setMainIngredientSelection(new Set(idsFromDishArray("pratos_ingredientes_principais")));
                 setThemeSelection(mealPreap ? new Set() : new Set(idsFromDishArray("pratos_temas")));
-                setIngredientsSelection(new Set(idsFromDishArray("pratos_ingredientes")));
 
                 setRemote({
                     foto1Url: cleanUrl(dishRecord.foto1),
@@ -276,7 +310,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                     ...p,
                     name,
                     descriptionText,
-                    quantity: quantity !== null ? String(quantity) : "1",
+                    servings: servings !== null ? String(servings) : "2",
                     ativo,
                     mealPreap,
                     getTogheter,
@@ -325,19 +359,16 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
     const cuisineTypeCsv = useMemo(() => Array.from(cuisineTypeSelection).join(","), [cuisineTypeSelection]);
     const mainIngredientCsv = useMemo(() => Array.from(mainIngredientSelection).join(","), [mainIngredientSelection]);
     const themeCsv = useMemo(() => Array.from(themeSelection).join(","), [themeSelection]);
-    const ingredientsCsv = useMemo(() => Array.from(ingredientsSelection).join(","), [ingredientsSelection]);
 
     const dishCategoryItems = useMemo(() => dishCategories.map((x) => ({ id: String(x.id), label: x.descricao })), [dishCategories]);
     const prefItems = useMemo(() => foodPreferences.map((x) => ({ id: String(x.id), label: x.descricao })), [foodPreferences]);
     const cuisineItems = useMemo(() => cuisineTypes.map((x) => ({ id: String(x.id), label: x.descricao })), [cuisineTypes]);
     const mainIngredientItems = useMemo(() => mainIngredients.map((x) => ({ id: String(x.id), label: x.descricao })), [mainIngredients]);
     const themeItems = useMemo(() => themes.map((x) => ({ id: String(x.id), label: x.descricao })), [themes]);
-    const ingredientItems = useMemo(() => ingredients.map((x) => ({ id: String(x.id), label: x.descricao })), [ingredients]);
     const prefSelectableItems = useMemo(() => prefItems.filter((x) => !foodPreferenceSelection.has(x.id)), [prefItems, foodPreferenceSelection]);
     const mainSelectableItems = useMemo(() => mainIngredientItems.filter((x) => !mainIngredientSelection.has(x.id)), [mainIngredientItems, mainIngredientSelection]);
     const cuisineSelectableItems = useMemo(() => cuisineItems.filter((x) => !cuisineTypeSelection.has(x.id)), [cuisineItems, cuisineTypeSelection]);
     const themeSelectableItems = useMemo(() => themeItems.filter((x) => !themeSelection.has(x.id)), [themeItems, themeSelection]);
-    const ingredientSelectableItems = useMemo(() => ingredientItems.filter((x) => !ingredientsSelection.has(x.id)), [ingredientItems, ingredientsSelection]);
 
     const foto1Preview = form.foto1File ? URL.createObjectURL(form.foto1File) : remote?.foto1Url ?? null;
     const foto2Preview = form.foto2File ? URL.createObjectURL(form.foto2File) : remote?.foto2Url ?? null;
@@ -419,6 +450,14 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                         onChange={(v) => setForm((p) => ({ ...p, descriptionText: v }))}
                                         placeholder="Descreva o prato"
                                         rows={4}
+                                    />
+                                    <Input
+                                        label="Porções"
+                                        isRequired
+                                        type="number"
+                                        value={form.servings}
+                                        onChange={(v) => setForm((p) => ({ ...p, servings: v }))}
+                                        placeholder="Ex: 2"
                                     />
                                 </div>
                             </article>
@@ -632,16 +671,16 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                                             })
                                                         }
                                                     >
-                                                         {(() => {
-                                                             const item = mainIngredients.find((x) => String(x.id) === id);
-                                                             const iconObj = item?.icone ? ICON_CATALOG.find((x) => x.id === item.icone) : null;
-                                                             return (
-                                                                 <span className="inline-flex items-center gap-1.5">
-                                                                     {iconObj ? <iconObj.Icon className="size-3.5" /> : null}
-                                                                     {item?.descricao ?? id}
-                                                                 </span>
-                                                             );
-                                                         })()}
+                                                        {(() => {
+                                                            const item = mainIngredients.find((x) => String(x.id) === id);
+                                                            const iconObj = item?.icone ? ICON_CATALOG.find((x) => x.id === item.icone) : null;
+                                                            return (
+                                                                <span className="inline-flex items-center gap-1.5">
+                                                                    {iconObj ? <iconObj.Icon className="size-3.5" /> : null}
+                                                                    {item?.descricao ?? id}
+                                                                </span>
+                                                            );
+                                                        })()}
                                                     </Tag>
                                                 ))}
                                             </TagList>
@@ -744,52 +783,6 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                         ) : null}
                                     </div>
                                 ) : null}
-
-                                <div className="flex flex-col gap-2 lg:col-span-2">
-                                    <Select.ComboBox
-                                        aria-label="Ingredientes"
-                                        label="Ingredientes"
-                                        size="md"
-                                        shortcut={false}
-                                        items={ingredientSelectableItems}
-                                        inputValue={ingredientQuery}
-                                        onInputChange={setIngredientQuery}
-                                        selectedKey={ingredientKey}
-                                        onOpenChange={setIngredientOpen}
-                                        onSelectionChange={(key) => {
-                                            const id = key ? String(key) : null;
-                                            setIngredientKey(null);
-                                            setIngredientQuery("");
-                                            if (!id) return;
-                                            setIngredientsSelection((prev) => new Set(prev).add(id));
-                                            setIngredientOpen(false);
-                                        }}
-                                        placeholder="Selecione"
-                                    >
-                                        {(item) => <Select.Item {...item} />}
-                                    </Select.ComboBox>
-                                    {ingredientsSelection.size ? (
-                                        <TagGroup label="Ingredientes selecionados" size="md">
-                                            <TagList className="flex flex-wrap gap-2">
-                                                {Array.from(ingredientsSelection).map((id) => (
-                                                    <Tag
-                                                        key={id}
-                                                        id={id}
-                                                        onClose={(tagId) =>
-                                                            setIngredientsSelection((prev) => {
-                                                                const next = new Set(prev);
-                                                                next.delete(tagId);
-                                                                return next;
-                                                            })
-                                                        }
-                                                    >
-                                                        {ingredients.find((x) => String(x.id) === id)?.descricao ?? id}
-                                                    </Tag>
-                                                ))}
-                                            </TagList>
-                                        </TagGroup>
-                                    ) : null}
-                                </div>
                             </div>
                         </section>
 
@@ -798,9 +791,15 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                 <div className="flex items-center justify-between gap-4 border-b border-secondary px-5 py-5">
                                     <div className="min-w-0">
                                         <h2 className="text-sm font-semibold text-primary">Ficha Técnica</h2>
-                                        <p className="mt-1 text-sm text-tertiary">Adicione a ficha técnica com detalhes de preparo, porções e insumos</p>
+                                        <p className="mt-1 text-sm text-tertiary">Adicione a ficha técnica com detalhes de quantidades e insumos</p>
                                     </div>
-                                    <Button color="link-color" size="sm" iconLeading={Download02} isDisabled>
+                                    <Button
+                                        color="link-color"
+                                        size="sm"
+                                        iconLeading={Download02}
+                                        onClick={downloadPratoTemplate}
+                                        isLoading={templateDownloading}
+                                    >
                                         Modelo tabela
                                     </Button>
                                 </div>
@@ -1005,14 +1004,13 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                             const fields = {
                                                 nome_prato: form.name.trim(),
                                                 descricao: form.descriptionText.trim(),
-                                                quantidade: form.quantity.trim() || "1",
+                                                servings: String(Math.max(1, parseInt(form.servings) || 2)),
                                                 ativo: form.ativo,
                                                 categorias: categoryCsv,
                                                 tipos_cozinha: cuisineTypeCsv,
                                                 temas: form.mealPreap ? "" : themeCsv,
                                                 ingredientes_principais: mainIngredientCsv,
                                                 pref_culinarias: foodPreferenceCsv,
-                                                ingredientes: ingredientsCsv ? ingredientsCsv : null,
                                                 foto1: removeFoto1 ? "" : form.foto1File,
                                                 foto2: removeFoto2 ? "" : form.foto2File,
                                                 ficha_tecnica: removeFichaTecnica ? "" : form.fichaTecnicaFile,

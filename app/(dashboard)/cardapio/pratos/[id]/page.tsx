@@ -89,6 +89,7 @@ type DishView = {
     fichaTecnicaUrl: string | null;
     receitaUrl: string | null;
     updatedAt: string | null;
+    servings: number;
     categorias: Array<{ id: number; descricao: string }>;
     tiposCozinha: Array<{ id: number; descricao: string }>;
     temas: Array<{ id: number; descricao: string }>;
@@ -170,6 +171,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
             fichaTecnicaUrl,
             receitaUrl,
             updatedAt,
+            servings: getNumberValue(details, ["servings"]) ?? 2,
             categorias: parseCatalogArray(details, "pratos_categorias"),
             tiposCozinha: parseCatalogArray(details, "pratos_tipos_cozinha"),
             temas: parseCatalogArray(details, "pratos_temas"),
@@ -232,10 +234,16 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                             <div className="border-b border-secondary px-5 py-5">
                                 <h2 className="text-sm font-semibold text-primary">Informações do Prato</h2>
                             </div>
-                            <div className="grid gap-4 px-5 py-5 sm:grid-cols-2">
+                            <div className="grid gap-4 px-5 py-5 sm:grid-cols-3">
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Nome do prato</p>
                                     <p className="mt-1 text-sm text-tertiary">{dish.title || ""}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-primary">Porções</p>
+                                    <p className="mt-1 text-sm text-tertiary">
+                                        {dish.servings} {dish.servings === 1 ? "porção" : "porções"}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Status</p>
@@ -374,7 +382,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                                 "flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary_alt",
                                                 dish.fichaTecnicaUrl ? "text-tertiary" : "text-quaternary"
                                             )}>
-                                                <FileTypeIcon type={dish.fichaTecnicaUrl ? "pdf" : "empty"} theme="light" variant="default" className="size-6" />
+                                                <FileTypeIcon type={dish.fichaTecnicaUrl ? "xlsx" : "empty"} theme="light" variant="default" className="size-6" />
                                             </div>
                                             <div className="min-w-0">
                                                 <p className={cx("truncate text-sm font-semibold", dish.fichaTecnicaUrl ? "text-primary" : "text-disabled")}>
