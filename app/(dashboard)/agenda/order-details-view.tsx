@@ -19,6 +19,7 @@ import { parseApiErrorMessage, parseJsonOrThrow, TytApiError } from "@/lib/tyt-a
 import { getKitchenOrderByCode, putKitchenOrderAssignChef, putKitchenOrderCancel, putKitchenOrderSpecialServiceProposal } from "@/lib/tyt-api/kitchen-orders";
 import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { getChefs } from "@/lib/tyt-api/users";
+import { getAsaasPayment } from "@/lib/tyt-api/asaas";
 import { cx } from "@/utils/cx";
 import { ChefHat } from "lucide-react";
 
@@ -396,6 +397,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
     const [proposalDraft, setProposalDraft] = useState<Array<{ description: string; price: string }>>([]);
     const [proposalPreviewItems, setProposalPreviewItems] = useState<Array<{ description: string; price: number }>>([]);
     const [pendingChefChange, setPendingChefChange] = useState<{ key: Key; label: string } | null>(null);
+    const [paymentInfo, setPaymentInfo] = useState<any>(null);
     const requestIdRef = useRef(0);
 
     const load = useCallback(async () => {
@@ -412,8 +414,25 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
         try {
             const res = await getKitchenOrderByCode(code, token);
             const json = await parseJsonOrThrow<unknown>(res);
-            if (requestId !== requestIdRef.current) return;
-            setOrder(mapKitchenOrderDetails(json));
+            const orderDetails = mapKitchenOrderDetails(json);
+            setOrder(orderDetails);
+
+            if (orderDetails.paymentId) {
+                try {
+                    const paymentRes = await getAsaasPayment(orderDetails.paymentId, token);
+                    const paymentJson = await parseJsonOrThrow<any>(paymentRes);
+                    if (requestId !== requestIdRef.current) return;
+                    if (paymentJson?.data) {
+                        setPaymentInfo(paymentJson.data);
+                    } else if (paymentJson) {
+                        setPaymentInfo(paymentJson);
+                    }
+                } catch (e) {
+                    console.error("Erro ao carregar comprovante do Asaas:", e);
+                }
+            } else {
+                setPaymentInfo(null);
+            }
 
             const chefsRes = await getChefs(token);
             const chefsJson = await parseJsonOrThrow<unknown>(chefsRes);
@@ -813,14 +832,44 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             </Badge>
                                         )}
                                     </div>
-                                    <Button color="secondary" size="sm" iconTrailing={ReceiptCheck} isDisabled>
+                                    <Button
+                                        color="secondary"
+                                        size="sm"
+                                        iconTrailing={ReceiptCheck}
+                                        isDisabled={!paymentInfo?.transactionReceiptUrl}
+                                        onClick={() => {
+                                            if (paymentInfo?.transactionReceiptUrl) {
+                                                window.open(paymentInfo.transactionReceiptUrl, "_blank");
+                                            }
+                                        }}
+                                    >
                                         Acessar recibo
                                     </Button>
                                 </div>
                                 <div className="grid gap-4 px-6 py-5 md:grid-cols-2">
                                     <DataRow label="Valor do serviço" value={formatCurrency(order.serviceValue ?? 0)} />
-                                    <DataRow label="Data do pagamento" value="—" />
-                                    <DataRow label="Método de Pagamento" value="—" />
+                                    <DataRow
+                                        label="Data do pagamento"
+                                        value={
+                                            paymentInfo?.clientPaymentDate
+                                                ? formatDatePtBr(paymentInfo.clientPaymentDate)
+                                                : paymentInfo?.paymentDate
+                                                ? formatDatePtBr(paymentInfo.paymentDate)
+                                                : "—"
+                                        }
+                                    />
+                                    <DataRow
+                                        label="Método de Pagamento"
+                                        value={
+                                            paymentInfo?.billingType === "CREDIT_CARD"
+                                                ? "Cartão de Crédito"
+                                                : paymentInfo?.billingType === "PIX"
+                                                ? "Pix"
+                                                : paymentInfo?.billingType === "BOLETO"
+                                                ? "Boleto"
+                                                : paymentInfo?.billingType || "—"
+                                        }
+                                    />
                                 </div>
                                 <div className="border-t border-secondary px-6 py-5">
                                     <Button color="secondary" size="md" className="w-full" iconLeading={Mail01} isDisabled>

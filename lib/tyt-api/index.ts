@@ -15,3 +15,5 @@ export * from "./pratos-catalogo";
 export * from "./kitchen-orders";
 export * from "./session";
 export * from "./configuracao-geral";
+export * from "./asaas";
+
