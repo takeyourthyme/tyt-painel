@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Key } from "react-aria";
 import { CheckCircle, Edit02, Mail01, Plus, ReceiptCheck, Trash01, X as CloseIcon } from "@untitledui/icons";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -58,6 +59,7 @@ type KitchenOrderDetails = {
     chef: { id: number; nome: string; foto: string | null } | null;
     themes: string[];
     serviceValue: number | null;
+    paymentId: string | null;
 };
 
 function cleanUrl(raw: unknown): string | null {
@@ -329,7 +331,15 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
         .filter(Boolean) as { description: string; price: number }[];
 
     const proposalItems = proposalItemsFromProposal.length ? proposalItemsFromProposal : proposalItemsFromProposals;
-    const proposalStatusFromProposals = proposalItemsFromProposals.length > 0 ? "AWAITING_CLIENT" : null;
+    // Derive proposal status from order status when items exist but no explicit proposal object:
+    // CONFIRMED/COMPLETED/FINALIZED → already paid (ACCEPTED); DECLINED/CANCELLED → DECLINED; otherwise AWAITING_CLIENT
+    const proposalStatusFromProposals = proposalItemsFromProposals.length > 0
+        ? ((["CONFIRMED", "COMPLETED", "FINALIZED"].includes(status.toUpperCase()))
+            ? "ACCEPTED"
+            : (["DECLINED", "CANCELLED"].includes(status.toUpperCase()))
+                ? "DECLINED"
+                : "AWAITING_CLIENT")
+        : null;
 
     const rootThemesRaw = obj.temas as unknown;
     const rootThemesList = Array.isArray(rootThemesRaw) ? rootThemesRaw : [];
@@ -359,6 +369,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
         chef,
         themes: rootThemes,
         serviceValue,
+        paymentId: getStringValue(obj, ["id_pagamento", "paymentId", "payment_id"]),
     };
 }
 
@@ -384,6 +395,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
     const [openProposalSendConfirm, setOpenProposalSendConfirm] = useState(false);
     const [proposalDraft, setProposalDraft] = useState<Array<{ description: string; price: string }>>([]);
     const [proposalPreviewItems, setProposalPreviewItems] = useState<Array<{ description: string; price: number }>>([]);
+    const [pendingChefChange, setPendingChefChange] = useState<{ key: Key; label: string } | null>(null);
     const requestIdRef = useRef(0);
 
     const load = useCallback(async () => {
@@ -580,22 +592,10 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             selectedKey={chefSelectedKey ?? undefined}
                                             placeholder="Escolher chef..."
                                             isDisabled={loading}
-                                            onSelectionChange={async (key) => {
+                                            onSelectionChange={(key) => {
                                                 if (key === null) return;
-                                                const token = getTytAccessToken();
-                                                if (!token) {
-                                                    toast.error("Sessão expirada. Faça login novamente");
-                                                    return;
-                                                }
-                                                try {
-                                                    const res = await putKitchenOrderAssignChef(code, { id_usuario_chef: Number(key) }, token);
-                                                    await parseJsonOrThrow<unknown>(res);
-                                                    toast.success("Chef associado com sucesso!");
-                                                    await load();
-                                                } catch (err) {
-                                                    if (err instanceof TytApiError) toast.error("Não foi possível associar o chef", { description: parseApiErrorMessage(err.body) });
-                                                    else toast.error("Não foi possível associar o chef");
-                                                }
+                                                const selected = chefs.find((c) => c.id === String(key));
+                                                setPendingChefChange({ key, label: selected?.label ?? String(key) });
                                             }}
                                         >
                                             {(item) => <Select.Item {...item} />}
@@ -803,9 +803,15 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                 <div className="flex items-center justify-between border-b border-secondary px-6 py-5">
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm font-semibold text-primary">Pagamento</p>
-                                        <Badge size="sm" type="pill-color" color="warning">
-                                            Pendente
-                                        </Badge>
+                                        {order.paymentId || ["CONFIRMED", "COMPLETED", "FINALIZED"].includes(order.status.toUpperCase()) ? (
+                                            <Badge size="sm" type="pill-color" color="success">
+                                                Pago
+                                            </Badge>
+                                        ) : (
+                                            <Badge size="sm" type="pill-color" color="warning">
+                                                Pendente
+                                            </Badge>
+                                        )}
                                     </div>
                                     <Button color="secondary" size="sm" iconTrailing={ReceiptCheck} isDisabled>
                                         Acessar recibo
@@ -1004,6 +1010,72 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                     }}
                                 >
                                     Enviar
+                                </Button>
+                            </div>
+                        </div>
+                    </Dialog>
+                </Modal>
+            </ModalOverlay>
+
+            {/* ── Confirm chef reassignment ──────────────────────────────────────── */}
+            <ModalOverlay isOpen={pendingChefChange !== null} isDismissable onOpenChange={(open) => { if (!open) setPendingChefChange(null); }}>
+                <Modal>
+                    <Dialog>
+                        <div className="w-full max-w-[440px] overflow-hidden rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
+                            <div className="flex items-start gap-4 px-6 pt-6">
+                                <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-warning-primary">
+                                    <Edit02 className="size-6 text-warning-solid" aria-hidden />
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="text-md font-semibold text-primary">Trocar chef responsável?</p>
+                                            <p className="mt-1 text-sm text-tertiary">
+                                                Ao confirmar, <strong>{pendingChefChange?.label}</strong> será vinculado a esta ordem. O status do pedido e o pagamento do cliente serão mantidos sem alteração.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            aria-label="Fechar"
+                                            className="flex size-9 items-center justify-center rounded-lg text-fg-quaternary outline-focus-ring hover:bg-primary_hover hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
+                                            onClick={() => setPendingChefChange(null)}
+                                        >
+                                            <CloseIcon className="size-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 px-6 pt-6 pb-6">
+                                <Button color="secondary" size="md" className="flex-1" onClick={() => setPendingChefChange(null)} isDisabled={loading}>
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    color="primary"
+                                    size="md"
+                                    className="flex-1"
+                                    isLoading={loading}
+                                    onClick={async () => {
+                                        if (!pendingChefChange) return;
+                                        const token = getTytAccessToken();
+                                        if (!token) {
+                                            toast.error("Sessão expirada. Faça login novamente");
+                                            return;
+                                        }
+                                        try {
+                                            const res = await putKitchenOrderAssignChef(code, { id_usuario_chef: Number(pendingChefChange.key) }, token);
+                                            await parseJsonOrThrow<unknown>(res);
+                                            toast.success("Chef trocado com sucesso!");
+                                            setPendingChefChange(null);
+                                            await load();
+                                        } catch (err) {
+                                            if (err instanceof TytApiError) toast.error("Não foi possível trocar o chef", { description: parseApiErrorMessage(err.body) });
+                                            else toast.error("Não foi possível trocar o chef");
+                                        }
+                                    }}
+                                >
+                                    Confirmar troca
                                 </Button>
                             </div>
                         </div>
