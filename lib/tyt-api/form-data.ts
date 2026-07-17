@@ -71,6 +71,7 @@ export function buildPratoFormData(fields: PratoFormFields): FormData {
     appendIfDefined(fd, "nome_prato", fields.nome_prato);
     appendIfDefined(fd, "descricao", fields.descricao);
     appendIfDefined(fd, "servings", fields.servings);
+    appendIfDefined(fd, "quantidade", fields.servings);
     appendIfDefined(fd, "ativo", fields.ativo);
     appendIfDefined(fd, "categorias", fields.categorias);
     appendIfDefined(fd, "tipos_cozinha", fields.tipos_cozinha);
