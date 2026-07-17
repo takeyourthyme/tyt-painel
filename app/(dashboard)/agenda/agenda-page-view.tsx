@@ -208,6 +208,18 @@ function SectionTable({
     statusOptions: AgendaFilterOption[];
 }) {
     const { exportToCsv } = useExportData<AgendaOrderRow>();
+    const [currentPage, setCurrentPage] = useState(1);
+    const limit = 10;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [rows]);
+
+    const totalPages = Math.max(Math.ceil(rows.length / limit), 1);
+    const paginatedRows = useMemo(() => {
+        const startIndex = (currentPage - 1) * limit;
+        return rows.slice(startIndex, startIndex + limit);
+    }, [rows, currentPage]);
 
     return (
         <>
@@ -261,7 +273,7 @@ function SectionTable({
                         <Table.Head id="date" label="Data" className="min-w-[140px]" />
                         <Table.Head id="actions" label="" className="w-[56px]" />
                     </Table.Header>
-                    <Table.Body items={rows}>
+                    <Table.Body items={paginatedRows}>
                         {(item) => (
                             <Table.Row id={item.id}>
                                 <Table.Cell className="whitespace-nowrap font-medium text-primary">{item.code}</Table.Cell>
@@ -293,6 +305,86 @@ function SectionTable({
                         )}
                     </Table.Body>
                 </Table>
+
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between border-t border-secondary bg-primary px-4 py-4 md:px-6">
+                        <Button
+                            color="secondary"
+                            size="sm"
+                            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                            isDisabled={currentPage === 1}
+                        >
+                            Anterior
+                        </Button>
+                        <div className="flex items-center gap-1">
+                            {(() => {
+                                const pages: (number | string)[] = [];
+                                const maxVisible = 5;
+                                if (totalPages <= maxVisible) {
+                                    for (let i = 1; i <= totalPages; i++) {
+                                        pages.push(i);
+                                    }
+                                } else {
+                                    pages.push(1);
+                                    let start = Math.max(2, currentPage - 1);
+                                    let end = Math.min(totalPages - 1, currentPage + 1);
+                                    if (currentPage <= 2) {
+                                        end = 3;
+                                    }
+                                    if (currentPage >= totalPages - 1) {
+                                        start = totalPages - 2;
+                                    }
+                                    if (start > 2) {
+                                        pages.push("...");
+                                    }
+                                    for (let i = start; i <= end; i++) {
+                                        pages.push(i);
+                                    }
+                                    if (end < totalPages - 1) {
+                                        pages.push("...");
+                                    }
+                                    pages.push(totalPages);
+                                }
+
+                                return pages.map((page, index) => {
+                                    if (typeof page === "string") {
+                                        return (
+                                            <span
+                                                key={`ellipsis-${index}`}
+                                                className="flex size-10 items-center justify-center text-sm font-medium text-tertiary"
+                                            >
+                                                {page}
+                                            </span>
+                                        );
+                                    }
+                                    return (
+                                        <button
+                                            key={`page-${page}`}
+                                            type="button"
+                                            onClick={() => setCurrentPage(page)}
+                                            className={cx(
+                                                "flex size-10 items-center justify-center rounded-full text-sm font-medium transition-colors",
+                                                currentPage === page
+                                                    ? "bg-primary_hover text-secondary"
+                                                    : "text-tertiary hover:bg-secondary"
+                                            )}
+                                        >
+                                            {page}
+                                        </button>
+                                    );
+                                });
+                            })()}
+                        </div>
+                        <Button
+                            color="secondary"
+                            size="sm"
+                            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                            isDisabled={currentPage === totalPages}
+                        >
+                            Próxima
+                        </Button>
+                    </div>
+                )}
             </TableCard.Root>
         </>
     );
