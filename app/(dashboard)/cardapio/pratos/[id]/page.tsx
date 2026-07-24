@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Edit02, Download02, InfoCircle } from "@untitledui/icons";
 import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
 import { Playfair_Display } from "next/font/google";
@@ -140,10 +140,14 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
     const [error, setError] = useState<string | null>(null);
     const [details, setDetails] = useState<Record<string, unknown> | null>(null);
     const [costDrawerOpen, setCostDrawerOpen] = useState(false);
+    const fetchedRef = useRef<string | null>(null);
 
-    const load = useCallback(async () => {
+    const load = useCallback(async (force = false) => {
         const token = getTytAccessToken();
-        if (!token) return;
+        if (!token || !dishId) return;
+        if (fetchedRef.current === dishId && !force) return;
+        fetchedRef.current = dishId;
+
         setLoading(true);
         setError(null);
         try {
@@ -152,6 +156,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
             const record = getRecord(json) ?? getRecord(getRecord(json)?.data) ?? null;
             setDetails(record);
         } catch (err) {
+            fetchedRef.current = null;
             if (err instanceof TytApiError) setError(parseApiErrorMessage(err.body));
             else if (err instanceof Error && err.message) setError(err.message);
             else setError("Ocorreu um erro. Tente novamente");
@@ -253,7 +258,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                 <p className="text-sm font-semibold text-primary">Não foi possível carregar os detalhes do prato</p>
                                 <p className="mt-1 text-sm text-tertiary">{error}</p>
                             </div>
-                            <Button color="secondary" size="md" onClick={() => void load()} isLoading={loading}>
+                            <Button color="secondary" size="md" onClick={() => void load(true)} isLoading={loading}>
                                 Tentar novamente
                             </Button>
                         </div>
