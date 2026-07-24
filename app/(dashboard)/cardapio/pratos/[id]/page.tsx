@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useMemo, useState } from "react";
-import { Edit02, Download02 } from "@untitledui/icons";
+import { Edit02, Download02, InfoCircle } from "@untitledui/icons";
 import { FileIcon as FileTypeIcon } from "@untitledui/file-icons";
 import { Playfair_Display } from "next/font/google";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ import { LoadingIndicator } from "@/components/application/loading-indicator/loa
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import type { BadgeColors } from "@/components/base/badges/badge-types";
+import { SlideoutMenu } from "@/components/application/slideout-menus/slideout-menu";
 import { parseJsonOrThrow, TytApiError, parseApiErrorMessage } from "@/lib/tyt-api/errors";
 import { getPratoById } from "@/lib/tyt-api/pratos";
 import { getTytAccessToken } from "@/lib/tyt-api/session";
@@ -65,6 +66,15 @@ function formatDatePtBr(v: string | null): string {
     return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
 }
 
+function formatCurrency(value: number | null): string {
+    if (value === null) return "—";
+    try {
+        return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    } catch {
+        return "—";
+    }
+}
+
 const badgeColors: BadgeColors[] = ["brand", "purple", "warning", "success", "error", "gray"];
 function badgeColorByIndex(i: number): BadgeColors {
     return badgeColors[i % badgeColors.length] ?? "gray";
@@ -74,6 +84,14 @@ type CatalogItem = {
     id: number;
     descricao: string;
     icone?: string | null;
+};
+
+type TechnicalSheetRow = {
+    descricao: string;
+    quantidade: number | null;
+    unidade: string;
+    valor: number | null;
+    custo_calculado: number | null;
 };
 
 type DishView = {
@@ -90,6 +108,8 @@ type DishView = {
     receitaUrl: string | null;
     updatedAt: string | null;
     servings: number;
+    totalCost: number | null;
+    technicalSheet: TechnicalSheetRow[];
     categorias: Array<{ id: number; descricao: string }>;
     tiposCozinha: Array<{ id: number; descricao: string }>;
     temas: Array<{ id: number; descricao: string }>;
@@ -119,6 +139,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [details, setDetails] = useState<Record<string, unknown> | null>(null);
+    const [costDrawerOpen, setCostDrawerOpen] = useState(false);
 
     const load = useCallback(async () => {
         const token = getTytAccessToken();
@@ -172,6 +193,21 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
             receitaUrl,
             updatedAt,
             servings: getNumberValue(details, ["servings"]) ?? 2,
+            totalCost: getNumberValue(details, ["total_cost"]) ?? null,
+            technicalSheet: (() => {
+                const raw = details.technical_sheet;
+                if (!Array.isArray(raw)) return [];
+                return raw.map((item) => {
+                    const r = item as Record<string, unknown>;
+                    return {
+                        descricao: (r.descricao as string) ?? "",
+                        quantidade: typeof r.quantidade === "number" ? r.quantidade : null,
+                        unidade: (r.unidade as string) ?? "",
+                        valor: typeof r.valor === "number" ? r.valor : null,
+                        custo_calculado: typeof r.custo_calculado === "number" ? r.custo_calculado : null,
+                    };
+                });
+            })(),
             categorias: parseCatalogArray(details, "pratos_categorias"),
             tiposCozinha: parseCatalogArray(details, "pratos_tipos_cozinha"),
             temas: parseCatalogArray(details, "pratos_temas"),
@@ -234,7 +270,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                             <div className="border-b border-secondary px-5 py-5">
                                 <h2 className="text-sm font-semibold text-primary">Informações do Prato</h2>
                             </div>
-                            <div className="grid gap-4 px-5 py-5 sm:grid-cols-3">
+                            <div className="grid gap-4 px-5 py-5 sm:grid-cols-4">
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Nome do prato</p>
                                     <p className="mt-1 text-sm text-tertiary">{dish.title || ""}</p>
@@ -244,6 +280,24 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                     <p className="mt-1 text-sm text-tertiary">
                                         {dish.servings} {dish.servings === 1 ? "porção" : "porções"}
                                     </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-primary">Custo do prato</p>
+                                    <div className="mt-1 flex items-center gap-1.5">
+                                        <p className="text-sm text-tertiary">
+                                            {formatCurrency(dish.totalCost)}
+                                        </p>
+                                        {dish.technicalSheet.length > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setCostDrawerOpen(true)}
+                                                className="inline-flex items-center justify-center rounded-full text-quaternary transition-colors hover:text-brand-secondary hover:cursor-pointer"
+                                                title="Ver detalhamento de custos"
+                                            >
+                                                <InfoCircle className="size-4" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-primary">Status</p>
@@ -372,8 +426,18 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
 
                         <section className="grid gap-4 lg:grid-cols-2">
                             <article className="rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
-                                <div className="border-b border-secondary px-5 py-5">
+                                <div className="border-b border-secondary px-5 py-5 flex items-center gap-2">
                                     <h2 className="text-sm font-semibold text-primary">Ficha Técnica</h2>
+                                    {dish.technicalSheet.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setCostDrawerOpen(true)}
+                                            className="inline-flex items-center justify-center rounded-full text-quaternary transition-colors hover:text-brand-secondary hover:cursor-pointer"
+                                            title="Ver detalhamento de custos"
+                                        >
+                                            <InfoCircle className="size-4" />
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="px-5 py-5">
                                     <div className="flex items-center justify-between gap-4 rounded-xl border border-secondary bg-primary p-4">
@@ -468,6 +532,56 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                     </div>
                 ) : null}
             </div>
+
+            {/* Cost breakdown drawer */}
+            <SlideoutMenu isOpen={costDrawerOpen} isDismissable onOpenChange={(open) => (!open ? setCostDrawerOpen(false) : undefined)}>
+                {({ close }) => (
+                    <>
+                        <SlideoutMenu.Header onClose={() => { close(); setCostDrawerOpen(false); }}>
+                            <div className="flex flex-col gap-1 pr-10">
+                                <p className="text-md font-semibold text-primary">Detalhamento de custos</p>
+                                <p className="text-sm text-tertiary">Ingredientes e valores da ficha técnica</p>
+                            </div>
+                        </SlideoutMenu.Header>
+
+                        <SlideoutMenu.Content>
+                            <div className="flex flex-col gap-4">
+                                <div className="rounded-xl border border-secondary bg-primary p-4 shadow-xs">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-semibold text-primary">Custo total</p>
+                                        <p className="text-lg font-semibold text-brand-secondary">{formatCurrency(dish?.totalCost ?? null)}</p>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-secondary bg-primary shadow-xs">
+                                    <div className="border-b border-secondary px-4 py-3">
+                                        <p className="text-sm font-semibold text-primary">Ingredientes ({dish?.technicalSheet.length ?? 0})</p>
+                                    </div>
+                                    <div className="divide-y divide-secondary">
+                                        {dish?.technicalSheet.map((item, idx) => (
+                                            <div key={idx} className="flex items-center justify-between gap-3 px-4 py-3">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium text-primary">{item.descricao}</p>
+                                                    <p className="mt-0.5 text-xs text-tertiary">
+                                                        {item.quantidade ?? "—"} {item.unidade}
+                                                    </p>
+                                                </div>
+                                                <div className="shrink-0 text-right">
+                                                    <p className="text-sm font-medium text-primary">{formatCurrency(item.custo_calculado)}</p>
+                                                    <p className="mt-0.5 text-xs text-tertiary">val. unit. {formatCurrency(item.valor)}</p>
+                                                </div>
+                                            </div>
+                                        )) ?? null}
+                                        {(!dish?.technicalSheet.length) && (
+                                            <div className="px-4 py-6 text-center text-sm text-tertiary">Nenhum ingrediente cadastrado na ficha técnica</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </SlideoutMenu.Content>
+                    </>
+                )}
+            </SlideoutMenu>
         </main>
     );
 }
