@@ -325,9 +325,17 @@ export type KitchenOrderListItem = {
     people_quantity: number;
     createdAt: string;
     service_value?: number;
+    grocery_receipt_url?: string | null;
+    grocery_receipt_amount?: number | null;
     cliente?: { id: number; nome: string; foto?: string | null } | null;
     chef?: { id: number; nome: string; foto?: string | null } | null;
 };
+
+export type UploadGroceryReceiptBody = {
+    receipt: File | Blob;
+    amount: number | string;
+};
+
 
 export type KitchenOrderDishInput = {
     dish_id: number;
