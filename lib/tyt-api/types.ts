@@ -327,6 +327,8 @@ export type KitchenOrderListItem = {
     service_value?: number;
     grocery_receipt_url?: string | null;
     grocery_receipt_amount?: number | null;
+    chef_service_notes?: string | null;
+    chef_client_next_notes?: string | null;
     cliente?: { id: number; nome: string; foto?: string | null } | null;
     chef?: { id: number; nome: string; foto?: string | null } | null;
 };
@@ -361,7 +363,10 @@ export type CreateKitchenOrderBody = {
 
 export type UpdateKitchenOrderStatusBody = {
     status: string;
+    chef_service_notes?: string | null;
+    chef_client_next_notes?: string | null;
 };
+
 
 export type SpecialServiceProposalItem = {
     description: string;
