@@ -434,7 +434,16 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                 setPaymentInfo(null);
             }
 
-            const chefsRes = await getChefs(token);
+            // Mapeia o type do pedido para o enum DisponivelPara do perfil do chef
+            // meal_preap/get_togheter são campos de PRATOS; o enum do chef usa cozinha_semanal/eventos
+            const orderTypeToDisponivel = (type: string): string | undefined => {
+                if (type === "MEAL_PREP") return "cozinha_semanal";
+                if (type === "GET_TOGETHER") return "eventos";
+                return undefined;
+            };
+            const disponivel_para = orderTypeToDisponivel(orderDetails.type);
+
+            const chefsRes = await getChefs(token, disponivel_para ? { disponivel_para } : undefined);
             const chefsJson = await parseJsonOrThrow<unknown>(chefsRes);
             if (requestId !== requestIdRef.current) return;
 
@@ -452,6 +461,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                 })
                 .filter(Boolean) as ChefOption[];
             setChefs(options);
+
         } catch (err) {
             if (requestId !== requestIdRef.current) return;
             if (err instanceof TytApiError) setError(parseApiErrorMessage(err.body));
@@ -854,8 +864,8 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             paymentInfo?.clientPaymentDate
                                                 ? formatDatePtBr(paymentInfo.clientPaymentDate)
                                                 : paymentInfo?.paymentDate
-                                                ? formatDatePtBr(paymentInfo.paymentDate)
-                                                : "—"
+                                                    ? formatDatePtBr(paymentInfo.paymentDate)
+                                                    : "—"
                                         }
                                     />
                                     <DataRow
@@ -864,10 +874,10 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             paymentInfo?.billingType === "CREDIT_CARD"
                                                 ? "Cartão de Crédito"
                                                 : paymentInfo?.billingType === "PIX"
-                                                ? "Pix"
-                                                : paymentInfo?.billingType === "BOLETO"
-                                                ? "Boleto"
-                                                : paymentInfo?.billingType || "—"
+                                                    ? "Pix"
+                                                    : paymentInfo?.billingType === "BOLETO"
+                                                        ? "Boleto"
+                                                        : paymentInfo?.billingType || "—"
                                         }
                                     />
                                 </div>

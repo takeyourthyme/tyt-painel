@@ -158,6 +158,8 @@ export const USER_FORM_KEYS = {
 
 export type ChefsListQuery = {
     status?: UserListStatus;
+    /** Filtra chefs pelo enum DisponivelPara do perfil (cozinha_semanal | eventos | servicos_especiais) */
+    disponivel_para?: string;
 };
 
 export type UpdateChefStatusBody = {
