@@ -435,7 +435,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
             }
 
             // Mapeia o type do pedido para o enum DisponivelPara do perfil do chef
-            // meal_preap/get_togheter são campos de PRATOS; o enum do chef usa cozinha_semanal/eventos
+            // meal_preap/get_together são campos de PRATOS; o enum do chef usa cozinha_semanal/eventos
             const orderTypeToDisponivel = (type: string): string | undefined => {
                 if (type === "MEAL_PREP") return "cozinha_semanal";
                 if (type === "GET_TOGETHER") return "eventos";

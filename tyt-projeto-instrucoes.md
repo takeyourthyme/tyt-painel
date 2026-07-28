@@ -45,7 +45,7 @@ O TyT conecta clientes a Personal Chefs parceiros. O ecossistema possui 3 pilare
 > [!IMPORTANT]
 > A API utiliza termos com erros de grafia históricos. **Use exatamente estas nomenclaturas nas integrações:**
 > 1. **`meal_preap`** (com "a" extra): Para a modalidade "Meal Prep".
-> 2. **`get_togheter`** (com "h" invertido): Para a modalidade "Get Together".
+> 2. **`get_together: Para a modalidade "Get Together" (typo corrigido em 2026-07-28).
 
 ---
 
@@ -142,7 +142,7 @@ export type TytUsuarioChef = {
 export type KitchenOrderListItem = {
     id: number;
     code: string; // Ex: "TYT-10293"
-    type: "meal_preap" | "get_togheter"; // Nota: typos da API
+    type: "meal_preap" | "get_together"; // Nota: typos da API
     status: "PENDING" | "IN_REVIEW" | "CONFIRMED" | "COMPLETED" | "DECLINED" | "CANCELLED" | "CANCELLATION_REQUESTED";
     city: string;
     event_date: string; // YYYY-MM-DD
@@ -197,7 +197,7 @@ export type PratoFormFields = {
     ficha_tecnica?: File | null;
     receita?: File | null;
     meal_preap: boolean; // Typo!
-    get_togheter: boolean; // Typo!
+    get_together: boolean; // Typo!
     destaque_site: boolean;
 };
 ```
@@ -207,6 +207,6 @@ export type PratoFormFields = {
 ## 5. Dicas de Integração para Prompts de IA
 
 1. **Formatação de Dados:** Datas seguem o padrão ISO `YYYY-MM-DD`. Telefones usam máscara `(99) 99999-9999` no front-end, mas devem ser limpos conforme exigido pela API.
-2. **Respeito aos Typos:** Garanta que a IA use os campos `meal_preap` e `get_togheter` nos formulários/objetos de pratos e ordens.
+2. **Respeito aos Typos:** Garanta que a IA use os campos `meal_preap` e `get_together` nos formulários/objetos de pratos e ordens.
 3. **Filtros Dinâmicos:** Carregue opções de filtros (categorias, tipos de cozinha, temas, etc.) dinamicamente a partir dos endpoints de catálogos.
 4. **Sessão Expirada (401/403):** Se houver erro HTTP 401 ou 403, limpe `tyt_access_token` e `tyt_user` do `localStorage` e redirecione para `/login`.

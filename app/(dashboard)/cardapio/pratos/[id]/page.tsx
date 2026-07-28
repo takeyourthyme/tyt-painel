@@ -100,7 +100,7 @@ type DishView = {
     description: string | null;
     ativo: boolean;
     meal_preap: boolean;
-    get_togheter: boolean;
+    get_together: boolean;
     destaque_site: boolean;
     foto1Url: string | null;
     foto2Url: string | null;
@@ -176,7 +176,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
         const description = getStringValue(details, ["descricao"]) ?? null;
         const ativo = coerceBool(details.ativo);
         const meal_preap = coerceBool(details.meal_preap);
-        const get_togheter = coerceBool(details.get_togheter);
+        const get_together = coerceBool(details.get_together);
         const destaque_site = coerceBool(details.destaque_site);
         const foto1Url = cleanUrl(details.foto1);
         const foto2Url = cleanUrl(details.foto2);
@@ -190,7 +190,7 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
             description,
             ativo,
             meal_preap,
-            get_togheter,
+            get_together,
             destaque_site,
             foto1Url,
             foto2Url,
@@ -335,12 +335,12 @@ export default function DishDetailsPage({ params }: { params: Promise<{ id: stri
                                                 Meal Prep
                                             </Badge>
                                         ) : null}
-                                        {dish.get_togheter ? (
+                                        {dish.get_together ? (
                                             <Badge size="sm" type="pill-color" color="gray">
                                                 Get Together
                                             </Badge>
                                         ) : null}
-                                        {!dish.meal_preap && !dish.get_togheter ? <p className="text-sm text-tertiary">—</p> : null}
+                                        {!dish.meal_preap && !dish.get_together ? <p className="text-sm text-tertiary">—</p> : null}
                                     </div>
                                 </div>
 

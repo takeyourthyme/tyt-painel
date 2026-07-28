@@ -424,7 +424,7 @@ export default function CardapioPage() {
 
                 const serviceBadges: string[] = [];
                 if (coerceBool(r.meal_preap ?? r.meal_prep)) serviceBadges.push("Meal Prep");
-                if (coerceBool(r.get_togheter ?? r.get_together)) serviceBadges.push("Get Together");
+                if (coerceBool(r.get_together ?? r.get_together)) serviceBadges.push("Get Together");
 
                 const destaque_site = coerceBool(r.destaque_site);
 

@@ -83,7 +83,7 @@ export function buildPratoFormData(fields: PratoFormFields): FormData {
     appendIfDefined(fd, "foto2", fields.foto2);
     appendIfDefined(fd, "ficha_tecnica", fields.ficha_tecnica);
     appendIfDefined(fd, "meal_preap", fields.meal_preap);
-    appendIfDefined(fd, "get_togheter", fields.get_togheter);
+    appendIfDefined(fd, "get_together", fields.get_together);
     appendIfDefined(fd, "receita", fields.receita);
     appendIfDefined(fd, "destaque_site", fields.destaque_site);
     return fd;

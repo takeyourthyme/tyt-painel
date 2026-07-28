@@ -277,7 +277,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                 const servings = getNumberValue(dishRecord, ["servings"]) ?? null;
                 const ativo = coerceBool(dishRecord.ativo);
                 const mealPreap = coerceBool(dishRecord.meal_preap);
-                const getTogheter = coerceBool(dishRecord.get_togheter);
+                const getTogheter = coerceBool(dishRecord.get_together);
                 const destaqueSite = coerceBool(dishRecord.destaque_site);
 
                 const idsFromDishArray = (key: string) => {
@@ -1015,7 +1015,7 @@ export default function DishEditPage({ params }: { params: Promise<{ id: string 
                                                 foto2: removeFoto2 ? "" : form.foto2File,
                                                 ficha_tecnica: removeFichaTecnica ? "" : form.fichaTecnicaFile,
                                                 meal_preap: form.mealPreap,
-                                                get_togheter: form.getTogheter,
+                                                get_together: form.getTogheter,
                                                 receita: removeReceita ? "" : form.receitaFile,
                                                 destaque_site: form.destaqueSite,
                                             };

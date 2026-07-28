@@ -829,7 +829,7 @@ export default function DishNewPage() {
                                                 foto2: form.foto2File,
                                                 ficha_tecnica: form.fichaTecnicaFile,
                                                 meal_preap: form.mealPreap,
-                                                get_togheter: form.getTogheter,
+                                                get_together: form.getTogheter,
                                                 receita: form.receitaFile,
                                                 destaque_site: form.destaqueSite,
                                             };
