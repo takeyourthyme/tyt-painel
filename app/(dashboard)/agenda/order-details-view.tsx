@@ -832,7 +832,7 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                 <div className="flex items-center justify-between border-b border-secondary px-6 py-5">
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm font-semibold text-primary">Pagamento</p>
-                                        {order.paymentId || ["CONFIRMED", "COMPLETED", "FINALIZED"].includes(order.status.toUpperCase()) ? (
+                                        {(paymentInfo?.status ? ["RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH"].includes(String(paymentInfo.status).toUpperCase()) : ["CONFIRMED", "COMPLETED", "FINALIZED"].includes(order.status.toUpperCase())) ? (
                                             <Badge size="sm" type="pill-color" color="success">
                                                 Pago
                                             </Badge>
