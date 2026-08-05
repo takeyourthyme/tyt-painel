@@ -60,6 +60,7 @@ type KitchenOrderDetails = {
     chef: { id: number; nome: string; foto: string | null } | null;
     themes: string[];
     serviceValue: number | null;
+    ingredientCost: number | null;
     paymentId: string | null;
 };
 
@@ -94,6 +95,34 @@ function getNumberValue(obj: Record<string, unknown> | null | undefined, keys: s
         }
     }
     return null;
+}
+
+function extractStringList(raw: unknown, nestedKey?: string): string[] {
+    if (!raw) return [];
+    if (typeof raw === "string") {
+        return raw.split(",").map(s => s.trim()).filter(Boolean);
+    }
+    if (Array.isArray(raw)) {
+        const result: string[] = [];
+        for (const item of raw) {
+            if (typeof item === "string") {
+                const parts = item.split(",").map(s => s.trim()).filter(Boolean);
+                result.push(...parts);
+            } else if (item && typeof item === "object") {
+                const rec = getRecord(item);
+                if (rec) {
+                    const nested = nestedKey ? getRecord(rec[nestedKey]) : null;
+                    const val = getStringValue(nested ?? rec, ["descricao", "nome", "name", "title"]);
+                    if (val) {
+                        const parts = val.split(",").map(s => s.trim()).filter(Boolean);
+                        result.push(...parts);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    return [];
 }
 
 function normalizeDetailsResponse(raw: unknown): Record<string, unknown> | null {
@@ -213,6 +242,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
     const observations = getStringValue(obj, ["observations", "observacao", "observação"]);
     const clientRequest = getStringValue(obj, ["client_request", "clientRequest", "solicitacao_cliente", "solicitacao", "pedido_cliente"]);
     const serviceValue = getNumberValue(obj, ["service_value"]);
+    const ingredientCost = getNumberValue(obj, ["ingredient_cost", "ingredients_value", "ingredient_value"]);
     const dishesRaw = (obj.dishes ?? obj.pratos ?? obj.menu) as unknown;
     const dishesList = Array.isArray(dishesRaw) ? dishesRaw : [];
     const dishes = dishesList
@@ -235,22 +265,16 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
                 : null;
 
             // Ingredientes principais
-            const mainIngsList = (dish?.pratos_ingredientes_principais ?? dish?.ingredientes_principais) as unknown[];
-            const mainIngredients = Array.isArray(mainIngsList)
-                ? (mainIngsList.map(item => getStringValue(getRecord(getRecord(item)?.ingrediente_principal), ["descricao"])).filter(Boolean) as string[])
-                : [];
+            const mainIngsRaw = dish?.pratos_ingredientes_principais ?? dish?.ingredientes_principais ?? dish?.ingredientesPrincipais ?? dish?.mainIngredients;
+            const mainIngredients = extractStringList(mainIngsRaw, "ingrediente_principal");
 
             // Tipos de cozinha
-            const cuisinesList = (dish?.pratos_tipos_cozinha ?? dish?.tipos_cozinha) as unknown[];
-            const cuisineTypes = Array.isArray(cuisinesList)
-                ? (cuisinesList.map(item => getStringValue(getRecord(getRecord(item)?.tipo_cozinha), ["descricao"])).filter(Boolean) as string[])
-                : [];
+            const cuisinesRaw = dish?.pratos_tipos_cozinha ?? dish?.tipos_cozinha ?? dish?.tiposCozinha ?? dish?.cuisineTypes;
+            const cuisineTypes = extractStringList(cuisinesRaw, "tipo_cozinha");
 
             // Temas
-            const themesList = (dish?.pratos_temas ?? dish?.temas) as unknown[];
-            const themes = Array.isArray(themesList)
-                ? (themesList.map(item => getStringValue(getRecord(getRecord(item)?.tema), ["nome", "descricao"])).filter(Boolean) as string[])
-                : [];
+            const themesRaw = dish?.pratos_temas ?? dish?.temas ?? dish?.themes;
+            const themes = extractStringList(themesRaw, "tema");
 
             // Observações/restrições
             const localObs =
@@ -370,6 +394,7 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
         chef,
         themes: rootThemes,
         serviceValue,
+        ingredientCost,
         paymentId: getStringValue(obj, ["id_pagamento", "paymentId", "payment_id"]),
     };
 }
@@ -527,23 +552,23 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
         });
     }, [order]);
 
-    const { mainIngredientsLabel, cuisineTypesLabel, themesLabel, serviceLevelLabel } = useMemo(() => {
+    const { uniqueMainIngredients, uniqueCuisineTypes, uniqueThemes, serviceLevelLabel } = useMemo(() => {
         if (!order || !order.dishes) {
             return {
-                mainIngredientsLabel: "—",
-                cuisineTypesLabel: "—",
-                themesLabel: "—",
+                uniqueMainIngredients: [],
+                uniqueCuisineTypes: [],
+                uniqueThemes: [],
                 serviceLevelLabel: "—",
             };
         }
-        const uniqueMainIngredients = Array.from(new Set(order.dishes.flatMap(d => d.mainIngredients)));
-        const uniqueCuisineTypes = Array.from(new Set(order.dishes.flatMap(d => d.cuisineTypes)));
-        const uniqueThemes = Array.from(new Set([...(order.themes ?? []), ...order.dishes.flatMap(d => d.themes)]));
+        const uniqueMainIngredients = Array.from(new Set(order.dishes.flatMap(d => d.mainIngredients))).filter(Boolean);
+        const uniqueCuisineTypes = Array.from(new Set(order.dishes.flatMap(d => d.cuisineTypes))).filter(Boolean);
+        const uniqueThemes = Array.from(new Set([...(order.themes ?? []), ...order.dishes.flatMap(d => d.themes)])).filter(Boolean);
 
         return {
-            mainIngredientsLabel: uniqueMainIngredients.length > 0 ? uniqueMainIngredients.join(", ") : "—",
-            cuisineTypesLabel: uniqueCuisineTypes.length > 0 ? uniqueCuisineTypes.join(", ") : "—",
-            themesLabel: uniqueThemes.length > 0 ? uniqueThemes.join(", ") : "—",
+            uniqueMainIngredients,
+            uniqueCuisineTypes,
+            uniqueThemes,
             serviceLevelLabel: order.dishes.length > 5 ? "Banquete" : "Clássico",
         };
     }, [order]);
@@ -727,25 +752,49 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                         {/* Metadata Row */}
                                         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                                             <div className="flex flex-col gap-1.5">
-                                                <span className="text-xs font-medium text-quaternary">Ingrediente Principal</span>
-                                                <Badge size="sm" type="pill-color" color="gray" className="w-max">
-                                                    {mainIngredientsLabel}
-                                                </Badge>
+                                                <span className="text-xs font-medium text-quaternary">Ingredientes Principais</span>
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                    {uniqueMainIngredients.length > 0 ? (
+                                                        uniqueMainIngredients.map((ing) => (
+                                                            <Badge key={ing} size="sm" type="pill-color" color="gray">
+                                                                {ing}
+                                                            </Badge>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-sm text-tertiary">—</span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="flex flex-col gap-1.5">
                                                 <span className="text-xs font-medium text-quaternary">Tipo de cozinha</span>
-                                                <Badge size="sm" type="pill-color" color="gray" className="w-max">
-                                                    {cuisineTypesLabel}
-                                                </Badge>
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                    {uniqueCuisineTypes.length > 0 ? (
+                                                        uniqueCuisineTypes.map((c) => (
+                                                            <Badge key={c} size="sm" type="pill-color" color="gray">
+                                                                {c}
+                                                            </Badge>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-sm text-tertiary">—</span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="flex flex-col gap-1.5">
                                                 <span className="text-xs font-medium text-quaternary">Tema</span>
-                                                <Badge size="sm" type="pill-color" color="gray" className="w-max">
-                                                    {themesLabel}
-                                                </Badge>
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                    {uniqueThemes.length > 0 ? (
+                                                        uniqueThemes.map((t) => (
+                                                            <Badge key={t} size="sm" type="pill-color" color="gray">
+                                                                {t}
+                                                            </Badge>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-sm text-tertiary">—</span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="flex flex-col gap-1.5">
-                                                <span className="text-xs font-medium text-quaternary">Niver serviço</span>
+                                                <span className="text-xs font-medium text-quaternary">Nível de serviço</span>
                                                 <Badge size="sm" type="pill-color" color="gray" className="w-max">
                                                     {serviceLevelLabel}
                                                 </Badge>
@@ -842,22 +891,53 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                             </Badge>
                                         )}
                                     </div>
-                                    <Button
-                                        color="secondary"
-                                        size="sm"
-                                        iconTrailing={ReceiptCheck}
-                                        isDisabled={!paymentInfo?.transactionReceiptUrl}
-                                        onClick={() => {
-                                            if (paymentInfo?.transactionReceiptUrl) {
-                                                window.open(paymentInfo.transactionReceiptUrl, "_blank");
-                                            }
-                                        }}
-                                    >
-                                        Acessar recibo
-                                    </Button>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        {paymentInfo?.subPayments && paymentInfo.subPayments.length > 1 ? (
+                                            paymentInfo.subPayments.map((sp: any, idx: number) => {
+                                                const label = sp.externalReference?.endsWith('-ING')
+                                                    ? 'Recibo Ingredientes'
+                                                    : sp.externalReference?.endsWith('-SVC')
+                                                        ? 'Recibo Serviço'
+                                                        : `Recibo ${idx + 1}`;
+                                                return (
+                                                    <Button
+                                                        key={sp.id || idx}
+                                                        color="secondary"
+                                                        size="sm"
+                                                        iconTrailing={ReceiptCheck}
+                                                        isDisabled={!sp.transactionReceiptUrl}
+                                                        onClick={() => {
+                                                            if (sp.transactionReceiptUrl) {
+                                                                window.open(sp.transactionReceiptUrl, "_blank");
+                                                            }
+                                                        }}
+                                                    >
+                                                        {label}
+                                                    </Button>
+                                                );
+                                            })
+                                        ) : (
+                                            <Button
+                                                color="secondary"
+                                                size="sm"
+                                                iconTrailing={ReceiptCheck}
+                                                isDisabled={!paymentInfo?.transactionReceiptUrl}
+                                                onClick={() => {
+                                                    if (paymentInfo?.transactionReceiptUrl) {
+                                                        window.open(paymentInfo.transactionReceiptUrl, "_blank");
+                                                    }
+                                                }}
+                                            >
+                                                Acessar recibo
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="grid gap-4 px-6 py-5 md:grid-cols-2">
                                     <DataRow label="Valor do serviço" value={formatCurrency(order.serviceValue ?? 0)} />
+                                    {order.ingredientCost !== null && order.ingredientCost > 0 && (
+                                        <DataRow label="Valor dos ingredientes" value={formatCurrency(order.ingredientCost)} />
+                                    )}
                                     <DataRow
                                         label="Data do pagamento"
                                         value={
