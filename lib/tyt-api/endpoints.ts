@@ -71,6 +71,10 @@ export const tytEndpoints = {
         get: "/api/configuracao-geral",
         put: "/api/configuracao-geral",
     },
+    pricingTiers: {
+        get: "/api/pricing-tiers",
+        put: "/api/pricing-tiers",
+    },
     asaas: {
         paymentById: (id: string) => `/api/asaas/payments/${id}`,
     },
