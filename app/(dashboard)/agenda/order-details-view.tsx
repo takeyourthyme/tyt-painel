@@ -62,7 +62,9 @@ type KitchenOrderDetails = {
     serviceValue: number | null;
     ingredientCost: number | null;
     paymentId: string | null;
+    shoppingListUrl: string | null;
 };
+
 
 function cleanUrl(raw: unknown): string | null {
     if (typeof raw !== "string") return null;
@@ -396,7 +398,9 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
         serviceValue,
         ingredientCost,
         paymentId: getStringValue(obj, ["id_pagamento", "paymentId", "payment_id"]),
+        shoppingListUrl: cleanUrl(getStringValue(obj, ["shopping_list_url", "shoppingListUrl", "shopping_list"])),
     };
+
 }
 
 type ChefOption = { id: string; label: string; avatarUrl?: string };
@@ -594,12 +598,24 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                             <h1 className={cx(playfair.className, "text-display-xs font-semibold text-primary")}>Ordem</h1>
                             <p className="mt-1 text-sm text-tertiary">Acompanhe o status e os detalhes da solicitação</p>
                         </div>
-                        {order && !["CANCELLED", "FINALIZED", "COMPLETED"].includes(order.status?.trim().toUpperCase()) && (
-                            <Button color="primary" size="md" iconLeading={CloseIcon} onClick={() => setOpenCancel(true)} isDisabled={loading}>
-                                Cancelar
-                            </Button>
-                        )}
+                        <div className="flex flex-wrap items-center gap-3">
+                            {order?.shoppingListUrl ? (
+                                <Button
+                                    color="secondary"
+                                    size="md"
+                                    onClick={() => window.open(order.shoppingListUrl!, "_blank")}
+                                >
+                                    Lista de Compras (PDF)
+                                </Button>
+                            ) : null}
+                            {order && !["CANCELLED", "FINALIZED", "COMPLETED"].includes(order.status?.trim().toUpperCase()) && (
+                                <Button color="primary" size="md" iconLeading={CloseIcon} onClick={() => setOpenCancel(true)} isDisabled={loading}>
+                                    Cancelar
+                                </Button>
+                            )}
+                        </div>
                     </div>
+
                     <div className="h-px w-full bg-border-secondary" aria-hidden />
                 </header>
 

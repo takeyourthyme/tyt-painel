@@ -329,7 +329,9 @@ export type KitchenOrderListItem = {
     grocery_receipt_amount?: number | null;
     chef_service_notes?: string | null;
     chef_client_next_notes?: string | null;
+    shopping_list_url?: string | null;
     cliente?: { id: number; nome: string; foto?: string | null } | null;
+
     chef?: { id: number; nome: string; foto?: string | null } | null;
 };
 
