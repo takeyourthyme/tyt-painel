@@ -137,7 +137,7 @@ export type TytUsuarioChef = {
 };
 ```
 
-#### Ordem de Cozinha (`KitchenOrder`)
+#### Ordem de Serviço (`KitchenOrder`)
 ```typescript
 export type KitchenOrderListItem = {
     id: number;
