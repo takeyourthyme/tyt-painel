@@ -71,12 +71,11 @@ function statusBadge(statusRaw: string | null | undefined, typeRaw: string | nul
 
     if (status === "PENDING") return { label: "Aguardando match", color: "warning" };
     if (status === "IN_REVIEW") return { label: isSpecial ? "Em análise" : "Aguardando chef", color: "blue" };
-    if (status === "CONFIRMED") return { label: "Confirmado", color: "success" };
-    if (status === "COMPLETED") return { label: "Concluído", color: "success" };
-    if (status === "FINALIZED") return { label: "Concluído", color: "success" };
+    if (status === "CONFIRMED" || status === "ACCEPTED") return { label: "Confirmado", color: "success" };
+    if (status === "COMPLETED" || status === "FINALIZED" || status === "CONCLUIDO" || status === "CONCLUÍDO") return { label: "Concluído", color: "success" };
     if (status === "DECLINED") return { label: "Chef recusou", color: "orange" };
-    if (status === "CANCELLED") return { label: "Cancelado", color: "error" };
-    if (status === "CANCELATION_REQUESTED") return { label: "Cancelamento solicitado", color: "warning" };
+    if (status === "CANCELLED" || status === "CANCELED") return { label: "Cancelado", color: "error" };
+    if (status === "CANCELATION_REQUESTED" || status === "CANCELLATION_REQUESTED") return { label: "Cancelamento solicitado", color: "warning" };
 
     return { label: statusRaw ?? "—", color: "gray" };
 }
@@ -112,9 +111,9 @@ export type AgendaMetrics = {
 
 function isRequestOrder(o: AgendaOrderRow): boolean {
     const status = o.rawStatus.trim().toUpperCase();
-    if (status === "CONFIRMED") return false;
-    if (status === "COMPLETED") return false;
-    if (status === "CANCELLED") return false;
+    if (status === "CONFIRMED" || status === "ACCEPTED") return false;
+    if (status === "COMPLETED" || status === "FINALIZED" || status === "CONCLUIDO" || status === "CONCLUÍDO" || status === "FINISHED" || status === "DONE") return false;
+    if (status === "CANCELLED" || status === "CANCELED" || status === "CANCELATION_REQUESTED" || status === "CANCELLATION_REQUESTED") return false;
     return true;
 }
 
