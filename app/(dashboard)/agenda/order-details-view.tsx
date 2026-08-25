@@ -63,6 +63,8 @@ type KitchenOrderDetails = {
     ingredientCost: number | null;
     paymentId: string | null;
     shoppingListUrl: string | null;
+    groceryReceiptUrl: string | null;
+    groceryReceiptAmount: number | null;
 };
 
 
@@ -398,6 +400,8 @@ function mapKitchenOrderDetails(raw: unknown): KitchenOrderDetails {
         ingredientCost,
         paymentId: getStringValue(obj, ["id_pagamento", "paymentId", "payment_id"]),
         shoppingListUrl: cleanUrl(getStringValue(obj, ["shopping_list_url", "shoppingListUrl", "shopping_list"])),
+        groceryReceiptUrl: cleanUrl(getStringValue(obj, ["grocery_receipt_url", "groceryReceiptUrl", "grocery_receipt", "groceryReceipt"])),
+        groceryReceiptAmount: getNumberValue(obj, ["grocery_receipt_amount", "groceryReceiptAmount", "grocery_receipt_value", "valor_recibo_compras"]),
     };
 
 }
@@ -508,9 +512,15 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
 
     const badge = useMemo(() => statusBadge(order?.status ?? "", order?.type ?? ""), [order?.status, order?.type]);
     const proposal = useMemo(() => proposalBadge(order?.proposalStatus ?? null), [order?.proposalStatus]);
+    const isProposalApproved = useMemo(() => {
+        if (!order) return false;
+        const pStatus = (order.proposalStatus ?? "").trim().toUpperCase();
+        const oStatus = (order.status ?? "").trim().toUpperCase();
+        return pStatus === "ACCEPTED" || ["CONFIRMED", "COMPLETED", "FINALIZED", "CONCLUIDO", "CONCLUÍDO"].includes(oStatus);
+    }, [order]);
     const chefSelectedKey = order?.chef?.id ? String(order.chef.id) : null;
     const isSpecial = order ? isSpecialService(order.type) : false;
-    const canSendProposal = isSpecial && !!order?.id ? order.proposalItems.length === 0 || (order.proposalStatus ?? "").trim().toUpperCase() === "DECLINED" : false;
+    const canSendProposal = isSpecial && !!order?.id && !isProposalApproved ? order.proposalItems.length === 0 || (order.proposalStatus ?? "").trim().toUpperCase() === "DECLINED" : false;
     const proposalItems = order?.proposalItems?.length ? order.proposalItems : proposalPreviewItems;
     const canConfirmSendProposal = canSendProposal && proposalItems.length > 0;
 
@@ -721,8 +731,10 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                                     size="sm"
                                                     color="tertiary"
                                                     icon={Edit02}
-                                                    tooltip="Editar"
+                                                    tooltip={isProposalApproved ? "Proposta já aprovada pelo cliente" : "Editar"}
+                                                    isDisabled={isProposalApproved || loading}
                                                     onClick={() => {
+                                                        if (isProposalApproved) return;
                                                         const existing = proposalItems.map((i) => ({ description: i.description, price: String(i.price) }));
                                                         setProposalDraft(existing.length > 0 ? existing : [{ description: "", price: "" }]);
                                                         setOpenProposal(true);
@@ -751,6 +763,48 @@ export function OrderDetailsView({ code, backHref }: { code: string; backHref: s
                                                 </div>
                                             )}
                                         </TableCard.Root>
+
+                                        {/* Comprovante de Compras do Chef */}
+                                        <div className="flex flex-col gap-3 rounded-xl border border-secondary bg-secondary_alt p-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-semibold text-primary">Comprovante de Compras</p>
+                                                    {order.groceryReceiptUrl ? (
+                                                        <Badge size="sm" type="pill-color" color="success">
+                                                            Enviado pelo chef
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge size="sm" type="pill-color" color="warning">
+                                                            Pendente
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                {order.groceryReceiptUrl && (
+                                                    <Button
+                                                        color="secondary"
+                                                        size="sm"
+                                                        iconTrailing={ReceiptCheck}
+                                                        onClick={() => window.open(order.groceryReceiptUrl!, "_blank")}
+                                                    >
+                                                        Abrir comprovante
+                                                    </Button>
+                                                )}
+                                            </div>
+                                            {order.groceryReceiptUrl ? (
+                                                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-tertiary">
+                                                    <span>Arquivo anexado pelo chef</span>
+                                                    {order.groceryReceiptAmount !== null && order.groceryReceiptAmount > 0 && (
+                                                        <span className="font-semibold text-primary">
+                                                            Valor total das compras: {formatCurrency(order.groceryReceiptAmount)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-tertiary">
+                                                    O chef anexará o comprovante de compras de ingredientes antes de finalizar o atendimento.
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </>
                             ) : isGetTogether ? (
