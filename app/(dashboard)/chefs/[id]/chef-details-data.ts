@@ -277,9 +277,9 @@ function mapChefDetails(raw: ApiChefUser): ChefDetails {
             : typeof chef?.id_user === "string" && chef.id_user.trim().length > 0
                 ? Number(chef.id_user)
                 : null;
-    const instagram = chef?.instagram ?? null;
-    const usernameFromEmail = raw.email ? `@${raw.email.split("@")[0] ?? ""}` : "";
-    const username = (instagram && instagram.trim().length > 0 ? instagram.trim() : usernameFromEmail) || `@chef_${raw.id}`;
+    const rawInstagram = chef?.instagram ?? null;
+    const cleanInstagram = rawInstagram && rawInstagram.trim().length > 0 ? rawInstagram.trim() : "";
+    const username = cleanInstagram ? (cleanInstagram.startsWith("@") ? cleanInstagram : `@${cleanInstagram}`) : "";
 
     const approved = chef?.cadastro_aprovado === true;
     const statusLabel = getChefStatus(chef?.status, approved);

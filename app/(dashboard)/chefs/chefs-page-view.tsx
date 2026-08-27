@@ -346,9 +346,9 @@ export function ChefsPageView() {
                 const city = c.cidade ?? "";
                 const state = c.estado ?? "";
 
-                const instagram = c.usuario_chef?.instagram ?? null;
-                const usernameFromEmail = c.email ? `@${c.email.split("@")[0] ?? ""}` : "";
-                const username = (instagram && instagram.trim().length > 0 ? instagram.trim() : usernameFromEmail) || `@chef_${chefId}`;
+                const rawInstagram = c.usuario_chef?.instagram ?? null;
+                const cleanInstagram = rawInstagram && rawInstagram.trim().length > 0 ? rawInstagram.trim() : "";
+                const username = cleanInstagram ? (cleanInstagram.startsWith("@") ? cleanInstagram : `@${cleanInstagram}`) : "";
 
                 const approved = c.usuario_chef?.cadastro_aprovado === true;
                 const status: ChefRow["status"] = approved ? "ativo" : "inativo";
@@ -687,7 +687,9 @@ function GestaoChefsTable({
                                                 <Avatar src={item.avatarUrl} initials={item.initials} size="md" alt={item.name} />
                                                 <div className="min-w-0">
                                                     <p className="truncate text-sm font-medium text-primary">{item.name}</p>
-                                                    <p className="truncate text-sm text-tertiary">{item.username}</p>
+                                                    {item.username ? (
+                                                        <p className="truncate text-sm text-tertiary">{item.username}</p>
+                                                    ) : null}
                                                 </div>
                                             </div>
                                         </Table.Cell>

@@ -194,13 +194,17 @@ function formatLanguageLabel(code: string): string {
     return map[s] ?? code;
 }
 
-function formatInstagramUsername(username: string): string {
-    return username.startsWith("@") ? username : `@${username}`;
+function formatInstagramUsername(username?: string | null): string {
+    if (!username || !username.trim()) return "—";
+    const clean = username.trim();
+    return clean.startsWith("@") ? clean : `@${clean}`;
 }
 
-function formatInstagramLink(username: string): string {
-    const user = username.startsWith("@") ? username.slice(1) : username;
-    return `https://instagram.com/${user}`;
+function formatInstagramLink(username?: string | null): string | undefined {
+    if (!username || !username.trim()) return undefined;
+    const clean = username.trim();
+    const user = clean.startsWith("@") ? clean.slice(1) : clean;
+    return user ? `https://instagram.com/${user}` : undefined;
 }
 
 function formatWhatsAppLink(raw: string): string | null {
