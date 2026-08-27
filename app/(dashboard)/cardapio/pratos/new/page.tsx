@@ -168,7 +168,7 @@ export default function DishNewPage() {
         servings: string;
         ativo: boolean;
         mealPreap: boolean;
-        getTogheter: boolean;
+        getTogether: boolean;
         destaqueSite: boolean;
         receitaFile: File | null;
         fichaTecnicaFile: File | null;
@@ -180,7 +180,7 @@ export default function DishNewPage() {
         servings: "2",
         ativo: true,
         mealPreap: false,
-        getTogheter: false,
+        getTogether: false,
         destaqueSite: false,
         receitaFile: null,
         fichaTecnicaFile: null,
@@ -245,9 +245,9 @@ export default function DishNewPage() {
     const serviceTypeSelection = useMemo(() => {
         const keys = new Set<string>();
         if (form.mealPreap) keys.add("meal-prep");
-        if (form.getTogheter) keys.add("get-together");
+        if (form.getTogether) keys.add("get-together");
         return keys;
-    }, [form.mealPreap, form.getTogheter]);
+    }, [form.mealPreap, form.getTogether]);
 
     const handleServiceTypeChange = (keys: Selection) => {
         if (keys === "all") return;
@@ -256,7 +256,7 @@ export default function DishNewPage() {
         setForm((p) => ({
             ...p,
             mealPreap: isMealPrep,
-            getTogheter: selected.includes("get-together"),
+            getTogether: selected.includes("get-together"),
         }));
         if (isMealPrep) {
             setThemeSelection(new Set());
@@ -805,7 +805,7 @@ export default function DishNewPage() {
                                             toast.error("Selecione ao menos uma categoria");
                                             return;
                                         }
-                                        if (!form.mealPreap && !form.getTogheter) {
+                                        if (!form.mealPreap && !form.getTogether) {
                                             toast.error("Selecione o tipo de serviço");
                                             return;
                                         }
@@ -829,7 +829,7 @@ export default function DishNewPage() {
                                                 foto2: form.foto2File,
                                                 ficha_tecnica: form.fichaTecnicaFile,
                                                 meal_preap: form.mealPreap,
-                                                get_together: form.getTogheter,
+                                                get_together: form.getTogether,
                                                 receita: form.receitaFile,
                                                 destaque_site: form.destaqueSite,
                                             };
