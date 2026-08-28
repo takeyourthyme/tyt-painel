@@ -24,13 +24,6 @@ import { getTytAccessToken } from "@/lib/tyt-api/session";
 import { cx } from "@/utils/cx";
 
 const playfair = Playfair_Display({ subsets: ["latin"], display: "swap" });
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
-
-function isWithinUploadLimit(file: File, label: string) {
-    if (file.size <= MAX_UPLOAD_BYTES) return true;
-    toast.error(`${label} excede 10MB`, { description: "Escolha um arquivo com até 10MB" });
-    return false;
-}
 
 function formatBytes(bytes: number, decimals = 2): string {
     if (bytes === 0) return "0 Bytes";
@@ -391,7 +384,6 @@ export default function DishNewPage() {
                                                 onDropFiles={(files) => {
                                                     const f = files.item(0);
                                                     if (!f) return;
-                                                    if (!isWithinUploadLimit(f, "Foto 1")) return;
                                                     setForm((p) => ({ ...p, foto1File: f }));
                                                 }}
                                             />
@@ -414,7 +406,6 @@ export default function DishNewPage() {
                                                 onDropFiles={(files) => {
                                                     const f = files.item(0);
                                                     if (!f) return;
-                                                    if (!isWithinUploadLimit(f, "Foto 2")) return;
                                                     setForm((p) => ({ ...p, foto2File: f }));
                                                 }}
                                             />
@@ -707,7 +698,6 @@ export default function DishNewPage() {
                                         onDropFiles={(files) => {
                                             const f = files.item(0);
                                             if (!f) return;
-                                            if (!isWithinUploadLimit(f, "Ficha técnica")) return;
                                             setForm((p) => ({ ...p, fichaTecnicaFile: f }));
                                         }}
                                     />
@@ -750,7 +740,6 @@ export default function DishNewPage() {
                                         onDropFiles={(files) => {
                                             const f = files.item(0);
                                             if (!f) return;
-                                            if (!isWithinUploadLimit(f, "Receita")) return;
                                             setForm((p) => ({ ...p, receitaFile: f }));
                                         }}
                                     />
