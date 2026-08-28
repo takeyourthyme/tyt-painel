@@ -1347,11 +1347,9 @@ export default function CardapioPage() {
                                         : "Escolha como deseja incluir novos itens à sua lista de insumos";
 
                     const unitOptions = [
-                        { id: "g", label: "g" },
-                        { id: "kg", label: "kg" },
-                        { id: "ml", label: "ml" },
-                        { id: "l", label: "l" },
-                        { id: "un", label: "un" },
+                        { id: "g", label: "g — gramas" },
+                        { id: "ml", label: "ml — mililitros" },
+                        { id: "un", label: "un — unidades" },
                     ];
 
                     return (
@@ -1487,6 +1485,7 @@ export default function CardapioPage() {
                                                                 value={ingredientForm.volume_peso}
                                                                 onChange={(v) => setIngredientForm((p) => ({ ...p, volume_peso: v }))}
                                                                 isRequired
+                                                                description="Informe o tamanho da embalagem na unidade escolhida. Ex: 1000 (para 1kg), 500 (para 500ml), 12 (para dúzia de ovos)."
                                                             />
                                                             <Select
                                                                 aria-label="Unidade"
@@ -1626,6 +1625,7 @@ export default function CardapioPage() {
                                                         value={ingredientForm.volume_peso}
                                                         onChange={(v) => setIngredientForm((p) => ({ ...p, volume_peso: v }))}
                                                         isRequired
+                                                        description="Informe o tamanho da embalagem na unidade escolhida. Ex: 1000 (para 1kg), 500 (para 500ml), 12 (para dúzia de ovos)."
                                                     />
                                                     <Select
                                                         aria-label="Unidade"
