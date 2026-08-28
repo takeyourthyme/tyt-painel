@@ -214,8 +214,10 @@ function formatWhatsAppLink(raw: string): string | null {
 }
 
 function formatMailto(email: string): string | null {
-    if (!email || email === "—") return null;
-    return `mailto:${email}`;
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail || normalizedEmail === "—") return null;
+
+    return `mailto:${normalizedEmail}`;
 }
 
 function addressLine(chef: { address: string | null; number: string | null }): string {
