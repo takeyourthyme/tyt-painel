@@ -1485,7 +1485,7 @@ export default function CardapioPage() {
                                                                 value={ingredientForm.volume_peso}
                                                                 onChange={(v) => setIngredientForm((p) => ({ ...p, volume_peso: v }))}
                                                                 isRequired
-                                                                description="Informe o tamanho da embalagem na unidade escolhida. Ex: 1000 (para 1kg), 500 (para 500ml), 12 (para dúzia de ovos)."
+                                                                tooltip="Informe o tamanho da embalagem na unidade escolhida. Ex: 1000 (para 1kg), 500 (para 500ml), 12 (para dúzia de ovos)."
                                                             />
                                                             <Select
                                                                 aria-label="Unidade"
@@ -1625,7 +1625,7 @@ export default function CardapioPage() {
                                                         value={ingredientForm.volume_peso}
                                                         onChange={(v) => setIngredientForm((p) => ({ ...p, volume_peso: v }))}
                                                         isRequired
-                                                        description="Informe o tamanho da embalagem na unidade escolhida. Ex: 1000 (para 1kg), 500 (para 500ml), 12 (para dúzia de ovos)."
+                                                        tooltip="Informe o tamanho da embalagem na unidade escolhida. Ex: 1000 (para 1kg), 500 (para 500ml), 12 (para dúzia de ovos)."
                                                     />
                                                     <Select
                                                         aria-label="Unidade"
