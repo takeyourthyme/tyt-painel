@@ -365,6 +365,7 @@ export default function CardapioPage() {
                     .map((x) => {
                         if (!x || typeof x !== "object") return null;
                         const r = x as Record<string, unknown>;
+                        if (typeof r.ativo === "boolean" && r.ativo === false) return null;
                         const id = typeof r.id === "number" ? r.id : Number(r.id);
                         const title = typeof r.nome_prato === "string" ? r.nome_prato : typeof r.nome === "string" ? r.nome : null;
                         const descricao = typeof r.descricao === "string" ? r.descricao : null;
@@ -386,6 +387,7 @@ export default function CardapioPage() {
                 .map((x) => {
                     if (!x || typeof x !== "object") return null;
                     const r = x as Record<string, unknown>;
+                    if (typeof r.ativo === "boolean" && r.ativo === false) return null;
                     const id = typeof r.id === "number" ? r.id : Number(r.id);
                     const nome_prato = typeof r.nome_prato === "string" ? r.nome_prato : "Sem Nome";
                     const pCats = Array.isArray(r.pratos_categorias) ? r.pratos_categorias : [];
@@ -401,7 +403,14 @@ export default function CardapioPage() {
                 .filter((d): d is { id: number; nome_prato: string; categoryIds: number[] } => d !== null && Number.isFinite(d.id));
             setDishesOptions(parsedDishesOptions);
 
-            const pratosList = normalizeList<unknown>(pratosJson).map((x, idx) => {
+            const pratosList = normalizeList<unknown>(pratosJson)
+                .filter((x) => {
+                    if (!x || typeof x !== "object") return true;
+                    const r = x as Record<string, unknown>;
+                    if (typeof r.ativo === "boolean") return r.ativo;
+                    return true;
+                })
+                .map((x, idx) => {
                 const r = (x && typeof x === "object" ? (x as Record<string, unknown>) : {}) as Record<string, unknown>;
                 const id = r.id !== undefined ? String(r.id) : String(idx);
                 const title = typeof r.nome_prato === "string" ? r.nome_prato : null;
